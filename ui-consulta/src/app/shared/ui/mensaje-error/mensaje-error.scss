@@ -1,0 +1,17 @@
+@use '../../../../styles/tokens' as *;
+
+.mensaje-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  padding: 24px;
+}
+
+.mensaje-error p {
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: $color-text-secondary;
+  margin: 0;
+}

@@ -1,0 +1,71 @@
+@use '../../../../styles/tokens' as *;
+
+.pregunta {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.pregunta__header {
+  text-align: center;
+  font-family: $font-heading;
+  font-weight: 700;
+  font-size: 20px;
+  color: $color-brand;
+  padding: 20px 24px 12px;
+}
+
+.pregunta__contenido {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+  padding: 24px 26px;
+
+  h1 {
+    font-family: $font-heading;
+    font-weight: 700;
+    font-size: 21px;
+    line-height: 1.3;
+    color: $color-text-primary;
+    text-align: center;
+    margin: 0 0 8px;
+  }
+}
+
+.pregunta__acciones-binarias {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pregunta__lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pregunta__opcion {
+  text-align: left;
+  padding: 15px 16px;
+  border-radius: $radius-sm;
+  background: white;
+  border: 1.5px solid $color-border;
+  font-family: $font-body;
+  font-weight: 600;
+  font-size: 14.5px;
+  color: $color-text-primary;
+  cursor: pointer;
+}
+
+.pregunta__opcion--activa {
+  border-color: $color-brand;
+}
+
+.pregunta__error {
+  color: $color-alert-dark;
+  font-size: 13.5px;
+  text-align: center;
+  margin: 0;
+}

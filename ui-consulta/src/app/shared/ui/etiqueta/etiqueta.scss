@@ -1,0 +1,12 @@
+@use '../../../../styles/tokens' as *;
+
+.etiqueta {
+  display: inline-block;
+  font-family: $font-body;
+  font-weight: 700;
+  font-size: 12.5px;
+  padding: 7px 14px;
+  border-radius: $radius-pill;
+}
+.etiqueta--marca { background: $color-brand-tint; color: $color-brand-dark; }
+.etiqueta--calma { background: $color-calm-tint; color: $color-calm-dark; }

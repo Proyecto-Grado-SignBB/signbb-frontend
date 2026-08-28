@@ -1,0 +1,51 @@
+@use '../../../../styles/tokens' as *;
+
+.inicio {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 24px 28px 0;
+  text-align: center;
+  align-items: center;
+}
+
+.inicio__hero {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  max-width: 360px;
+
+  h1 {
+    font-family: $font-heading;
+    font-weight: 700;
+    font-size: 25px;
+    color: $color-text-primary;
+    margin: 0;
+  }
+
+  p {
+    font-size: 15px;
+    line-height: 1.5;
+    color: $color-text-secondary;
+    margin: 0;
+  }
+}
+
+.inicio__etiquetas {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.inicio__acciones {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 16px;
+}

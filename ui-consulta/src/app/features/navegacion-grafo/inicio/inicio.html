@@ -1,0 +1,30 @@
+<div class="inicio pantalla">
+  <div class="inicio__hero">
+    <app-insignia-icono tono="marca" [tamano]="72">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="oklch(48% 0.13 340)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+      </svg>
+    </app-insignia-icono>
+
+    <h1>Bienvenido a SignBB</h1>
+    <p>Tu acompañante en el cuidado de tu bebé prematuro con el método madre canguro.</p>
+
+    <div class="inicio__etiquetas">
+      <app-etiqueta tono="calma">Cuidado del bebé</app-etiqueta>
+      <app-etiqueta tono="marca">Orientación a padres</app-etiqueta>
+    </div>
+  </div>
+
+  <div class="inicio__acciones">
+    <app-boton tono="marca" (click)="comenzarConsulta()">
+      {{ cargando ? 'Un momento...' : 'Comenzar consulta' }}
+    </app-boton>
+    <app-boton variante="texto" tono="neutro" alto="mediano">Manual de usuario</app-boton>
+  </div>
+
+  @if (error) {
+  <app-mensaje-error [texto]="error" (reintentar)="comenzarConsulta()"></app-mensaje-error>
+}
+
+  <app-aviso-legal></app-aviso-legal>
+</div>

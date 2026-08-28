@@ -1,0 +1,12 @@
+@use '../../../../styles/tokens' as *;
+
+.insignia {
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.insignia--marca { background: $color-brand-tint; }
+.insignia--calma { background: $color-calm-tint; }
+.insignia--alerta { background: $color-alert-tint; }

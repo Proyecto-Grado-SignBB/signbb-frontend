@@ -1,6 +1,8 @@
 {
-  "name": "ui-consulta",
-  "short_name": "ui-consulta",
+  "name": "SignBB",
+  "short_name": "SignBB",
+  "theme_color": "#b3588e",
+  "background_color": "#f6f4f7",
   "display": "standalone",
   "scope": "./",
   "start_url": "./",

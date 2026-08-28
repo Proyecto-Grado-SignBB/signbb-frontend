@@ -1,0 +1,66 @@
+@use '../../../../styles/tokens' as *;
+
+.resultado {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.resultado__header {
+  text-align: center;
+  font-family: $font-heading;
+  font-weight: 700;
+  font-size: 20px;
+  color: $color-brand;
+  padding: 20px 24px 12px;
+}
+
+.resultado__contenido {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 20px 30px;
+  text-align: center;
+}
+
+.resultado__contenido h1 {
+  font-family: $font-heading;
+  font-weight: 700;
+  font-size: 22px;
+  color: $color-text-primary;
+  margin: 0;
+}
+
+.resultado__contenido p {
+  font-size: 15px;
+  line-height: 1.5;
+  color: $color-text-secondary;
+  margin: 0;
+}
+
+.resultado__nota {
+  font-size: 14px !important;
+  color: $color-text-muted !important;
+}
+
+.resultado__chip {
+  border: 1.5px solid $color-alert-tint;
+  border-radius: $radius-pill;
+  background: $color-alert-tint;
+  color: $color-alert-dark;
+  font-family: $font-body;
+  font-weight: 700;
+  font-size: 13.5px;
+  padding: 8px 18px;
+  cursor: pointer;
+}
+
+.resultado__acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 24px 12px;
+}

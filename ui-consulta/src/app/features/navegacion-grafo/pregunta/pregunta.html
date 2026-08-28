@@ -1,1 +1,45 @@
-<p>pregunta works!</p>
+@if (respuesta(); as r) {
+  <div class="pregunta pantalla">
+    <div class="pregunta__header">SignBB</div>
+
+    <div class="pregunta__contenido">
+      <h1>{{ r.nodoActual?.texto }}</h1>
+
+      @if (esBinaria()) {
+        <div class="pregunta__acciones-binarias">
+          @for (opcion of r.nodoActual?.opciones; track opcion.valor; let esPrimera = $first) {
+            <app-boton
+              tono="marca"
+              [variante]="esPrimera ? 'relleno' : 'contorno'"
+              (click)="seleccionar(opcion.valor)">
+              {{ opcion.texto }}
+            </app-boton>
+          }
+        </div>
+      } @else {
+        <div class="pregunta__lista">
+          @for (opcion of r.nodoActual?.opciones; track opcion.valor) {
+            <button
+              type="button"
+              class="pregunta__opcion"
+              [class.pregunta__opcion--activa]="seleccionActual() === opcion.valor"
+              (click)="seleccionar(opcion.valor)">
+              {{ opcion.texto }}
+            </button>
+          }
+        </div>
+        <app-boton tono="marca" (click)="continuar()">Continuar</app-boton>
+      }
+    </div>
+
+    @if (error()) {
+      <app-mensaje-error [texto]="error()!" (reintentar)="cargar()"></app-mensaje-error>
+    }
+
+    <app-aviso-legal></app-aviso-legal>
+  </div>
+} @else if (error()) {
+  <div class="pantalla">
+    <app-mensaje-error [texto]="error()!" (reintentar)="cargar()"></app-mensaje-error>
+  </div>
+}
