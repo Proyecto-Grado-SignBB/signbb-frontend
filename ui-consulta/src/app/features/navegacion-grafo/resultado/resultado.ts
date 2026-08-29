@@ -19,7 +19,7 @@ export class ResultadoComponent implements OnInit {
   respuesta = signal<RecorridoResponse | null>(null);
   mostrarRecomendaciones = signal(false);
   error = signal<string | null>(null);
-  private recorridoId = '';
+  private recorridoId = 0;
 
   constructor(
     private route: ActivatedRoute,
@@ -28,7 +28,7 @@ export class ResultadoComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.recorridoId = this.route.snapshot.paramMap.get('recorridoId')!;
+    this.recorridoId = Number(this.route.snapshot.paramMap.get('recorridoId')!);
     this.cargar();
   }
 

@@ -1,97 +1,114 @@
-import { fakeAsync, tick } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { RecorridoService } from './recorrido';
 import { RecorridoResponse } from '../../models/recorrido.model';
+import { environment } from '../../../environments/environment';
 
 describe('RecorridoService', () => {
   let servicio: RecorridoService;
+  let httpMock: HttpTestingController;
 
   beforeEach(() => {
-    servicio = new RecorridoService();
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting()
+      ]
+    });
+    servicio = TestBed.inject(RecorridoService);
+    httpMock = TestBed.inject(HttpTestingController);
   });
 
-  it('iniciar() debe devolver el primer nodo (p1) en curso', fakeAsync(() => {
+  afterEach(() => {
+    httpMock.verify();
+  });
+
+  it('iniciar() debe hacer POST /recorridos y devolver RecorridoResponse en curso', () => {
+    const respuestaMock: RecorridoResponse = {
+      recorridoId: 1,
+      estado: 'EN_CURSO',
+      nodoActual: { id: 10, texto: '¿Tu bebé está respirando más rápido de lo usual?', opciones: [] },
+      resultado: null,
+      mensaje: null
+    };
+
     let resultado!: RecorridoResponse;
-    servicio.iniciar({ grafoClinicoId: 'grafo-dif-resp' }).subscribe(r => (resultado = r));
-    tick(400);
+    servicio.iniciar({ grafoClinicoId: 1 }).subscribe(r => (resultado = r));
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/recorridos`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ grafoClinicoId: 1 });
+    req.flush(respuestaMock);
 
     expect(resultado.estado).toBe('EN_CURSO');
-    expect(resultado.nodoActual?.id).toBe('p1');
-    expect(resultado.recorridoId).toBeTruthy();
-  }));
+    expect(resultado.recorridoId).toBe(1);
+    expect(resultado.nodoActual?.id).toBe(10);
+  });
 
-  it('responder "no" en p1 debe finalizar con resultado NORMAL', fakeAsync(() => {
-    let recorridoId = '';
-    servicio.iniciar({ grafoClinicoId: 'grafo-dif-resp' }).subscribe(r => (recorridoId = r.recorridoId));
-    tick(400);
+  it('responder() debe hacer POST /recorridos/{id}/respuestas con el body correcto', () => {
+    const respuestaMock: RecorridoResponse = {
+      recorridoId: 1,
+      estado: 'FINALIZADO',
+      nodoActual: null,
+      resultado: 'NORMAL',
+      mensaje: 'No se detectan signos de alarma respiratoria en este momento.'
+    };
 
     let resultado!: RecorridoResponse;
-    servicio.responder(recorridoId, { respuesta: 'no' }).subscribe(r => (resultado = r));
-    tick(400);
+    servicio.responder(1, { respuesta: 'no' }).subscribe(r => (resultado = r));
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/recorridos/1/respuestas`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ respuesta: 'no' });
+    req.flush(respuestaMock);
 
     expect(resultado.estado).toBe('FINALIZADO');
     expect(resultado.resultado).toBe('NORMAL');
     expect(resultado.nodoActual).toBeNull();
-  }));
+  });
 
-  it('responder "si" en p1 debe avanzar a la pregunta p2', fakeAsync(() => {
-    let recorridoId = '';
-    servicio.iniciar({ grafoClinicoId: 'grafo-dif-resp' }).subscribe(r => (recorridoId = r.recorridoId));
-    tick(400);
+  it('consultar() debe hacer GET /recorridos/{id}', () => {
+    const respuestaMock: RecorridoResponse = {
+      recorridoId: 1,
+      estado: 'EN_CURSO',
+      nodoActual: { id: 10, texto: '¿Tu bebé está respirando más rápido de lo usual?', opciones: [] },
+      resultado: null,
+      mensaje: null
+    };
 
     let resultado!: RecorridoResponse;
-    servicio.responder(recorridoId, { respuesta: 'si' }).subscribe(r => (resultado = r));
-    tick(400);
+    servicio.consultar(1).subscribe(r => (resultado = r));
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/recorridos/1`);
+    expect(req.request.method).toBe('GET');
+    req.flush(respuestaMock);
 
     expect(resultado.estado).toBe('EN_CURSO');
-    expect(resultado.nodoActual?.id).toBe('p2');
-  }));
+    expect(resultado.recorridoId).toBe(1);
+  });
 
-  it('responder "cianosis" en p2 debe finalizar con REQUIERE_ATENCION', fakeAsync(() => {
-    let recorridoId = '';
-    servicio.iniciar({ grafoClinicoId: 'grafo-dif-resp' }).subscribe(r => (recorridoId = r.recorridoId));
-    tick(400);
-    servicio.responder(recorridoId, { respuesta: 'si' }).subscribe();
-    tick(400);
-
-    let resultado!: RecorridoResponse;
-    servicio.responder(recorridoId, { respuesta: 'cianosis' }).subscribe(r => (resultado = r));
-    tick(400);
-
-    expect(resultado.estado).toBe('FINALIZADO');
-    expect(resultado.resultado).toBe('REQUIERE_ATENCION');
-  }));
-
-  it('responder "agitada" en p2 debe finalizar con NORMAL', fakeAsync(() => {
-    let recorridoId = '';
-    servicio.iniciar({ grafoClinicoId: 'grafo-dif-resp' }).subscribe(r => (recorridoId = r.recorridoId));
-    tick(400);
-    servicio.responder(recorridoId, { respuesta: 'si' }).subscribe();
-    tick(400);
-
-    let resultado!: RecorridoResponse;
-    servicio.responder(recorridoId, { respuesta: 'agitada' }).subscribe(r => (resultado = r));
-    tick(400);
-
-    expect(resultado.resultado).toBe('NORMAL');
-  }));
-
-  it('responder con un id inexistente debe fallar', fakeAsync(() => {
+  it('responder con un id inexistente debe propagar el error HTTP', () => {
     let error: unknown;
-    servicio.responder('id-que-no-existe', { respuesta: 'si' }).subscribe({
+    servicio.responder(999, { respuesta: 'si' }).subscribe({
       error: e => (error = e)
     });
-    tick(300);
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/recorridos/999/respuestas`);
+    req.flush('Recorrido no encontrado', { status: 404, statusText: 'Not Found' });
 
     expect(error).toBeTruthy();
-  }));
+  });
 
-  it('consultar con un id inexistente debe fallar', fakeAsync(() => {
+  it('consultar con un id inexistente debe propagar el error HTTP', () => {
     let error: unknown;
-    servicio.consultar('id-que-no-existe').subscribe({
+    servicio.consultar(999).subscribe({
       error: e => (error = e)
     });
-    tick(300);
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/recorridos/999`);
+    req.flush('Recorrido no encontrado', { status: 404, statusText: 'Not Found' });
 
     expect(error).toBeTruthy();
-  }));
+  });
 });

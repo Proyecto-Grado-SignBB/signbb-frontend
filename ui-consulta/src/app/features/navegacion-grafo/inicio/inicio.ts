@@ -27,7 +27,7 @@ export class Inicio {
 comenzarConsulta(): void {
     this.error = null;
     this.cargando = true;
-    this.recorridoService.iniciar({ grafoClinicoId: 'grafo-dif-resp' }).subscribe({
+    this.recorridoService.iniciar({ grafoClinicoId: 1 }).subscribe({
       next: respuesta => {
         this.cargando = false;
         this.router.navigate(['/pregunta', respuesta.recorridoId]);

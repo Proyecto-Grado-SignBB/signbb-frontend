@@ -4,7 +4,7 @@ export type EstadoRecorrido = 'EN_CURSO' | 'FINALIZADO';
 export type ResultadoFinal = 'NORMAL' | 'REQUIERE_ATENCION';
 
 export interface RecorridoResponse {
-  recorridoId: string;
+  recorridoId: number;
   estado: EstadoRecorrido;
   nodoActual: Nodo | null;
   resultado: ResultadoFinal | null;
@@ -12,7 +12,7 @@ export interface RecorridoResponse {
 }
 
 export interface IniciarRecorridoRequest {
-  grafoClinicoId: string;
+  grafoClinicoId: number;
 }
 
 export interface ResponderRequest {

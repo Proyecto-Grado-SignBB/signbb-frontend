@@ -4,7 +4,7 @@ export interface OpcionRespuesta {
 }
 
 export interface Nodo {
-  id: string;
+  id: number;
   texto: string;
   opciones: OpcionRespuesta[];
 }

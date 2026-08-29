@@ -22,7 +22,7 @@ export class PreguntaComponent implements OnInit {
 
   esBinaria = computed(() => (this.respuesta()?.nodoActual?.opciones.length ?? 0) <= 2);
 
-  private recorridoId = '';
+  private recorridoId = 0;
 
   constructor(
     private route: ActivatedRoute,
@@ -31,7 +31,7 @@ export class PreguntaComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.recorridoId = this.route.snapshot.paramMap.get('recorridoId')!;
+    this.recorridoId = Number(this.route.snapshot.paramMap.get('recorridoId')!);
     this.cargar();
   }
 
