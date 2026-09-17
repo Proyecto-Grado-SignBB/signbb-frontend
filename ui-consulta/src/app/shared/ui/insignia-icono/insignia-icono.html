@@ -1,7 +1,4 @@
-<div
-  class="insignia"
-  [class]="'insignia--' + tono"
-  [style.width.px]="tamano"
+<div class="insignia" [class]="'insignia--' + tono + (solido ? ' insignia--solido' : '')" [style.width.px]="tamano"
   [style.height.px]="tamano">
   <ng-content></ng-content>
 </div>

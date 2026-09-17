@@ -24,77 +24,116 @@ describe('RecorridoService', () => {
     httpMock.verify();
   });
 
-  it('iniciar() debe hacer POST /recorridos y devolver RecorridoResponse en curso', () => {
+  it('iniciar() debe hacer POST /recorridos y devolver la primera pregunta', () => {
     const respuestaMock: RecorridoResponse = {
-      recorridoId: 1,
+      recorridoId: 'abc-123',
       estado: 'EN_CURSO',
-      nodoActual: { id: 10, texto: '¿Tu bebé está respirando más rápido de lo usual?', opciones: [] },
-      resultado: null,
-      mensaje: null
+      pregunta: {
+        id: 'pregunta_coloracion',
+        texto: '¿Observa coloración amarilla en la piel o los ojos del bebé?',
+        opciones: ['SI', 'NO'],
+        tieneImagenes: true,
+        imagenes: ['/images/ictericia-ejemplo.jpg']
+      },
+      resultado: null
     };
 
     let resultado!: RecorridoResponse;
-    servicio.iniciar({ grafoClinicoId: 1 }).subscribe(r => (resultado = r));
+    servicio.iniciar().subscribe(r => (resultado = r));
 
     const req = httpMock.expectOne(`${environment.apiUrl}/recorridos`);
     expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual({ grafoClinicoId: 1 });
     req.flush(respuestaMock);
 
     expect(resultado.estado).toBe('EN_CURSO');
-    expect(resultado.recorridoId).toBe(1);
-    expect(resultado.nodoActual?.id).toBe(10);
+    expect(resultado.recorridoId).toBe('abc-123');
+    expect(resultado.pregunta?.id).toBe('pregunta_coloracion');
+    expect(resultado.pregunta?.tieneImagenes).toBeTrue();
   });
 
   it('responder() debe hacer POST /recorridos/{id}/respuestas con el body correcto', () => {
     const respuestaMock: RecorridoResponse = {
-      recorridoId: 1,
+      recorridoId: 'abc-123',
       estado: 'FINALIZADO',
-      nodoActual: null,
-      resultado: 'NORMAL',
-      mensaje: 'No se detectan signos de alarma respiratoria en este momento.'
+      pregunta: null,
+      resultado: {
+        nivel: 'NORMAL',
+        destinoId: 'recomendacion_tranquilidad',
+        mensaje: 'La coloración amarilla puede ser normal en los primeros días.',
+        razones: [],
+        caminoCausal: []
+      }
     };
 
     let resultado!: RecorridoResponse;
-    servicio.responder(1, { respuesta: 'no' }).subscribe(r => (resultado = r));
+    servicio.responder('abc-123', { respuesta: 'NO' }).subscribe(r => (resultado = r));
 
-    const req = httpMock.expectOne(`${environment.apiUrl}/recorridos/1/respuestas`);
+    const req = httpMock.expectOne(`${environment.apiUrl}/recorridos/abc-123/respuestas`);
     expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual({ respuesta: 'no' });
+    expect(req.request.body).toEqual({ respuesta: 'NO' });
     req.flush(respuestaMock);
 
     expect(resultado.estado).toBe('FINALIZADO');
-    expect(resultado.resultado).toBe('NORMAL');
-    expect(resultado.nodoActual).toBeNull();
+    expect(resultado.resultado?.nivel).toBe('NORMAL');
+    expect(resultado.pregunta).toBeNull();
+  });
+
+  it('responder() con 2+ reglas activas debe traer varias razones', () => {
+    const respuestaMock: RecorridoResponse = {
+      recorridoId: 'abc-123',
+      estado: 'FINALIZADO',
+      pregunta: null,
+      resultado: {
+        nivel: 'URGENCIA',
+        destinoId: 'consulta_medica_urgente',
+        mensaje: '¡ATENCIÓN! La ictericia puede ser grave.',
+        razones: ['Ictericia prolongada', 'Ictericia con letargo'],
+        caminoCausal: []
+      }
+    };
+
+    let resultado!: RecorridoResponse;
+    servicio.responder('abc-123', { respuesta: 'SI' }).subscribe(r => (resultado = r));
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/recorridos/abc-123/respuestas`);
+    req.flush(respuestaMock);
+
+    expect(resultado.resultado?.razones.length).toBe(2);
+    expect(resultado.resultado?.razones).toContain('Ictericia con letargo');
   });
 
   it('consultar() debe hacer GET /recorridos/{id}', () => {
     const respuestaMock: RecorridoResponse = {
-      recorridoId: 1,
+      recorridoId: 'abc-123',
       estado: 'EN_CURSO',
-      nodoActual: { id: 10, texto: '¿Tu bebé está respirando más rápido de lo usual?', opciones: [] },
-      resultado: null,
-      mensaje: null
+      pregunta: {
+        id: 'pregunta_coloracion',
+        texto: '¿Observa coloración amarilla en la piel o los ojos del bebé?',
+        opciones: ['SI', 'NO'],
+        tieneImagenes: true,
+        imagenes: []
+      },
+      resultado: null
     };
 
     let resultado!: RecorridoResponse;
-    servicio.consultar(1).subscribe(r => (resultado = r));
+    servicio.consultar('abc-123').subscribe(r => (resultado = r));
 
-    const req = httpMock.expectOne(`${environment.apiUrl}/recorridos/1`);
+    const req = httpMock.expectOne(`${environment.apiUrl}/recorridos/abc-123`);
     expect(req.request.method).toBe('GET');
     req.flush(respuestaMock);
 
     expect(resultado.estado).toBe('EN_CURSO');
-    expect(resultado.recorridoId).toBe(1);
+    expect(resultado.recorridoId).toBe('abc-123');
   });
 
   it('responder con un id inexistente debe propagar el error HTTP', () => {
     let error: unknown;
-    servicio.responder(999, { respuesta: 'si' }).subscribe({
+    servicio.responder('no-existe', { respuesta: 'SI' }).subscribe({
       error: e => (error = e)
     });
 
-    const req = httpMock.expectOne(`${environment.apiUrl}/recorridos/999/respuestas`);
+    const req = httpMock.expectOne(`${environment.apiUrl}/recorridos/no-existe/respuestas`);
     req.flush('Recorrido no encontrado', { status: 404, statusText: 'Not Found' });
 
     expect(error).toBeTruthy();
@@ -102,11 +141,11 @@ describe('RecorridoService', () => {
 
   it('consultar con un id inexistente debe propagar el error HTTP', () => {
     let error: unknown;
-    servicio.consultar(999).subscribe({
+    servicio.consultar('no-existe').subscribe({
       error: e => (error = e)
     });
 
-    const req = httpMock.expectOne(`${environment.apiUrl}/recorridos/999`);
+    const req = httpMock.expectOne(`${environment.apiUrl}/recorridos/no-existe`);
     req.flush('Recorrido no encontrado', { status: 404, statusText: 'Not Found' });
 
     expect(error).toBeTruthy();

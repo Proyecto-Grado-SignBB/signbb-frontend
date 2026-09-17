@@ -7,6 +7,44 @@
   justify-content: center;
   flex-shrink: 0;
 }
-.insignia--marca { background: $color-brand-tint; }
-.insignia--calma { background: $color-calm-tint; }
-.insignia--alerta { background: $color-alert-tint; }
+
+.insignia--marca {
+  background: $color-brand-tint;
+  color: $color-brand-dark;
+}
+
+.insignia--calma {
+  background: $color-calm-tint;
+  color: $color-calm-dark;
+}
+
+.insignia--alerta {
+  background: $color-alert-tint;
+  color: $color-alert-dark;
+}
+
+.insignia--aviso {
+  background: $color-aviso-tint;
+  color: $color-aviso-dark;
+}
+
+.insignia--solido {
+  color: white;
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.22);
+}
+
+.insignia--marca.insignia--solido {
+  background: $color-brand-dark;
+}
+
+.insignia--calma.insignia--solido {
+  background: $color-calm-dark;
+}
+
+.insignia--alerta.insignia--solido {
+  background: $color-alert-dark;
+}
+
+.insignia--aviso.insignia--solido {
+  background: $color-aviso-dark;
+}

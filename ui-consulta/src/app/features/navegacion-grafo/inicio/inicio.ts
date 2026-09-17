@@ -1,33 +1,32 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { RecorridoService } from '../../../core/http/recorrido';
-import { BotonComponent } from '../../../shared/ui/boton/boton';
-import { EtiquetaComponent } from '../../../shared/ui/etiqueta/etiqueta';
-import { InsigniaIconoComponent } from '../../../shared/ui/insignia-icono/insignia-icono';
 import { AvisoLegalComponent } from '../../../shared/ui/aviso-legal/aviso-legal';
 import { MensajeErrorComponent } from '../../../shared/ui/mensaje-error/mensaje-error';
 
 @Component({
   selector: 'app-inicio',
   standalone: true,
-  imports: [BotonComponent, EtiquetaComponent, InsigniaIconoComponent, AvisoLegalComponent, MensajeErrorComponent],
+  imports: [AvisoLegalComponent, MensajeErrorComponent],
   templateUrl: './inicio.html',
   styleUrl: './inicio.scss'
 })
-
 export class Inicio {
+  /** TODO: confirma con tu asesora si hay una sección específica del portal (recomendaciones/padres) en vez de la home. */
+  urlFundacionCanguro = 'https://fundacioncanguro.co/';
+
   cargando = false;
   error: string | null = null;
 
   constructor(
     private recorridoService: RecorridoService,
     private router: Router
-  ) {}
+  ) { }
 
-comenzarConsulta(): void {
+  comenzarConsulta(): void {
     this.error = null;
     this.cargando = true;
-    this.recorridoService.iniciar({ grafoClinicoId: 1 }).subscribe({
+    this.recorridoService.iniciar().subscribe({
       next: respuesta => {
         this.cargando = false;
         this.router.navigate(['/pregunta', respuesta.recorridoId]);
@@ -37,5 +36,9 @@ comenzarConsulta(): void {
         this.error = 'No pudimos iniciar la consulta. Intenta de nuevo.';
       }
     });
+  }
+
+  abrirManualUsuario(): void {
+    // TODO: sin destino definido todavía en el diseño.
   }
 }

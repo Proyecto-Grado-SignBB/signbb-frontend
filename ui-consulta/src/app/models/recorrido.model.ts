@@ -1,18 +1,32 @@
-import { Nodo } from './nodo.model';
-
 export type EstadoRecorrido = 'EN_CURSO' | 'FINALIZADO';
-export type ResultadoFinal = 'NORMAL' | 'REQUIERE_ATENCION';
+export type NivelAlerta = 'NORMAL' | 'CONSULTAR_MEDICO' | 'URGENCIA';
 
-export interface RecorridoResponse {
-  recorridoId: number;
-  estado: EstadoRecorrido;
-  nodoActual: Nodo | null;
-  resultado: ResultadoFinal | null;
-  mensaje: string | null;
+export interface PreguntaDTO {
+  id: string;
+  texto: string;
+  opciones: string[];
+  tieneImagenes: boolean;
+  imagenes: string[];
 }
 
-export interface IniciarRecorridoRequest {
-  grafoClinicoId: number;
+export interface PasoCausalDTO {
+  nodoId: string;
+  condicion: string;
+}
+
+export interface ResultadoDTO {
+  nivel: NivelAlerta;
+  destinoId: string;
+  mensaje: string;
+  razones: string[];
+  caminoCausal: PasoCausalDTO[];
+}
+
+export interface RecorridoResponse {
+  recorridoId: string;
+  estado: EstadoRecorrido;
+  pregunta: PreguntaDTO | null;
+  resultado: ResultadoDTO | null;
 }
 
 export interface ResponderRequest {

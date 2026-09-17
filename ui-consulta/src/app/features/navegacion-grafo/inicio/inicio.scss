@@ -1,51 +1,254 @@
 @use '../../../../styles/tokens' as *;
 
 .inicio {
+  position: relative;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  padding: 24px 28px 0;
-  text-align: center;
+  overflow: hidden;
+  background: linear-gradient(165deg, oklch(88% 0.06 340) 0%, oklch(90% 0.05 300) 50%, oklch(90% 0.06 200) 100%);
+}
+
+.inicio__blob {
+  position: absolute;
+  border-radius: 50%;
+  z-index: 0;
+}
+
+.inicio__blob--1 {
+  top: -40px;
+  right: -50px;
+  width: 200px;
+  height: 200px;
+  background: oklch(97% 0.03 340 / 0.5);
+}
+
+.inicio__blob--2 {
+  bottom: -70px;
+  left: -60px;
+  width: 220px;
+  height: 220px;
+  background: oklch(95% 0.04 165 / 0.45);
+}
+
+.inicio__blob--3 {
+  top: 280px;
+  left: -40px;
+  width: 120px;
+  height: 120px;
+  background: oklch(96% 0.03 200 / 0.35);
+}
+
+.inicio__header {
+  position: relative;
+  z-index: 1;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
+  padding: 20px 22px 0;
+  flex-shrink: 0;
+}
+
+.inicio__icono-header {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(6px);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 10px rgba(20, 20, 19, 0.06);
+  color: oklch(40% 0.03 300);
+  cursor: pointer;
+}
+
+.inicio__marca {
+  font-family: $font-heading;
+  font-weight: 700;
+  font-size: 17px;
+  color: oklch(34% 0.06 320);
+  letter-spacing: 0.3px;
 }
 
 .inicio__hero {
+  position: relative;
+  z-index: 1;
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  max-width: 360px;
+  gap: 26px;
+  padding: 20px 30px;
+  text-align: center;
+}
 
+.inicio__insignia {
+  width: 78px;
+  height: 78px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 12px 26px rgba(120, 60, 100, 0.16);
+  color: $color-brand;
+}
+
+.inicio__texto {
   h1 {
     font-family: $font-heading;
     font-weight: 700;
     font-size: 25px;
-    color: $color-text-primary;
-    margin: 0;
+    color: oklch(26% 0.04 320);
+    line-height: 1.2;
+    margin: 0 0 10px;
   }
 
   p {
-    font-size: 15px;
+    font-size: 14.5px;
     line-height: 1.5;
-    color: $color-text-secondary;
-    margin: 0;
+    color: oklch(38% 0.03 300);
+    max-width: 270px;
+    margin: 0 auto;
   }
-}
-
-.inicio__etiquetas {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  justify-content: center;
 }
 
 .inicio__acciones {
   width: 100%;
-  max-width: 360px;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding-bottom: 16px;
+}
+
+.inicio__cta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 74px;
+  border: none;
+  border-radius: 20px;
+  background: linear-gradient(135deg, oklch(60% 0.14 340), oklch(56% 0.14 320));
+  padding: 0 20px;
+  cursor: pointer;
+  box-shadow: 0 14px 26px rgba(180, 70, 120, 0.28);
+
+  &:disabled {
+    opacity: 0.75;
+    cursor: default;
+  }
+}
+
+.inicio__cta-icono {
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.inicio__cta-texto {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  flex: 1;
+}
+
+.inicio__cta-titulo {
+  font-family: $font-heading;
+  font-weight: 700;
+  font-size: 16px;
+  color: white;
+}
+
+.inicio__cta-subtitulo {
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 1px;
+}
+
+.inicio__lista {
+  display: flex;
+  flex-direction: column;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(6px);
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(20, 20, 19, 0.05);
+}
+
+.inicio__fila {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 58px;
+  border: none;
+  border-bottom: 1px solid rgba(20, 20, 19, 0.06);
+  background: transparent;
+  padding: 0 16px;
+  cursor: pointer;
+  text-decoration: none;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.inicio__fila-icono {
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.inicio__fila-icono--calma {
+  background: oklch(93% 0.05 165);
+  color: oklch(42% 0.10 165);
+}
+
+.inicio__fila-icono--marca {
+  background: oklch(93% 0.05 340);
+  color: $color-brand;
+}
+
+.inicio__fila-texto {
+  flex: 1;
+  text-align: left;
+  font-family: $font-body;
+  font-weight: 700;
+  font-size: 14px;
+  color: $color-text-primary;
+  display: flex;
+  flex-direction: column;
+}
+
+.inicio__fila-titulo {
+  font-weight: 700;
+}
+
+.inicio__fila-subtitulo {
+  font-weight: 400;
+  font-size: 11px;
+  color: $color-text-secondary;
+  margin-top: 1px;
+}
+
+.inicio__fila-flecha {
+  color: oklch(65% 0.01 300);
+  flex-shrink: 0;
+}
+
+app-mensaje-error,
+app-aviso-legal {
+  position: relative;
+  z-index: 1;
 }

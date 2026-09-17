@@ -1,30 +1,97 @@
 <div class="inicio pantalla">
-  <div class="inicio__hero">
-    <app-insignia-icono tono="marca" [tamano]="72">
-      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="oklch(48% 0.13 340)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+  <div class="inicio__blob inicio__blob--1"></div>
+  <div class="inicio__blob inicio__blob--2"></div>
+  <div class="inicio__blob inicio__blob--3"></div>
+
+  <div class="inicio__header">
+    <button type="button" class="inicio__icono-header" aria-label="Perfil">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+        stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="8" r="4"></circle>
+        <path d="M4 20c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"></path>
       </svg>
-    </app-insignia-icono>
-
-    <h1>Bienvenido a SignBB</h1>
-    <p>Tu acompañante en el cuidado de tu bebé prematuro con el método madre canguro.</p>
-
-    <div class="inicio__etiquetas">
-      <app-etiqueta tono="calma">Cuidado del bebé</app-etiqueta>
-      <app-etiqueta tono="marca">Orientación a padres</app-etiqueta>
-    </div>
+    </button>
+    <span class="inicio__marca">SignBB</span>
+    <button type="button" class="inicio__icono-header" aria-label="Configuración">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+        stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path
+          d="M19.4 13.5a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V19.5a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H4.5a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H10a1.65 1.65 0 0 0 1-1.51V4.5a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V10c.03.7.44 1.32 1.51 1.51H19.5a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-.51 1z">
+        </path>
+      </svg>
+    </button>
   </div>
 
-  <div class="inicio__acciones">
-    <app-boton tono="marca" (click)="comenzarConsulta()">
-      {{ cargando ? 'Un momento...' : 'Comenzar consulta' }}
-    </app-boton>
-    <app-boton variante="texto" tono="neutro" alto="mediano">Manual de usuario</app-boton>
+  <div class="inicio__hero">
+    <div class="inicio__insignia">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path
+          d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
+        </path>
+      </svg>
+    </div>
+
+    <div class="inicio__texto">
+      <h1>Hola, cuidador</h1>
+      <p>Tu acompañante en el cuidado de tu bebé prematuro con el método madre canguro.</p>
+    </div>
+
+    <div class="inicio__acciones">
+      <button type="button" class="inicio__cta" [disabled]="cargando" (click)="comenzarConsulta()">
+        <span class="inicio__cta-icono">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 18l6-6-6-6"></path>
+          </svg>
+        </span>
+        <span class="inicio__cta-texto">
+          <span class="inicio__cta-titulo">{{ cargando ? 'Un momento...' : 'Comenzar consulta' }}</span>
+          <span class="inicio__cta-subtitulo">Evalúa el estado de tu bebé ahora</span>
+        </span>
+      </button>
+
+      <div class="inicio__lista">
+        <button type="button" class="inicio__fila" (click)="abrirManualUsuario()">
+          <span class="inicio__fila-icono inicio__fila-icono--calma">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
+          </span>
+          <span class="inicio__fila-texto">Manual de usuario</span>
+          <svg class="inicio__fila-flecha" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 18l6-6-6-6"></path>
+          </svg>
+        </button>
+        <a class="inicio__fila" [href]="urlFundacionCanguro" target="_blank" rel="noopener">
+          <span class="inicio__fila-icono inicio__fila-icono--marca">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
+              </path>
+            </svg>
+          </span>
+          <span class="inicio__fila-texto">
+            <span class="inicio__fila-titulo">Información y recomendaciones</span>
+            <span class="inicio__fila-subtitulo">Fundación Canguro</span>
+          </span>
+          <svg class="inicio__fila-flecha" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 18l6-6-6-6"></path>
+          </svg>
+        </a>
+      </div>
+    </div>
   </div>
 
   @if (error) {
   <app-mensaje-error [texto]="error" (reintentar)="comenzarConsulta()"></app-mensaje-error>
-}
+  }
 
   <app-aviso-legal></app-aviso-legal>
 </div>

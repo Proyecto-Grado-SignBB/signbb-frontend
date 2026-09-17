@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 
-export type TonoBoton = 'marca' | 'calma' | 'alerta' | 'neutro';
+export type TonoBoton = 'marca' | 'calma' | 'alerta' | 'aviso' | 'neutro';
 export type VarianteBoton = 'relleno' | 'contorno' | 'texto';
 
 @Component({

@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 
-export type TonoInsignia = 'marca' | 'calma' | 'alerta';
+export type TonoInsignia = 'marca' | 'calma' | 'alerta' | 'aviso';
 
 @Component({
   selector: 'app-insignia-icono',
@@ -11,4 +11,6 @@ export type TonoInsignia = 'marca' | 'calma' | 'alerta';
 export class InsigniaIconoComponent {
   @Input() tono: TonoInsignia = 'marca';
   @Input() tamano = 72;
+  /** true = fondo sólido oscuro + ícono blanco (pantallas de resultado). */
+  @Input() solido = false;
 }

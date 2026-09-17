@@ -3,48 +3,86 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { RecorridoService } from '../../../core/http/recorrido';
 import { RecorridoResponse } from '../../../models/recorrido.model';
 import { BotonComponent } from '../../../shared/ui/boton/boton';
+import { EtiquetaComponent } from '../../../shared/ui/etiqueta/etiqueta';
 import { AvisoLegalComponent } from '../../../shared/ui/aviso-legal/aviso-legal';
 import { MensajeErrorComponent } from '../../../shared/ui/mensaje-error/mensaje-error';
+
+/** Etiquetas legibles para las condiciones que devuelve el backend como opciones. */
+const ETIQUETAS_OPCION: Record<string, string> = {
+  SI: 'Sí',
+  NO: 'No',
+  MENOS_DE_24_HORAS: 'Menos de 24 horas',
+  MAS_DE_24_HORAS: 'Más de 24 horas'
+};
+
+/** Orden visual de las opciones en la pantalla de imágenes: "No" siempre primero. */
+const ORDEN_OPCIONES_IMAGEN = ['NO', 'SI'];
 
 @Component({
   selector: 'app-pregunta',
   standalone: true,
-  imports: [BotonComponent, AvisoLegalComponent, MensajeErrorComponent],
+  imports: [BotonComponent, EtiquetaComponent, AvisoLegalComponent, MensajeErrorComponent],
   templateUrl: './pregunta.html',
   styleUrl: './pregunta.scss'
 })
-
 export class PreguntaComponent implements OnInit {
   respuesta = signal<RecorridoResponse | null>(null);
   seleccionActual = signal<string | null>(null);
   enviando = signal(false);
   error = signal<string | null>(null);
 
-  esBinaria = computed(() => (this.respuesta()?.nodoActual?.opciones.length ?? 0) <= 2);
+  // Carrusel de imágenes (pantalla de pregunta con imágenes de apoyo).
+  // TEMPORAL: siempre muestra las 3 ilustraciones por defecto del mockup,
+  // sin importar el contenido real de `pregunta.imagenes` (todavía no hay
+  // archivos reales que servir). Cuando los haya, cambia el *ngFor del
+  // carrusel en el HTML para iterar sobre `r.pregunta.imagenes` con <img>.
+  indiceImagen = signal(0);
+  totalImagenes = 3;
+  private inicioArrastreX = 0;
 
-  private recorridoId = 0;
+  esImagen = computed(() => this.respuesta()?.pregunta?.tieneImagenes ?? false);
+  esBinaria = computed(() =>
+    !this.esImagen() && (this.respuesta()?.pregunta?.opciones.length ?? 0) <= 2);
+
+  /** Opciones de la pantalla de imágenes reordenadas para que "No" aparezca antes que "Sí", como en el mockup. */
+  opcionesImagen = computed(() => {
+    const opciones = this.respuesta()?.pregunta?.opciones ?? [];
+    return [...opciones].sort(
+      (a, b) => ORDEN_OPCIONES_IMAGEN.indexOf(a) - ORDEN_OPCIONES_IMAGEN.indexOf(b)
+    );
+  });
+
+  private recorridoId = '';
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private recorridoService: RecorridoService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
-    this.recorridoId = Number(this.route.snapshot.paramMap.get('recorridoId')!);
+    this.recorridoId = this.route.snapshot.paramMap.get('recorridoId')!;
     this.cargar();
   }
 
   cargar(): void {
     this.error.set(null);
     this.recorridoService.consultar(this.recorridoId).subscribe({
-      next: r => this.respuesta.set(r),
+      next: r => { this.respuesta.set(r); this.indiceImagen.set(0); },
       error: () => this.error.set('No pudimos cargar la pregunta. Intenta de nuevo.')
     });
   }
 
+  volver(): void {
+    this.router.navigate(['/']);
+  }
+
+  etiqueta(valor: string): string {
+    return ETIQUETAS_OPCION[valor] ?? valor;
+  }
+
   seleccionar(valor: string): void {
-    if (this.esBinaria()) {
+    if (this.esBinaria() || this.esImagen()) {
       this.enviar(valor);
     } else {
       this.seleccionActual.set(valor);
@@ -58,6 +96,20 @@ export class PreguntaComponent implements OnInit {
     }
   }
 
+  irAImagen(i: number): void {
+    this.indiceImagen.set(Math.max(0, Math.min(this.totalImagenes - 1, i)));
+  }
+
+  onArrastreInicio(x: number): void {
+    this.inicioArrastreX = x;
+  }
+
+  onArrastreFin(x: number): void {
+    const delta = x - this.inicioArrastreX;
+    if (delta < -35) this.irAImagen(this.indiceImagen() + 1);
+    else if (delta > 35) this.irAImagen(this.indiceImagen() - 1);
+  }
+
   private enviar(valor: string): void {
     this.error.set(null);
     this.enviando.set(true);
@@ -69,6 +121,7 @@ export class PreguntaComponent implements OnInit {
           this.router.navigate(['/resultado', this.recorridoId]);
         } else {
           this.respuesta.set(r);
+          this.indiceImagen.set(0);
         }
       },
       error: () => {

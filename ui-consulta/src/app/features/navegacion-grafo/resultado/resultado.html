@@ -1,55 +1,120 @@
 @if (respuesta(); as r) {
-  <div class="resultado pantalla">
-    <div class="resultado__header">SignBB</div>
+<div class="resultado pantalla" [class]="'resultado--' + (r.resultado?.nivel ?? 'NORMAL')">
+  <div class="resultado__blob resultado__blob--1"></div>
+  <div class="resultado__blob resultado__blob--2"></div>
 
-    @if (r.resultado === 'NORMAL') {
-      <div class="resultado__contenido">
-        <app-insignia-icono tono="calma" [tamano]="88">
-          <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="oklch(46% 0.11 165)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="8 12.5 10.8 15.3 16 9.5"></polyline>
-          </svg>
-        </app-insignia-icono>
-        <h1>Todo tranquilo por ahora</h1>
-        <p>{{ r.mensaje }}</p>
-        <p class="resultado__nota">Sigue observando a tu bebé con cariño. Si algo cambia, puedes volver a consultar cuando quieras.</p>
-      </div>
+  <div class="resultado__header">
+    <span>SignBB</span>
+    <button type="button" class="resultado__cerrar" (click)="volverAlInicio()" aria-label="Cerrar">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+  </div>
 
-      <div class="resultado__acciones">
-        <app-boton tono="calma" (click)="volverAlInicio()">Finalizar</app-boton>
-        <app-boton variante="texto" tono="calma" alto="mediano" (click)="volverAlInicio()">Registrar otro signo</app-boton>
+  <div class="resultado__hero">
+    <app-insignia-icono [tono]="tonoInsignia()" [solido]="true" [tamano]="104">
+      @switch (r.resultado?.nivel) {
+      @case ('URGENCIA') {
+      <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="7.5" x2="12" y2="12.5"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      }
+      @case ('CONSULTAR_MEDICO') {
+      <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 3v6a4 4 0 0 0 8 0V3"></path>
+        <path d="M12 13v4"></path>
+        <circle cx="12" cy="20" r="1.5" fill="currentColor" stroke="none"></circle>
+        <circle cx="19" cy="9" r="2.4"></circle>
+      </svg>
+      }
+      @default {
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <polyline points="8 12.5 10.8 15.3 16 9.5"></polyline>
+      </svg>
+      }
+      }
+    </app-insignia-icono>
+
+    <div>
+      <h1>
+        @switch (r.resultado?.nivel) {
+        @case ('URGENCIA') { Ve a urgencias ahora }
+        @case ('CONSULTAR_MEDICO') { Conviene consultar a tu médico }
+        @default { Todo tranquilo por ahora }
+        }
+      </h1>
+      @if (r.resultado?.nivel === 'NORMAL') {
+      <p class="resultado__subtitulo">No se detectan signos de alarma respiratoria en este momento.</p>
+      } @else if (r.resultado?.nivel === 'CONSULTAR_MEDICO') {
+      <p class="resultado__subtitulo">No es una emergencia, pero tu bebé presenta señales que conviene revisar
+        pronto.</p>
+      }
+    </div>
+  </div>
+
+  @if (r.resultado?.nivel === 'URGENCIA' && (r.resultado?.razones?.length ?? 0) > 0) {
+  <div class="resultado__panel resultado__panel--razones">
+    <div class="resultado__contenedor-razones">
+      <div class="resultado__etiqueta-razones">
+        {{ r.resultado!.razones.length === 1 ? '1 señal detectada' : r.resultado!.razones.length + ' señales
+        detectadas a la vez' }}
       </div>
-    } @else {
-      <div class="resultado__contenido">
-        <app-insignia-icono tono="alerta" [tamano]="84">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="oklch(48% 0.16 35)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <div class="resultado__lista-razones">
+        @for (razon of r.resultado?.razones; track razon) {
+        <div class="resultado__razon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"
+            stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"></circle>
             <line x1="12" y1="7.5" x2="12" y2="12.5"></line>
             <line x1="12" y1="16" x2="12.01" y2="16"></line>
           </svg>
-        </app-insignia-icono>
-        <h1>Se recomienda valoración médica</h1>
-        <p>{{ r.mensaje }}</p>
-
-        <button type="button" class="resultado__chip" (click)="toggleRecomendaciones()">¿Qué hacer ahora?</button>
-
-        @if (mostrarRecomendaciones()) {
-          <p class="resultado__nota">
-            Comunícate con tu centro de salud o la Fundación Canguro. No estás solo o sola en esto — actuar ahora es lo mejor que puedes hacer por tu bebé.
-          </p>
+          <span>{{ razon }}</span>
+        </div>
         }
       </div>
+    </div>
+  </div>
+  } @else {
+  <div class="resultado__panel resultado__panel--tip">
+    <p>{{ r.resultado?.mensaje }}</p>
+  </div>
+  }
 
-      <div class="resultado__acciones">
-        <app-boton tono="alerta">Buscar ayuda ahora</app-boton>
-        <app-boton variante="texto" tono="neutro" alto="mediano" (click)="volverAlInicio()">Finalizar navegación</app-boton>
-      </div>
+  <div class="resultado__acciones">
+    @switch (r.resultado?.nivel) {
+    @case ('URGENCIA') {
+    <app-boton tono="alerta" (click)="volverAlInicio()">Buscar ayuda ahora</app-boton>
+    <app-boton variante="texto" tono="neutro" alto="mediano" (click)="volverAlInicio()">Finalizar navegación</app-boton>
     }
+    @case ('CONSULTAR_MEDICO') {
+    <app-boton tono="aviso" (click)="volverAlInicio()">Contactar a mi pediatra</app-boton>
+    <app-boton variante="texto" tono="neutro" alto="mediano" (click)="volverAlInicio()">Finalizar navegación</app-boton>
+    }
+    @default {
+    <app-boton tono="calma" (click)="volverAlInicio()">Finalizar</app-boton>
+    <app-boton variante="texto" tono="neutro" alto="mediano" (click)="comenzarOtraConsulta()">Registrar otro
+      signo</app-boton>
+    }
+    }
+  </div>
 
-    <app-aviso-legal></app-aviso-legal>
-  </div>
+  @if (error()) {
+  <app-mensaje-error [texto]="error()!" (reintentar)="cargar()"></app-mensaje-error>
+  }
+
+  <app-aviso-legal></app-aviso-legal>
+</div>
 } @else if (error()) {
-  <div class="pantalla">
-    <app-mensaje-error [texto]="error()!" (reintentar)="cargar()"></app-mensaje-error>
-  </div>
+<div class="pantalla">
+  <app-mensaje-error [texto]="error()!" (reintentar)="cargar()"></app-mensaje-error>
+</div>
 }
