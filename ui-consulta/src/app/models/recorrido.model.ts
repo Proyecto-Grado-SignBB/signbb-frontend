@@ -1,5 +1,6 @@
 export type EstadoRecorrido = 'EN_CURSO' | 'FINALIZADO';
 export type NivelAlerta = 'NORMAL' | 'CONSULTAR_MEDICO' | 'URGENCIA';
+export type TipoInteraccion = 'SI_NO' | 'SELECCION_UNICA' | 'SELECCION_MULTIPLE';
 
 export interface PreguntaDTO {
   id: string;
@@ -7,6 +8,7 @@ export interface PreguntaDTO {
   opciones: string[];
   tieneImagenes: boolean;
   imagenes: string[];
+  tipoInteraccion?: TipoInteraccion;
 }
 
 export interface PasoCausalDTO {
@@ -30,5 +32,7 @@ export interface RecorridoResponse {
 }
 
 export interface ResponderRequest {
-  respuesta: string;
+  respuesta?: string;
+  opciones?: string[];
+  tipo?: TipoInteraccion;
 }

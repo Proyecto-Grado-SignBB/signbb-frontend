@@ -13,4 +13,5 @@ export class BotonComponent {
   @Input() tono: TonoBoton = 'marca';
   @Input() variante: VarianteBoton = 'relleno';
   @Input() alto: 'grande' | 'mediano' = 'grande';
+  @Input() disabled = false;
 }

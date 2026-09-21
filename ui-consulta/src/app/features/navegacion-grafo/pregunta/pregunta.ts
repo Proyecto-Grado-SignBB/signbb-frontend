@@ -1,13 +1,12 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RecorridoService } from '../../../core/http/recorrido';
-import { RecorridoResponse } from '../../../models/recorrido.model';
+import { RecorridoResponse, ResponderRequest } from '../../../models/recorrido.model';
 import { BotonComponent } from '../../../shared/ui/boton/boton';
 import { EtiquetaComponent } from '../../../shared/ui/etiqueta/etiqueta';
 import { AvisoLegalComponent } from '../../../shared/ui/aviso-legal/aviso-legal';
 import { MensajeErrorComponent } from '../../../shared/ui/mensaje-error/mensaje-error';
 
-/** Etiquetas legibles para las condiciones que devuelve el backend como opciones. */
 const ETIQUETAS_OPCION: Record<string, string> = {
   SI: 'Sí',
   NO: 'No',
@@ -15,7 +14,6 @@ const ETIQUETAS_OPCION: Record<string, string> = {
   MAS_DE_24_HORAS: 'Más de 24 horas'
 };
 
-/** Orden visual de las opciones en la pantalla de imágenes: "No" siempre primero. */
 const ORDEN_OPCIONES_IMAGEN = ['NO', 'SI'];
 
 @Component({
@@ -28,23 +26,23 @@ const ORDEN_OPCIONES_IMAGEN = ['NO', 'SI'];
 export class PreguntaComponent implements OnInit {
   respuesta = signal<RecorridoResponse | null>(null);
   seleccionActual = signal<string | null>(null);
+  opcionesSeleccionadas = signal<Set<string>>(new Set());
   enviando = signal(false);
   error = signal<string | null>(null);
 
-  // Carrusel de imágenes (pantalla de pregunta con imágenes de apoyo).
-  // TEMPORAL: siempre muestra las 3 ilustraciones por defecto del mockup,
-  // sin importar el contenido real de `pregunta.imagenes` (todavía no hay
-  // archivos reales que servir). Cuando los haya, cambia el *ngFor del
-  // carrusel en el HTML para iterar sobre `r.pregunta.imagenes` con <img>.
   indiceImagen = signal(0);
   totalImagenes = 3;
   private inicioArrastreX = 0;
 
   esImagen = computed(() => this.respuesta()?.pregunta?.tieneImagenes ?? false);
-  esBinaria = computed(() =>
-    !this.esImagen() && (this.respuesta()?.pregunta?.opciones.length ?? 0) <= 2);
 
-  /** Opciones de la pantalla de imágenes reordenadas para que "No" aparezca antes que "Sí", como en el mockup. */
+  esSeleccionMultiple = computed(() =>
+    !this.esImagen() && this.respuesta()?.pregunta?.tipoInteraccion === 'SELECCION_MULTIPLE');
+
+  esBinaria = computed(() =>
+    !this.esImagen() && !this.esSeleccionMultiple()
+    && (this.respuesta()?.pregunta?.opciones.length ?? 0) <= 2);
+
   opcionesImagen = computed(() => {
     const opciones = this.respuesta()?.pregunta?.opciones ?? [];
     return [...opciones].sort(
@@ -68,7 +66,11 @@ export class PreguntaComponent implements OnInit {
   cargar(): void {
     this.error.set(null);
     this.recorridoService.consultar(this.recorridoId).subscribe({
-      next: r => { this.respuesta.set(r); this.indiceImagen.set(0); },
+      next: r => {
+        this.respuesta.set(r);
+        this.indiceImagen.set(0);
+        this.opcionesSeleccionadas.set(new Set());
+      },
       error: () => this.error.set('No pudimos cargar la pregunta. Intenta de nuevo.')
     });
   }
@@ -96,6 +98,28 @@ export class PreguntaComponent implements OnInit {
     }
   }
 
+  estaSeleccionada(opcion: string): boolean {
+    return this.opcionesSeleccionadas().has(opcion);
+  }
+
+  alternarOpcion(opcion: string): void {
+    const actuales = new Set(this.opcionesSeleccionadas());
+    if (actuales.has(opcion)) {
+      actuales.delete(opcion);
+    } else {
+      actuales.add(opcion);
+    }
+    this.opcionesSeleccionadas.set(actuales);
+  }
+
+  continuarMultiple(): void {
+    const opciones = Array.from(this.opcionesSeleccionadas());
+    if (opciones.length === 0) {
+      return;
+    }
+    this.enviarSolicitud({ opciones, tipo: 'SELECCION_MULTIPLE' });
+  }
+
   irAImagen(i: number): void {
     this.indiceImagen.set(Math.max(0, Math.min(this.totalImagenes - 1, i)));
   }
@@ -111,12 +135,17 @@ export class PreguntaComponent implements OnInit {
   }
 
   private enviar(valor: string): void {
+    this.enviarSolicitud({ respuesta: valor });
+  }
+
+  private enviarSolicitud(request: ResponderRequest): void {
     this.error.set(null);
     this.enviando.set(true);
-    this.recorridoService.responder(this.recorridoId, { respuesta: valor }).subscribe({
+    this.recorridoService.responder(this.recorridoId, request).subscribe({
       next: r => {
         this.enviando.set(false);
         this.seleccionActual.set(null);
+        this.opcionesSeleccionadas.set(new Set());
         if (r.estado === 'FINALIZADO') {
           this.router.navigate(['/resultado', this.recorridoId]);
         } else {

@@ -188,6 +188,22 @@
   background: $color-brand;
 }
 
+.pregunta__checkbox {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 1.6px solid oklch(82% 0.008 300);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pregunta__checkbox--activo {
+  border: none;
+  background: $color-brand;
+}
+
 .pregunta__ayuda {
   text-align: center;
   font-size: 12.5px;

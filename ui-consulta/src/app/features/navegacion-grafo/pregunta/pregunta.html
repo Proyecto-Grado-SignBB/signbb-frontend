@@ -75,6 +75,37 @@
     </app-boton>
     }
   </div>
+  } @else if (esSeleccionMultiple()) {
+  <div class="pregunta__contenido pregunta__contenido--seleccion">
+    <div class="pregunta__encabezado">
+      <app-etiqueta tono="calma">Observación guiada</app-etiqueta>
+      <h1>{{ r.pregunta?.texto }}</h1>
+      <p class="pregunta__subtitulo">Elige todas las opciones que apliquen a lo que observas.</p>
+    </div>
+
+    <div class="pregunta__lista">
+      @for (opcion of r.pregunta?.opciones; track opcion) {
+      <button type="button" class="pregunta__opcion" [class.pregunta__opcion--activa]="estaSeleccionada(opcion)"
+        (click)="alternarOpcion(opcion)">
+        <span>{{ etiqueta(opcion) }}</span>
+        <span class="pregunta__checkbox" [class.pregunta__checkbox--activo]="estaSeleccionada(opcion)">
+          @if (estaSeleccionada(opcion)) {
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 6L9 17l-5-5"></path>
+          </svg>
+          }
+        </span>
+      </button>
+      }
+    </div>
+  </div>
+
+  <div class="pregunta__acciones pregunta__acciones--seleccion">
+    <app-boton tono="marca" [disabled]="opcionesSeleccionadas().size === 0" (click)="continuarMultiple()">
+      Continuar
+    </app-boton>
+  </div>
   } @else if (esBinaria()) {
   <div class="pregunta__region">
     <div class="pregunta__blob"></div>
