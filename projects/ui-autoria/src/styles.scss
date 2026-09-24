@@ -1,0 +1,21 @@
+// src/styles.scss
+@use 'tokens-admin' as *;
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: $color-surface-2;
+  font-family: $font-body;
+  color: $color-ink;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  font-family: $font-heading;
+  margin: 0;
+}
+
+button {
+  font-family: inherit;
+}

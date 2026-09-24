@@ -1,0 +1,244 @@
+@use 'tokens-admin' as *;
+
+.pantalla-autoria {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 30px;
+  border-bottom: 1px solid $color-line;
+  background: $color-surface;
+  gap: 16px;
+}
+
+.topbar-left .crumb {
+  font-size: 12px;
+  color: $color-ink-faint;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.crumb--clicable {
+  cursor: pointer;
+
+  &:hover {
+    color: $color-brand-dark;
+    text-decoration: underline;
+  }
+}
+
+.topbar-left h3 {
+  font-size: 19px;
+  font-weight: 800;
+  color: $color-ink;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.content {
+  flex: 1;
+  min-height: 0;
+  padding: 28px 30px;
+  overflow: auto;
+  position: relative;
+}
+
+.estado-carga,
+.estado-vacio {
+  color: $color-ink-faint;
+  font-size: 14px;
+  padding: 12px 0;
+}
+
+.aviso-publicacion {
+  background: $color-calm-tint;
+  color: $color-calm-dark;
+  border-radius: $radius-md;
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 18px;
+}
+
+.aviso-ciclo {
+  color: $color-alert-dark;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 16px;
+}
+
+.flow-toolhint {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+
+  p {
+    margin: 0;
+    font-size: 12.5px;
+    color: $color-ink-faint;
+  }
+}
+
+.flow {
+  display: flex;
+  gap: 34px;
+  align-items: flex-start;
+  padding-top: 14px;
+  padding-bottom: 10px;
+  overflow-x: auto;
+}
+
+.flow-col {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  min-width: 208px;
+}
+
+.node {
+  background: $color-surface;
+  border: 1px solid $color-line;
+  border-radius: $radius-md;
+  padding: 14px 14px 12px;
+  position: relative;
+  box-shadow: 0 1px 2px oklch(20% 0.02 300 / 0.04);
+
+  .kind {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: $color-ink-faint;
+    margin-bottom: 5px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 12.5px;
+    font-weight: 600;
+    line-height: 1.35;
+    color: $color-ink;
+  }
+}
+
+.node--editable {
+  cursor: pointer;
+  transition: box-shadow 0.12s ease, border-color 0.12s ease;
+
+  &:hover {
+    border-color: $color-brand;
+    box-shadow: 0 0 0 2px $color-brand-tint;
+  }
+}
+
+.edge-tag {
+  position: absolute;
+  top: -11px;
+  left: 12px;
+  background: $color-ink;
+  color: $color-surface;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.node--outcome {
+  background: $color-calm-tint;
+  border-color: transparent;
+
+  p {
+    color: $color-calm-dark;
+  }
+}
+
+.node--outcome.node--urgent {
+  background: $color-alert-tint;
+
+  p {
+    color: $color-alert-dark;
+  }
+}
+
+.node--outcome.node--priority {
+  background: $color-aviso-tint;
+
+  p {
+    color: $color-aviso-dark;
+  }
+}
+
+.orphan-wrap {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px dashed $color-line;
+
+  .flag {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 800;
+    color: $color-alert-dark;
+    margin-bottom: 12px;
+  }
+}
+
+.node--orphan {
+  border: 1.5px dashed $color-alert;
+  background: $color-alert-tint;
+  max-width: 230px;
+
+  p {
+    color: $color-alert-dark;
+  }
+
+  .kind {
+    color: $color-alert-dark;
+    opacity: 0.7;
+  }
+}
+
+.fab {
+  position: sticky;
+  bottom: 0;
+  margin-top: 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  background: linear-gradient(135deg, $color-brand, $color-brand-dark);
+  color: white;
+  border-radius: 999px;
+  padding: 12px 18px;
+  font-weight: 800;
+  font-size: 13px;
+  box-shadow: 0 10px 24px oklch(55% 0.16 335 / 0.35);
+  cursor: pointer;
+}
+
+.fab--deshabilitado {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

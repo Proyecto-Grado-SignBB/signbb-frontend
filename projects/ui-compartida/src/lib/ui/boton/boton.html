@@ -1,0 +1,7 @@
+<button
+  class="boton"
+  [class]="'boton--' + variante + ' boton--' + tono + ' boton--' + alto + ' boton--ancho-' + ancho"
+  [class.boton--deshabilitado]="disabled"
+  [disabled]="disabled">
+  <ng-content></ng-content>
+</button>

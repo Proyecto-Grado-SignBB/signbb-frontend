@@ -1,0 +1,103 @@
+@use '../../../styles/tokens' as *;
+
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  line-height: 1;
+  border: none;
+  border-radius: $radius-md;
+  font-family: $font-body;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.boton--grande {
+  height: $button-height-lg;
+  font-size: 16.5px;
+}
+
+.boton--compacto {
+  height: 34px;
+  padding: 0 14px;
+  font-size: 13px;
+  border-radius: $radius-sm;
+}
+
+.boton--mediano {
+  height: $button-height-md;
+  font-size: 14.5px;
+  background: transparent;
+}
+
+.boton--relleno.boton--marca {
+  background: linear-gradient(135deg, oklch(60% 0.14 340), oklch(55% 0.14 320));
+  color: white;
+}
+
+.boton--relleno.boton--calma {
+  background: $color-calm;
+  color: white;
+}
+
+.boton--relleno.boton--alerta {
+  background: $color-alert;
+  color: white;
+}
+
+.boton--relleno.boton--aviso {
+  background: $color-aviso;
+  color: white;
+}
+
+.boton--contorno {
+  background: white;
+  border: 1.5px solid $color-border;
+  color: $color-text-primary;
+}
+
+.boton--texto {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.boton--texto.boton--marca {
+  color: $color-brand-dark;
+}
+
+.boton--texto.boton--calma {
+  color: $color-calm-dark;
+}
+
+.boton--texto.boton--aviso {
+  color: $color-aviso-dark;
+}
+
+.boton--texto.boton--neutro {
+  color: $color-text-secondary;
+}
+
+.boton:hover {
+  opacity: 0.9;
+}
+
+.boton:focus-visible {
+  outline: 3px solid $color-brand-dark;
+  outline-offset: 2px;
+}
+
+.boton--deshabilitado {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.boton--ancho-completo {
+  width: 100%;
+}
+
+.boton--ancho-auto {
+  width: auto;
+}

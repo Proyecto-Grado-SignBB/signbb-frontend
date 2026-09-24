@@ -1,0 +1,38 @@
+<aside class="sidebar">
+  <div class="brand-mark">
+    <div class="dot"></div>
+    <div><b>SignBB</b><span>Autoría clínica</span></div>
+  </div>
+
+  <a class="nav-item" [class.nav-item--activo]="seccionActiva === 'grafos'" routerLink="/grafos">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <rect x="3" y="3" width="7" height="7" rx="1.5" />
+      <rect x="14" y="3" width="7" height="7" rx="1.5" />
+      <rect x="3" y="14" width="7" height="7" rx="1.5" />
+      <rect x="14" y="14" width="7" height="7" rx="1.5" />
+    </svg>
+    Grafos clínicos
+  </a>
+  @if (grafoId !== null) {
+    <a class="nav-item" [class.nav-item--activo]="seccionActiva === 'reglas'" [routerLink]="['/grafos', grafoId, 'reglas']">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path
+          d="M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M9 3v18M9 8h6M9 13h6" />
+      </svg>
+      Base de reglas
+    </a>
+  } @else {
+    <div class="nav-item nav-item--deshabilitado" title="Abre un grafo primero">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path
+          d="M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M9 3v18M9 8h6M9 13h6" />
+      </svg>
+      Base de reglas
+    </div>
+  }
+
+  <div class="sidebar-foot">
+    <div class="avatar">{{ iniciales }}</div>
+    <div><b>{{ nombreMedico }}</b><span>{{ institucion }}</span></div>
+  </div>
+</aside>

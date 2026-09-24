@@ -1,0 +1,23 @@
+// Reexporta los tokens clínicos compartidos (marca, calma/aviso/alerta) para
+// que el panel de autoría hable el mismo idioma de color que la app del
+// cuidador: si aquí el médico marca un desenlace como "Urgencia", el
+// cuidador lo verá exactamente en el mismo tono de rojo. Solo se ocultan
+// las fuentes: este panel es de escritorio para el médico, no la
+// experiencia móvil del cuidador, así que usa su propia pareja tipográfica.
+@forward '../../../ui-compartida/src/styles/tokens' hide $font-heading, $font-body;
+
+$font-heading: 'Manrope', -apple-system, 'Segoe UI', sans-serif;
+$font-body: 'Public Sans', -apple-system, 'Segoe UI', sans-serif;
+
+// Superficies y jerarquía de texto neutra propias del panel administrativo
+// (no existen en los tokens del cuidador porque esa app no tiene sidebar,
+// tablero ni tarjetas).
+$color-surface: oklch(100% 0 0);
+$color-surface-2: oklch(98.3% 0.006 90);
+$color-ink: oklch(26% 0.02 300);
+$color-ink-soft: oklch(46% 0.018 300);
+$color-ink-faint: oklch(63% 0.014 300);
+$color-line: oklch(90% 0.012 300);
+$color-line-soft: oklch(94% 0.008 300);
+$radius-lg: 18px;
+$shadow-card: 0 1px 2px oklch(20% 0.02 300 / 0.06), 0 8px 24px oklch(20% 0.02 300 / 0.07);

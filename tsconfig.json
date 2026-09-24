@@ -1,0 +1,51 @@
+/* To learn more about Typescript configuration file: https://www.typescriptlang.org/docs/handbook/tsconfig-json.html. */
+/* To learn more about Angular compiler options: https://angular.dev/reference/configs/angular-compiler-options. */
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "ES2022",
+    "module": "preserve",
+    "paths": {
+      "ui-compartida": [
+        "./dist/ui-compartida"
+      ]
+    }
+  },
+  "angularCompilerOptions": {
+    "enableI18nLegacyMessageIdFormat": false,
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true,
+    "typeCheckHostBindings": true,
+    "strictTemplates": true
+  },
+  "files": [],
+  "references": [
+    {
+      "path": "./projects/ui-consulta/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/ui-consulta/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/ui-compartida/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/ui-compartida/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/ui-autoria/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/ui-autoria/tsconfig.spec.json"
+    }
+  ]
+}

@@ -1,0 +1,312 @@
+@use 'tokens-admin' as *;
+
+.pantalla-autoria {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 30px;
+  border-bottom: 1px solid $color-line;
+  background: $color-surface;
+  gap: 16px;
+}
+
+.topbar-left .crumb {
+  font-size: 12px;
+  color: $color-ink-faint;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.crumb--clicable {
+  cursor: pointer;
+
+  &:hover {
+    color: $color-brand-dark;
+    text-decoration: underline;
+  }
+}
+
+.topbar-left h3 {
+  font-size: 19px;
+  font-weight: 800;
+  color: $color-ink;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.content {
+  flex: 1;
+  min-height: 0;
+  padding: 28px 30px;
+  overflow: auto;
+}
+
+.estado-carga,
+.estado-vacio {
+  color: $color-ink-faint;
+  font-size: 14px;
+  padding: 12px 0;
+}
+
+// --- lista de reglas -------------------------------------------------------
+
+.rule-card {
+  background: $color-surface;
+  border: 1px solid $color-line;
+  border-radius: $radius-md;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 10px;
+
+  .txt {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+
+    b {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      color: $color-ink;
+    }
+
+    span {
+      font-size: 12px;
+      color: $color-ink-soft;
+    }
+  }
+}
+
+.aviso-inline {
+  color: $color-aviso-dark !important;
+  font-weight: 600;
+}
+
+.rule-acciones {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.no-editable {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: $color-ink-faint;
+  padding: 0 4px;
+}
+
+// --- constructor -------------------------------------------------------
+
+.builder {
+  background: $color-surface-2;
+  border: 1.5px dashed $color-line;
+  border-radius: $radius-lg;
+  padding: 20px;
+  margin-top: 18px;
+  max-width: 620px;
+
+  h4 {
+    font-size: 15px;
+    font-weight: 800;
+    color: $color-ink;
+    margin: 0 0 16px;
+  }
+}
+
+.aviso-metadata {
+  background: $color-aviso-tint;
+  color: $color-aviso-dark;
+  border-radius: $radius-sm;
+  padding: 10px 13px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.field {
+  margin-bottom: 16px;
+
+  label {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: $color-ink;
+    margin-bottom: 7px;
+  }
+
+  .hint {
+    font-size: 11.5px;
+    color: $color-ink-faint;
+    font-weight: 500;
+    margin-top: 6px;
+  }
+}
+
+.input,
+.select {
+  width: 100%;
+  border: 1px solid $color-line;
+  border-radius: $radius-sm;
+  background: $color-surface;
+  color: $color-ink;
+  font-family: $font-body;
+  font-size: 13px;
+  padding: 9px 11px;
+
+  &:focus {
+    outline: 2px solid $color-brand-tint;
+    outline-offset: 1px;
+    border-color: $color-brand;
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+.cond-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cond-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+
+  .select {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.btn-quitar {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: $radius-sm;
+  border: 1px solid $color-line;
+  background: $color-surface;
+  color: $color-ink-faint;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+
+  &:hover {
+    border-color: $color-alert;
+    color: $color-alert-dark;
+    background: $color-alert-tint;
+  }
+}
+
+.link-add {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: $color-brand-dark;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.and-or {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+
+  button {
+    flex: 1;
+    padding: 9px;
+    border-radius: $radius-sm;
+    border: 1.5px solid $color-line;
+    background: $color-surface;
+    font-weight: 700;
+    font-size: 12px;
+    color: $color-ink-soft;
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .sel {
+    border-color: $color-brand;
+    background: $color-brand-tint;
+    color: $color-brand-dark;
+  }
+}
+
+.seg {
+  display: flex;
+  gap: 8px;
+
+  button {
+    flex: 1;
+    padding: 9px;
+    border-radius: $radius-sm;
+    border: 1.5px solid $color-line;
+    background: $color-surface;
+    font-weight: 700;
+    font-size: 12.5px;
+    color: $color-ink-soft;
+    text-align: center;
+    cursor: pointer;
+    font-family: inherit;
+
+    &.sel-warn {
+      border-color: $color-aviso;
+      background: $color-aviso-tint;
+      color: $color-aviso-dark;
+    }
+
+    &.sel-danger {
+      border-color: $color-alert;
+      background: $color-alert-tint;
+      color: $color-alert-dark;
+    }
+  }
+}
+
+.builder-acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 6px;
+}
