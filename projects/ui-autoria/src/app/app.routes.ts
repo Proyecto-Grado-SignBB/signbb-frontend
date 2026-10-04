@@ -23,5 +23,19 @@ export const routes: Routes = [
   {
     path: 'grafos/:id/reglas',
     loadComponent: () => import('./features/grafos/reglas/reglas').then(m => m.ReglasComponent)
+  },
+  {
+    path: 'grafos/:id/desenlaces/nuevo',
+    loadComponent: () =>
+      import('./features/grafos/desenlace-editor/desenlace-editor').then(m => m.DesenlaceEditorComponent)
+  },
+  {
+    path: 'grafos/:id/desenlaces/:nodoId',
+    loadComponent: () =>
+      import('./features/grafos/desenlace-editor/desenlace-editor').then(m => m.DesenlaceEditorComponent)
+  },
+  {
+    path: 'perfil',
+    loadComponent: () => import('./features/perfil/perfil').then(m => m.PerfilComponent)
   }
 ];

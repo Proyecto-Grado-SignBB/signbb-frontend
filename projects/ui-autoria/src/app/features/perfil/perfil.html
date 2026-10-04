@@ -1,0 +1,76 @@
+<div class="pantalla-autoria">
+  <app-sidebar-autoria seccionActiva="perfil" />
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="crumb">Cuenta</div>
+        <h3>Mi perfil</h3>
+      </div>
+    </div>
+
+    <div class="content">
+      @if (error()) {
+        <div class="error-guardado">
+          <app-mensaje-error [texto]="error()!" (reintentar)="cargar()" />
+        </div>
+      }
+
+      <div class="profile-wrap">
+        <div class="profile-card">
+          <div class="avatar lg">{{ iniciales }}</div>
+          <div class="who">
+            <b>{{ nombreMedico }}</b>
+            <span>{{ rol }} · {{ institucion }}</span>
+          </div>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat">
+            <b>{{ cargando() ? '—' : conteoPublicados() }}</b>
+            <span>Grafos publicados</span>
+          </div>
+          <div class="stat">
+            <b>{{ cargando() ? '—' : conteoBorrador() }}</b>
+            <span>En borrador</span>
+          </div>
+          <div class="stat">
+            <b>{{ cargando() ? '—' : (ultimaPublicacion() ?? 'Sin publicaciones') }}</b>
+            <span>Última publicación</span>
+          </div>
+        </div>
+        <p class="hint stats-hint">
+          Estos totales son del sistema completo: todavía no hay inicio de sesión de médicos, así que
+          aún no es posible filtrar solo lo que cada autor ha creado.
+        </p>
+
+        <div class="profile-fields">
+          <div class="profile-row">
+            <span class="lbl">Correo institucional</span>
+            <span class="val">{{ correo }}</span>
+          </div>
+          <div class="profile-row">
+            <span class="lbl">Institución</span>
+            <span class="val">{{ institucion }}</span>
+          </div>
+          <div class="profile-row">
+            <span class="lbl">Rol</span>
+            <span class="val">{{ rol }}</span>
+          </div>
+        </div>
+        <p class="hint">
+          Estos datos son fijos por ahora: todavía no existe una pantalla de edición de perfil ni
+          autenticación real de médicos.
+        </p>
+
+        <div class="profile-danger">
+          <div>
+            <b>Cerrar sesión</b>
+            <span>Sin autenticación real todavía, esta acción no tiene efecto — queda lista para cuando exista</span>
+          </div>
+          <app-boton tono="alerta" variante="contorno" alto="compacto" ancho="auto" [disabled]="true">Cerrar sesión</app-boton>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

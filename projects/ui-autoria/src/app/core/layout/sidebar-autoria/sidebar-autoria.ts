@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-export type SeccionAutoria = 'grafos' | 'reglas';
+export type SeccionAutoria = 'grafos' | 'reglas' | 'perfil';
 
 /**
  * Navegación lateral del panel de autoría, compartida por las 5 pantallas.

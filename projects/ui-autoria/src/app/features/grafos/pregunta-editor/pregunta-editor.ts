@@ -5,7 +5,7 @@ import { BotonComponent, EtiquetaComponent, MensajeErrorComponent } from 'ui-com
 import { SidebarAutoriaComponent } from '../../../core/layout/sidebar-autoria/sidebar-autoria';
 import { ModalPublicarComponent } from '../../../core/ui/modal-publicar/modal-publicar';
 import { AutoriaService } from '../../../core/http/autoria';
-import { DocumentoAutoria, EstadoGrafo, PreguntaRequest, ValidacionDTO } from '../../../models/autoria.model';
+import { DocumentoAutoria, EstadoGrafo, NodoJson, PreguntaRequest, ValidacionDTO } from '../../../models/autoria.model';
 
 type Severidad = 'leve' | 'moderado' | 'urgente';
 
@@ -37,11 +37,18 @@ interface NodoResumen {
  *
  * Importante: crearPregunta/editarPregunta en el backend SIEMPRE marcan el
  * nodo resultante como metadata.tipo="pregunta" (ver
- * ServicioAutoriaImpl.construirNodoPregunta). Editar aquí un nodo "inicio" o
- * un desenlace (recomendacion/consulta_medica/bloqueo) lo convertiría en una
- * pregunta común y rompería el grafo. Por eso esta pantalla se niega a cargar
- * cualquier nodo cuyo tipo real no sea ya "pregunta" — ver la validación en
- * cargar().
+ * ServicioAutoriaImpl.construirNodoPregunta). Un desenlace
+ * (recomendacion/consulta médica/urgencia) no se edita aquí — tiene su propia
+ * pantalla (DesenlaceEditorComponent) — así que esta sigue rechazando esos
+ * tipos (ver la validación en cargar()).
+ *
+ * El nodo de inicio si se puede editar aquí, pero NO a través del endpoint
+ * tipado de arriba: si se hiciera, le quitaría la marca de inicio sin avisar
+ * (rompiendo flujo.ts, que arma la vista buscando el nodo con tipo "inicio").
+ * Por eso, cuando el nodo cargado es el inicio, guardarPregunta() usa en su
+ * lugar el mismo puente de "guardar" documento completo que ya usan el
+ * editor de desenlace y "marcar como inicio" — ver guardarInicioViaPuente().
+ * Por la misma razón no se ofrece eliminar el nodo de inicio desde aquí.
  */
 @Component({
   selector: 'app-pregunta-editor',
@@ -66,6 +73,8 @@ export class PreguntaEditorComponent implements OnInit {
   protected readonly validacionParaPublicar = signal<ValidacionDTO | null>(null);
   protected readonly conteoPreguntas = signal(0);
   protected readonly conteoReglas = signal(0);
+  /** true si el nodo cargado es el inicio del recorrido, no una pregunta común. */
+  protected readonly esInicio = signal(false);
 
   protected texto = '';
   protected severidad: Severidad = 'moderado';
@@ -77,6 +86,7 @@ export class PreguntaEditorComponent implements OnInit {
 
   protected grafoId!: number;
   private nodoId: string | null = null;
+  private documento: DocumentoAutoria | null = null;
 
   constructor(
     private autoria: AutoriaService,
@@ -99,6 +109,7 @@ export class PreguntaEditorComponent implements OnInit {
     this.autoria.obtener(this.grafoId).subscribe({
       next: doc => {
         this.nombreGrafo.set(doc.nombre);
+        this.documento = doc.documento;
         this.nodosDisponibles = Object.entries(doc.documento.graph.nodes).map(([id, nodo]) => ({
           id,
           texto: nodo.label,
@@ -113,14 +124,15 @@ export class PreguntaEditorComponent implements OnInit {
             this.cargando.set(false);
             return;
           }
-          if (nodo.metadata.tipo !== 'pregunta') {
+          if (nodo.metadata.tipo !== 'pregunta' && nodo.metadata.tipo !== 'inicio') {
             this.errorCarga.set(
-              `Este nodo es de tipo "${nodo.metadata.tipo}", no una pregunta común — todavía no hay ` +
-              'una pantalla para editar el nodo de inicio o los desenlaces del grafo, así que no se puede abrir aquí.'
+              `Este nodo es de tipo "${nodo.metadata.tipo}", un desenlace — edítalo desde el editor de ` +
+              'desenlaces, no aquí.'
             );
             this.cargando.set(false);
             return;
           }
+          this.esInicio.set(nodo.metadata.tipo === 'inicio');
           this.texto = nodo.label;
           this.severidad = this.severidadDesdePeso(nodo.metadata.peso);
           const src = nodo.metadata.src ?? [];
@@ -267,6 +279,11 @@ export class PreguntaEditorComponent implements OnInit {
     this.guardando.set(true);
     this.error.set(null);
 
+    if (this.esInicio()) {
+      this.guardarInicioViaPuente();
+      return;
+    }
+
     const request: PreguntaRequest = {
       texto: this.texto.trim(),
       imagenes: this.imagenUrl ? [this.imagenUrl] : [],
@@ -290,6 +307,64 @@ export class PreguntaEditorComponent implements OnInit {
         this.guardando.set(false);
         this.error.set(
           'No se pudo guardar la pregunta. Verifica que todas las opciones tengan un destino válido.'
+        );
+      }
+    });
+  }
+
+  /**
+   * Guarda el nodo de inicio por el puente de "guardar" documento completo
+   * en vez del endpoint tipado de preguntas — ver el porqué en el JSDoc de
+   * la clase. Reconstruye a mano lo que el backend haría por un nodo normal
+   * (reemplazar el nodo y sus aristas salientes), pero conservando
+   * metadata.tipo="inicio" y el resto de metadata que ya tuviera el nodo.
+   */
+  private guardarInicioViaPuente(): void {
+    if (!this.nodoId || !this.documento) {
+      this.guardando.set(false);
+      return;
+    }
+    const nodoId = this.nodoId;
+    const nodoExistente = this.documento.graph.nodes[nodoId];
+
+    const nodo: NodoJson = {
+      label: this.texto.trim(),
+      metadata: {
+        ...nodoExistente.metadata,
+        tipo: 'inicio',
+        peso: PESO_POR_SEVERIDAD[this.severidad],
+        archivos: !!this.imagenUrl,
+        src: this.imagenUrl ? [this.imagenUrl] : []
+      }
+    };
+
+    const aristasSinLasSuyas = this.documento.graph.edges.filter(a => a.source !== nodoId);
+    for (const opcion of this.opcionesValidas) {
+      aristasSinLasSuyas.push({
+        source: nodoId,
+        relation: this.etiquetaBackend(opcion.etiqueta),
+        target: opcion.destinoId
+      });
+    }
+
+    const documento: DocumentoAutoria = {
+      ...this.documento,
+      graph: {
+        ...this.documento.graph,
+        nodes: { ...this.documento.graph.nodes, [nodoId]: nodo },
+        edges: aristasSinLasSuyas
+      }
+    };
+
+    this.autoria.guardar(this.grafoId, documento).subscribe({
+      next: () => {
+        this.guardando.set(false);
+        this.volver();
+      },
+      error: () => {
+        this.guardando.set(false);
+        this.error.set(
+          'No se pudo guardar la pregunta de inicio. Verifica que todas las opciones tengan un destino válido.'
         );
       }
     });

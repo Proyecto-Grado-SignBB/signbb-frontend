@@ -133,8 +133,7 @@ export interface MediaSubidaDTO {
 /** POST /api/autoria/grafos */
 export interface CrearGrafoRequest {
   nombre: string;
-  autor: string;
-  institucion: string;
+  descripcion: string;
 }
 
 /** POST /api/autoria/grafos/{id}/guardar */

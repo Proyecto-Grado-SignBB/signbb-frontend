@@ -92,6 +92,7 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 18px;
+  gap: 16px;
 
   p {
     margin: 0;
@@ -100,13 +101,46 @@
   }
 }
 
+.lock-hint {
+  font-size: 11.5px;
+  color: $color-ink-faint;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+// ---------- diagrama de flujo: columnas conectadas + columna fija de huérfanos ----------
+//
+// Solo `.diagram-scroll` se desplaza horizontalmente. `.orphan-col` queda
+// fuera de ese contenedor a propósito: si una cadena de preguntas es larga,
+// el médico puede necesitar desplazarse mucho para verla completa, y las
+// tarjetas "sin conectar" no deberían quedar perdidas al fondo de ese scroll.
+.diagram-wrap {
+  display: flex;
+  align-items: flex-start;
+}
+
+.diagram-scroll {
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 10px;
+}
+
 .flow {
   display: flex;
-  gap: 34px;
+  // 130px: deja que la pastilla (hasta 100px, ver .conn-tag) quepa completa
+  // en el carril entre columnas sin superponerse con las tarjetas vecinas.
+  // El médico puede ver el texto completo de una respuesta larga pasando el
+  // mouse por encima (title, ver etiquetaConector en flujo.ts) — no hace
+  // falta que quepa entera sin cortar.
+  gap: 130px;
   align-items: flex-start;
   padding-top: 14px;
   padding-bottom: 10px;
-  overflow-x: auto;
+  position: relative;
+  width: fit-content;
 }
 
 .flow-col {
@@ -114,6 +148,52 @@
   flex-direction: column;
   gap: 22px;
   min-width: 208px;
+}
+
+// Líneas y etiquetas del diagrama — ver recalcularConectores() en flujo.ts.
+// Ambas capas cubren exactamente `.flow` (no más: `.flow` ya tiene
+// `width: fit-content`, así que no sobra área para medir mal).
+.conectores-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+
+  path {
+    fill: none;
+    stroke: $color-line;
+    stroke-width: 2;
+  }
+}
+
+.conector-etiquetas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.conn-tag {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  // 100px: respuestas cortas (Sí/No/Menos de 24h) se ven completas; una
+  // respuesta más larga se corta con elipsis y se lee completa con el
+  // tooltip (title, ver etiquetaConector en flujo.ts) — no hace falta un
+  // límite más ancho porque el médico puede pasar el mouse para verla.
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: $color-surface-2;
+  border: 1px solid $color-line;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 10.5px;
+  font-weight: 800;
+  color: $color-ink-faint;
+  pointer-events: auto;
+  cursor: default;
 }
 
 .node {
@@ -142,26 +222,122 @@
   }
 }
 
-.node--editable {
-  cursor: pointer;
-  transition: box-shadow 0.12s ease, border-color 0.12s ease;
+.node-menu {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+}
 
-  &:hover {
-    border-color: $color-brand;
-    box-shadow: 0 0 0 2px $color-brand-tint;
+.btn-menu-nodo {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: none;
+  background: $color-surface-2;
+  color: $color-ink-faint;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.12s ease, background 0.12s ease, color 0.12s ease;
+}
+
+.node:hover .btn-menu-nodo,
+.node-menu:has(.menu-flotante) .btn-menu-nodo {
+  opacity: 1;
+}
+
+.btn-menu-nodo:hover {
+  background: $color-brand-tint;
+  color: $color-brand-dark;
+}
+
+.menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 15;
+}
+
+.menu-flotante {
+  // position:fixed, no absolute: ver el comentario en toggleMenu() de
+  // flujo.ts — con absolute, el scroll horizontal de .diagram-scroll lo
+  // recortaba o lo dejaba tapando otra tarjeta.
+  position: fixed;
+  z-index: 20;
+  background: $color-surface;
+  border: 1px solid $color-line;
+  border-radius: $radius-md;
+  box-shadow: $shadow-card;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 180px; // debe calzar con `anchoMenu` en flujo.ts (toggleMenu)
+
+  button {
+    text-align: left;
+    background: none;
+    border: none;
+    border-radius: $radius-sm;
+    padding: 8px 10px;
+    font-family: $font-body;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: $color-ink;
+    cursor: pointer;
+
+    &:hover {
+      background: $color-surface-2;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  .opcion-peligro {
+    color: $color-alert-dark;
+
+    &:hover {
+      background: $color-alert-tint;
+    }
   }
 }
 
-.edge-tag {
+.tag-inicio {
   position: absolute;
   top: -11px;
   left: 12px;
-  background: $color-ink;
+  background: $color-brand;
   color: $color-surface;
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 800;
-  padding: 2px 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 3px 9px;
   border-radius: 999px;
+  white-space: nowrap;
+}
+
+// Mismo lenguaje visual que .tag-inicio (pastilla flotando sobre el borde
+// superior) para la tarjeta de un nodo al que llegan dos o más preguntas
+// distintas (ver construirVista en flujo.ts) — del lado derecho para no
+// competir con la de "Inicio del recorrido" si alguna vez coincidieran.
+.tag-repetido {
+  position: absolute;
+  top: -11px;
+  right: 12px;
+  background: $color-brand;
+  color: $color-surface;
+  font-size: 9.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 3px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
 }
 
 .node--outcome {
@@ -189,10 +365,26 @@
   }
 }
 
-.orphan-wrap {
-  margin-top: 40px;
-  padding-top: 24px;
-  border-top: 1px dashed $color-line;
+// Ícono de "enlace" en la esquina superior izquierda de un nodo al que
+// llegan dos o más preguntas distintas (ver construirVista en flujo.ts): se
+// dibuja una copia por cada pregunta que lo alcanza, así que el médico
+// necesita una señal de que son LA MISMA tarjeta repetida y no dos pasos
+// distintos. Un borde doble no se notaba lo suficiente, así que se usa un
+// ícono — misma convención visual que el resto de la app (svg 24x24,
+// stroke currentColor, ver sidebar-autoria.html).
+
+
+.orphan-col {
+  flex-shrink: 0;
+  width: 230px;
+  margin-left: 40px;
+  padding-left: 24px;
+  padding-top: 14px;
+  align-self: flex-start;
+  border-left: 1px dashed $color-line;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 
   .flag {
     display: flex;
@@ -201,7 +393,6 @@
     font-size: 12px;
     font-weight: 800;
     color: $color-alert-dark;
-    margin-bottom: 12px;
   }
 }
 
@@ -214,16 +405,31 @@
     color: $color-alert-dark;
   }
 
+  // Antes: `color: $color-alert-dark; opacity: 0.7;`. Cualquier elemento con
+  // opacity < 1 queda promovido a su propia capa de apilamiento en CSS, como
+  // si tuviera position — y como este div va DESPUÉS del botón de los tres
+  // puntos (.node-menu) en el markup, esa promoción hacía que la etiqueta se
+  // dibujara ENCIMA del botón donde se superponen, robándose el clic. Pasa
+  // solo acá (tarjetas "sin conectar") porque solo acá había ese opacity:
+  // explica por qué el bug de "el primer clic a los tres puntos se va a
+  // editar" solo ocurría en estas tarjetas. Se logra el mismo tono tenue
+  // mezclando transparencia directo en el color, sin tocar la capa de
+  // apilamiento del elemento.
   .kind {
-    color: $color-alert-dark;
-    opacity: 0.7;
+    color: color-mix(in oklch, $color-alert-dark 70%, transparent);
   }
 }
 
-.fab {
+.fab-group {
   position: sticky;
   bottom: 0;
   margin-top: 24px;
+  display: flex;
+  gap: 10px;
+  width: fit-content;
+}
+
+.fab {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -236,6 +442,13 @@
   font-size: 13px;
   box-shadow: 0 10px 24px oklch(55% 0.16 335 / 0.35);
   cursor: pointer;
+}
+
+.fab--secundario {
+  background: $color-surface;
+  color: $color-brand-dark;
+  border: 1.5px solid $color-brand;
+  box-shadow: none;
 }
 
 .fab--deshabilitado {

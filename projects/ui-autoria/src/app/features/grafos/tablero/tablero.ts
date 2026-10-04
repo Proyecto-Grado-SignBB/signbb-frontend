@@ -22,8 +22,17 @@ export class TableroComponent implements OnInit {
   protected readonly mostrarFormularioCrear = signal(false);
   protected readonly creando = signal(false);
   protected nombreNuevo = '';
-  protected autorNuevo = '';
-  protected institucionNuevo = '';
+  protected descripcionNuevo = '';
+
+  /**
+   * PUENTE: lista de categorías que vienen de AutoriaService.obtenerCategorias()
+   * (hoy una lista fija en el front — ver el comentario de ese método). La
+   * categoría elegida todavía no se envía al crear el grafo porque
+   * CrearGrafoRequest no tiene ese campo en el backend; cuando lo tenga,
+   * agregar `categoria: this.categoriaSeleccionada()` en confirmarCrear().
+   */
+  protected readonly categoriasDisponibles = signal<string[]>([]);
+  protected readonly categoriaSeleccionada = signal<string | null>(null);
 
   protected readonly totalPublicados = computed(
     () => this.grafos().filter(g => g.estado === 'Publicado').length
@@ -39,6 +48,10 @@ export class TableroComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarGrafos();
+    this.autoria.obtenerCategorias().subscribe({
+      next: categorias => this.categoriasDisponibles.set(categorias),
+      error: () => { /* el selector de categoría simplemente queda vacío */ }
+    });
   }
 
   protected cargarGrafos(): void {
@@ -63,14 +76,17 @@ export class TableroComponent implements OnInit {
   protected cancelarCrear(): void {
     this.mostrarFormularioCrear.set(false);
     this.nombreNuevo = '';
-    this.autorNuevo = '';
-    this.institucionNuevo = '';
+    this.descripcionNuevo = '';
+    this.categoriaSeleccionada.set(null);
+  }
+
+  /** Alterna la categoría elegida: un segundo click sobre la misma la deselecciona. */
+  protected seleccionarCategoria(categoria: string): void {
+    this.categoriaSeleccionada.set(this.categoriaSeleccionada() === categoria ? null : categoria);
   }
 
   protected get puedeCrear(): boolean {
-    return this.nombreNuevo.trim().length > 0
-      && this.autorNuevo.trim().length > 0
-      && this.institucionNuevo.trim().length > 0;
+    return this.nombreNuevo.trim().length > 0;
   }
 
   protected confirmarCrear(): void {
@@ -79,8 +95,7 @@ export class TableroComponent implements OnInit {
     }
     const request: CrearGrafoRequest = {
       nombre: this.nombreNuevo.trim(),
-      autor: this.autorNuevo.trim(),
-      institucion: this.institucionNuevo.trim()
+      descripcion: this.descripcionNuevo.trim()
     };
     this.creando.set(true);
     this.autoria.crear(request).subscribe({

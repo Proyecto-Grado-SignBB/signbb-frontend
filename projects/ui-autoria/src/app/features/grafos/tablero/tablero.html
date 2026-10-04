@@ -26,14 +26,27 @@
               <input type="text" [(ngModel)]="nombreNuevo" placeholder="Ej: Evaluación de Cólico del Lactante" />
             </label>
             <label>
-              <span>Autor</span>
-              <input type="text" [(ngModel)]="autorNuevo" placeholder="Ej: Dra. Catalina Rodríguez" />
-            </label>
-            <label>
-              <span>Institución</span>
-              <input type="text" [(ngModel)]="institucionNuevo" placeholder="Ej: Fundación Canguro" />
+              <span>Descripción</span>
+              <textarea
+                rows="3"
+                [(ngModel)]="descripcionNuevo"
+                placeholder="Ej: Grafo clínico para evaluar signos de cólico en lactantes"></textarea>
             </label>
           </div>
+
+          <div class="crear-categoria">
+            <span>Categoría</span>
+            <div class="chips-categoria">
+              @for (cat of categoriasDisponibles(); track cat) {
+                <button
+                  type="button"
+                  class="chip"
+                  [class.chip--activo]="categoriaSeleccionada() === cat"
+                  (click)="seleccionarCategoria(cat)">{{ cat }}</button>
+              }
+            </div>
+          </div>
+
           <div class="crear-acciones">
             <app-boton tono="neutro" variante="texto" alto="compacto" ancho="auto" (click)="cancelarCrear()">Cancelar</app-boton>
             <app-boton

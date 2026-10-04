@@ -15,7 +15,6 @@
         </h3>
       </div>
       <div class="topbar-right">
-        <app-boton tono="neutro" variante="contorno" alto="compacto" ancho="auto" [disabled]="true" title="Pantalla 7 pendiente">Vista previa</app-boton>
         <app-boton tono="neutro" variante="contorno" alto="compacto" ancho="auto" [disabled]="guardando()" (click)="guardar()">{{ guardando() ? 'Guardando…' : 'Guardar' }}</app-boton>
         <app-boton tono="marca" alto="compacto" ancho="auto" [disabled]="publicando()" (click)="abrirConfirmarPublicar()">Publicar</app-boton>
       </div>
@@ -34,54 +33,109 @@
         <p class="estado-carga">Cargando flujo…</p>
       } @else {
         <div class="flow-toolhint">
-          <p>Cada tarjeta es una pregunta o un desenlace. La edición puntual de preguntas llega en la siguiente pantalla.</p>
+          <p>Usa los tres puntos de una tarjeta para editarla, marcarla como inicio o eliminarla.</p>
+          <span class="lock-hint">Solo vista — las tarjetas no se arrastran</span>
         </div>
 
         @if (columnas().length === 0 && huerfanos().length === 0) {
           <p class="estado-vacio">Este grafo todavía no tiene preguntas. Agrega la primera con el botón de abajo.</p>
         } @else {
-          <div class="flow">
-            @for (columna of columnas(); track $index) {
-              <div class="flow-col">
-                @for (nodo of columna; track nodo.id) {
-                  <div
-                    class="node"
-                    [class.node--outcome]="nodo.esDesenlace"
-                    [class.node--urgent]="nodo.severidad === 'urgent'"
-                    [class.node--priority]="nodo.severidad === 'priority'"
-                    [class.node--editable]="nodo.tipo === 'pregunta'"
-                    [attr.title]="nodo.tipo === 'pregunta' ? 'Editar esta pregunta' : null"
-                    (click)="editarPregunta(nodo)">
-                    @if (nodo.etiquetaEntrada) {
-                      <span class="edge-tag">{{ nodo.etiquetaEntrada }}</span>
+          @if (menuAbiertoId()) {
+            <div class="menu-backdrop" (click)="cerrarMenu()"></div>
+          }
+
+          <div class="diagram-wrap">
+            <div class="diagram-scroll">
+              <div class="flow" #flowEl>
+                <svg class="conectores-svg">
+                  @for (conector of conectores(); track $index) {
+                    <path [attr.d]="conector.d" />
+                  }
+                </svg>
+                <div class="conector-etiquetas">
+                  @for (conector of conectores(); track $index) {
+                    <span
+                      class="conn-tag"
+                      [style.left.px]="conector.etiquetaX"
+                      [style.top.px]="conector.etiquetaY"
+                      [title]="conector.etiqueta">{{ conector.etiqueta }}</span>
+                  }
+                </div>
+                @for (columna of columnas(); track $index) {
+                  <div class="flow-col">
+                    @for (nodo of columna; track nodo.ocurrenciaId) {
+                      <ng-container *ngTemplateOutlet="tarjetaNodo; context: { nodo: nodo }" />
                     }
-                    <div class="kind">{{ nodo.kind }}</div>
-                    <p>{{ nodo.texto }}</p>
                   </div>
+                }
+              </div>
+            </div>
+
+            @if (huerfanos().length > 0) {
+              <div class="orphan-col">
+                <div class="flag">Sin conectar — nadie del flujo lleva hasta aquí</div>
+                @for (nodo of huerfanos(); track nodo.id) {
+                  <ng-container *ngTemplateOutlet="tarjetaNodo; context: { nodo: nodo, orfano: true }" />
                 }
               </div>
             }
           </div>
-
-          @if (huerfanos().length > 0) {
-            <div class="orphan-wrap">
-              <div class="flag">Sin conectar — nadie del flujo lleva hasta aquí</div>
-              @for (nodo of huerfanos(); track nodo.id) {
-                <div class="node node--orphan">
-                  <div class="kind">{{ nodo.kind }}</div>
-                  <p>{{ nodo.texto }}</p>
-                </div>
-              }
-            </div>
-          }
 
           @if (hayCiclos()) {
             <p class="aviso-ciclo">Este grafo tiene ciclos: alguna secuencia de respuestas puede repetirse sin llegar nunca a un desenlace.</p>
           }
         }
 
-        <div class="fab" (click)="agregarPregunta()">+ Agregar pregunta</div>
+        <div class="fab-group">
+          <div class="fab fab--secundario" (click)="agregarDesenlace()">+ Agregar desenlace</div>
+          <div class="fab" (click)="agregarPregunta()">+ Agregar pregunta</div>
+        </div>
       }
+
+      <ng-template #tarjetaNodo let-nodo="nodo" let-orfano="orfano">
+        <div
+          class="node"
+          [attr.data-ocurrencia-id]="nodo.ocurrenciaId"
+          [class.node--orphan]="orfano"
+          [class.node--outcome]="nodo.esDesenlace"
+          [class.node--urgent]="nodo.severidad === 'urgent'"
+          [class.node--priority]="nodo.severidad === 'priority'">
+          @if (nodo.tipo === 'inicio') {
+            <span class="tag-inicio">Inicio del recorrido</span>
+          }
+          @if (nodo.repetido) {
+            <span class="tag-repetido" title="Esta misma tarjeta también aparece en otra rama del flujo">Repetido</span>
+          }
+          @if (puedeEditar(nodo)) {
+            <div class="node-menu">
+              <button
+                type="button"
+                class="btn-menu-nodo"
+                title="Más acciones"
+                (click)="toggleMenu(nodo.ocurrenciaId, $event)">⋮</button>
+              @if (menuAbiertoId() === nodo.ocurrenciaId) {
+                <div
+                    class="menu-flotante"
+                    [style.top.px]="menuPosicion()?.top"
+                    [style.left.px]="menuPosicion()?.left"
+                    (click)="$event.stopPropagation()">
+                  <button type="button" (click)="abrirNodo(nodo)">{{ nodo.esDesenlace ? 'Editar desenlace' : 'Editar pregunta' }}</button>
+                  @if (nodo.tipo === 'pregunta') {
+                    <button type="button" (click)="marcarComoInicio(nodo)">Marcar como inicio</button>
+                  }
+                  @if (nodo.tipo === 'pregunta') {
+                    <button type="button" class="opcion-peligro" [disabled]="eliminando()" (click)="eliminarPregunta(nodo)">{{ eliminando() ? 'Eliminando…' : 'Eliminar' }}</button>
+                  } @else if (nodo.esDesenlace) {
+                    <button type="button" class="opcion-peligro" [disabled]="eliminando()" (click)="eliminarDesenlace(nodo)">{{ eliminando() ? 'Eliminando…' : 'Eliminar' }}</button>
+                  }
+                </div>
+              }
+            </div>
+          }
+          <div class="kind">{{ nodo.kind }}</div>
+          <p>{{ nodo.texto }}</p>
+        </div>
+      </ng-template>
     </div>
   </div>
 

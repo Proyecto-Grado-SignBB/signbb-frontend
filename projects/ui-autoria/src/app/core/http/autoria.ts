@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   CrearGrafoRequest,
@@ -35,6 +35,19 @@ export class AutoriaService {
 
   crear(request: CrearGrafoRequest): Observable<GrafoResumenDTO> {
     return this.http.post<GrafoResumenDTO>(`${this.base}/grafos`, request);
+  }
+
+  /**
+   * PUENTE: el backend todavía no expone un endpoint de categorías (no hay
+   * `GET /autoria/categorias` ni nada similar). Mientras tanto, el selector
+   * de categoría de la Pantalla 1 usa esta lista fija para poder funcionar
+   * ya en el front. Cuando el backend tenga el endpoint real, basta con
+   * reemplazar el cuerpo de este método por
+   * `this.http.get<string[]>(\`${this.base}/categorias\`)` — la pantalla no
+   * necesita cambiar nada más.
+   */
+  obtenerCategorias(): Observable<string[]> {
+    return of(['Ictericia', 'Cólico del lactante', 'Fiebre', 'Alimentación', 'Otro']);
   }
 
   // --- Pantalla 2: documento del borrador ----------------------------------

@@ -6,7 +6,7 @@
       <div class="topbar-left">
         <div class="crumb crumb--clicable" (click)="cancelar()">{{ nombreGrafo() }}</div>
         <h3>
-          {{ esNuevo() ? 'Nueva pregunta' : 'Editando pregunta' }}
+          {{ esNuevo() ? 'Nueva pregunta' : (esInicio() ? 'Editando el inicio del recorrido' : 'Editando pregunta') }}
           @if (estadoGrafo() === 'Borrador') {
             <app-etiqueta tono="aviso">Borrador sin publicar</app-etiqueta>
           } @else {
@@ -91,10 +91,13 @@
               <div class="link-add" (click)="agregarOpcion()">+ Agregar opción</div>
             </div>
 
-            @if (!esNuevo()) {
+            @if (!esNuevo() && !esInicio()) {
               <div class="zona-peligro">
                 <app-boton tono="alerta" variante="texto" alto="compacto" ancho="auto" [disabled]="eliminando()" (click)="eliminarPregunta()">{{ eliminando() ? 'Eliminando…' : 'Eliminar esta pregunta' }}</app-boton>
               </div>
+            }
+            @if (esInicio()) {
+              <p class="hint hint-inicio">Este es el nodo de inicio del recorrido — no se puede eliminar desde aquí, porque el grafo necesita un punto de partida. Para reemplazarlo, marca otra pregunta como inicio desde el flujo.</p>
             }
 
             <div class="acciones-form">
