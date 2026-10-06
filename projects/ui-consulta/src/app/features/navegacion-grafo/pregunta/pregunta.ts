@@ -8,7 +8,12 @@ const ETIQUETAS_OPCION: Record<string, string> = {
   SI: 'Sí',
   NO: 'No',
   MENOS_DE_24_HORAS: 'Menos de 24 horas',
-  MAS_DE_24_HORAS: 'Más de 24 horas'
+  MAS_DE_24_HORAS: 'Más de 24 horas',
+  SOMNOLENCIA: 'Somnoliento o letárgico',
+  SANGRE_EN_HECES: 'Sangre en las heces',
+  NINGUNO: 'Ninguno de estos',
+  COME_MENOS: 'Se alimenta menos de lo habitual',
+  AMARILLO_SE_EXTIENDE: 'El amarillo se está extendiendo'
 };
 
 const ORDEN_OPCIONES_IMAGEN = ['NO', 'SI'];
