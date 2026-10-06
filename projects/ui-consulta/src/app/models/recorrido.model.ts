@@ -18,12 +18,20 @@ export interface PasoCausalDTO {
   condicion: string;
 }
 
+export interface RecomendacionDTO {
+  nodoId: string;
+  mensaje: string;
+  caminoCausal: PasoCausalDTO[];
+}
+
 export interface ResultadoDTO {
   nivel: NivelAlerta;
   destinoId: string;
   mensaje: string;
   razones: string[];
   caminoCausal: PasoCausalDTO[];
+  /** Todas las recomendaciones alcanzadas (cierre sin alerta); ausente en backends anteriores. */
+  recomendaciones?: RecomendacionDTO[];
 }
 
 export interface RecorridoResponse {

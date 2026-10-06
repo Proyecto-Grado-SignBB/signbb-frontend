@@ -83,6 +83,30 @@
       </div>
     </div>
   </div>
+  } @else if (mostrarListaRecomendaciones()) {
+  <div class="resultado__panel resultado__panel--recomendaciones">
+    <div class="resultado__contenedor-recomendaciones">
+      @if (cierrePorLimite()) {
+      <p class="resultado__introduccion">{{ r.resultado?.mensaje }}</p>
+      }
+      <div class="resultado__etiqueta-recomendaciones">
+        {{ r.resultado!.recomendaciones!.length === 1 ? '1 recomendación para ti' :
+        r.resultado!.recomendaciones!.length + ' recomendaciones para ti' }}
+      </div>
+      <div class="resultado__lista-recomendaciones">
+        @for (rec of r.resultado!.recomendaciones; track rec.nodoId) {
+        <div class="resultado__recomendacion">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"
+            stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="8 12.5 10.8 15.3 16 9.5"></polyline>
+          </svg>
+          <span>{{ rec.mensaje }}</span>
+        </div>
+        }
+      </div>
+    </div>
+  </div>
   } @else {
   <div class="resultado__panel resultado__panel--tip">
     <p>{{ r.resultado?.mensaje }}</p>

@@ -4,6 +4,9 @@ import { RecorridoService } from '../../../core/http/recorrido';
 import { RecorridoResponse } from '../../../models/recorrido.model';
 import { BotonComponent, InsigniaIconoComponent, TonoInsignia, AvisoLegalComponent, MensajeErrorComponent } from 'ui-compartida';
 
+/** Id del desenlace de sistema que el backend usa al cerrar por el máximo de preguntas. */
+const ID_LIMITE_PREGUNTAS = 'sistema/limite_preguntas';
+
 @Component({
   selector: 'app-resultado',
   standalone: true,
@@ -22,6 +25,24 @@ export class ResultadoComponent implements OnInit {
       case 'CONSULTAR_MEDICO': return 'aviso';
       default: return 'calma';
     }
+  });
+
+  /** True si el recorrido se cerró por el máximo de preguntas (desenlace de sistema). */
+  cierrePorLimite = computed(
+    () => this.respuesta()?.resultado?.destinoId === ID_LIMITE_PREGUNTAS
+  );
+
+  /**
+   * Hay que listar las recomendaciones cuando son varias, o cuando el cierre fue por
+   * el máximo de preguntas y se alcanzó alguna (el mensaje general va de introducción).
+   */
+  mostrarListaRecomendaciones = computed(() => {
+    const resultado = this.respuesta()?.resultado;
+    const cantidad = resultado?.recomendaciones?.length ?? 0;
+    if (resultado?.nivel !== 'NORMAL') {
+      return false;
+    }
+    return cantidad > 1 || (this.cierrePorLimite() && cantidad > 0);
   });
 
   constructor(
