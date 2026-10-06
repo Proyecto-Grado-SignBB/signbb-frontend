@@ -10,15 +10,16 @@ import { DocumentoAutoria, EstadoGrafo, NodoJson, PreguntaRequest, ValidacionDTO
 type Severidad = 'leve' | 'moderado' | 'urgente';
 
 /**
- * El backend guarda la severidad como un peso 0-100 (metadata.peso), usado
- * para desempatar cuando el cuidador marca varias señales a la vez (ver
- * MotorNavegacion.resolverGanadora). No hay 3 niveles fijos en el dominio:
- * esto es una simplificación de UI para no pedirle al médico un número
- * arbitrario. Al editar una pregunta existente con un peso que no cae
- * exacto en uno de estos 3 valores (ej. datos sembrados con peso=85), se
- * selecciona el nivel más cercano.
+ * La severidad se guarda como un peso de 1 a 3 (metadata.peso): Leve=1,
+ * Moderado=2, Urgente=3. Es la escala que exige el backend al cargar un
+ * grafo (GrafoClinicoMapper). El motor de navegación usa el peso del destino
+ * para ordenar la cola de opciones pendientes cuando el cuidador marca varias
+ * opciones a la vez (MotorNavegacion.ordenCola): a igual tipo de terminal,
+ * se sigue primero la de mayor peso, y a igual peso la que se marcó antes.
+ * Al editar una pregunta con un peso fuera de la escala (ej. datos antiguos
+ * sembrados con peso=85), se selecciona el nivel más cercano.
  */
-const PESO_POR_SEVERIDAD: Record<Severidad, number> = { leve: 20, moderado: 55, urgente: 90 };
+const PESO_POR_SEVERIDAD: Record<Severidad, number> = { leve: 1, moderado: 2, urgente: 3 };
 
 interface OpcionForm {
   etiqueta: string;

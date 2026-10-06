@@ -17,6 +17,14 @@ import { DocumentoAutoria, EstadoGrafo, NodoJson, ValidacionDTO } from '../../..
  */
 type TipoDesenlace = 'recomendacion' | 'consulta médica' | 'urgencia';
 
+/**
+ * Peso de un desenlace nuevo. El backend exige un peso de 1 a 3 en todos los
+ * nodos; en un desenlace el orden de la cola lo decide su tipo (urgencia,
+ * luego consulta médica), y el peso solo desempata entre desenlaces del
+ * mismo tipo, así que el valor por defecto es el mínimo de la escala.
+ */
+const PESO_DESENLACE_POR_DEFECTO = 1;
+
 const TIPOS_DESENLACE: TipoDesenlace[] = ['recomendacion', 'consulta médica', 'urgencia'];
 
 /**
@@ -188,7 +196,7 @@ export class DesenlaceEditorComponent implements OnInit {
       metadata: {
         ...nodoExistente?.metadata,
         tipo: this.tipo,
-        peso: nodoExistente?.metadata.peso ?? 0,
+        peso: nodoExistente?.metadata.peso ?? PESO_DESENLACE_POR_DEFECTO,
         archivos: nodoExistente?.metadata.archivos ?? false
       }
     };

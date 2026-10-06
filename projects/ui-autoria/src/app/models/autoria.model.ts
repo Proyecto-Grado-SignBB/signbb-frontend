@@ -9,6 +9,7 @@ import type { NivelAlerta } from 'ui-compartida';
 
 export interface NodoMetadataJson {
   tipo: string;
+  /** Escala 1–3 (Leve=1, Moderado=2, Urgente=3); el backend rechaza otros valores al cargar el grafo. */
   peso: number;
   archivos?: boolean;
   src?: string[];
@@ -151,6 +152,7 @@ export interface OpcionRequest {
 export interface PreguntaRequest {
   texto: string;
   imagenes: string[];
+  /** Se guarda como metadata.peso: escala 1–3 (Leve=1, Moderado=2, Urgente=3). */
   severidad: number;
   opciones: OpcionRequest[];
 }
