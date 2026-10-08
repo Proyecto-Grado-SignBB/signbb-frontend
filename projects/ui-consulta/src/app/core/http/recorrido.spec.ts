@@ -127,6 +127,41 @@ describe('RecorridoService', () => {
     expect(resultado.recorridoId).toBe('abc-123');
   });
 
+  it('retroceder() debe hacer POST /recorridos/{id}/retroceder y devolver la pregunta anterior', () => {
+    const respuestaMock: RecorridoResponse = {
+      recorridoId: 'abc-123',
+      estado: 'EN_CURSO',
+      pregunta: {
+        id: 'pregunta_anterior',
+        texto: '¿Pregunta anterior?',
+        opciones: ['SI', 'NO'],
+        tieneImagenes: false,
+        imagenes: []
+      },
+      resultado: null
+    };
+
+    let resultado!: RecorridoResponse;
+    servicio.retroceder('abc-123').subscribe(r => (resultado = r));
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/recorridos/abc-123/retroceder`);
+    expect(req.request.method).toBe('POST');
+    req.flush(respuestaMock);
+
+    expect(resultado.estado).toBe('EN_CURSO');
+    expect(resultado.pregunta?.id).toBe('pregunta_anterior');
+  });
+
+  it('retroceder() sin respuestas previas debe propagar el error 400', () => {
+    let error: { status?: number } | undefined;
+    servicio.retroceder('abc-123').subscribe({ error: e => (error = e) });
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/recorridos/abc-123/retroceder`);
+    req.flush(null, { status: 400, statusText: 'Bad Request' });
+
+    expect(error?.status).toBe(400);
+  });
+
   it('responder con un id inexistente debe propagar el error HTTP', () => {
     let error: unknown;
     servicio.responder('no-existe', { respuesta: 'SI' }).subscribe({

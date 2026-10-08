@@ -1,4 +1,5 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RecorridoService } from '../../../core/http/recorrido';
 import { RecorridoResponse, ResponderRequest } from '../../../models/recorrido.model';
@@ -18,6 +19,12 @@ const ETIQUETAS_OPCION: Record<string, string> = {
 
 const ORDEN_OPCIONES_IMAGEN = ['NO', 'SI'];
 
+/**
+ * Tiempo en que «volver» queda bloqueado tras un retroceso exitoso. En local el backend
+ * responde en milisegundos, así que sin esta pausa un doble clic retrocedería dos preguntas.
+ */
+const ENFRIAMIENTO_VOLVER_MS = 400;
+
 @Component({
   selector: 'app-pregunta',
   standalone: true,
@@ -30,6 +37,8 @@ export class PreguntaComponent implements OnInit {
   seleccionActual = signal<string | null>(null);
   opcionesSeleccionadas = signal<Set<string>>(new Set());
   enviando = signal(false);
+  /** True mientras «volver» está en curso o en su pausa anticlic (ver ENFRIAMIENTO_VOLVER_MS). */
+  volviendo = signal(false);
   error = signal<string | null>(null);
 
   indiceImagen = signal(0);
@@ -77,8 +86,34 @@ export class PreguntaComponent implements OnInit {
     });
   }
 
+  /**
+   * Botón «volver» del encabezado: deshace la última respuesta en el backend y
+   * muestra de nuevo la pregunta anterior para poder cambiarla. Si todavía no hay
+   * ninguna respuesta (primera pregunta) el backend responde 400 y se sale al inicio.
+   */
   volver(): void {
-    this.router.navigate(['/']);
+    if (this.enviando() || this.volviendo()) {
+      return;
+    }
+    this.error.set(null);
+    this.volviendo.set(true);
+    this.recorridoService.retroceder(this.recorridoId).subscribe({
+      next: r => {
+        this.seleccionActual.set(null);
+        this.opcionesSeleccionadas.set(new Set());
+        this.indiceImagen.set(0);
+        this.respuesta.set(r);
+        setTimeout(() => this.volviendo.set(false), ENFRIAMIENTO_VOLVER_MS);
+      },
+      error: (e: HttpErrorResponse) => {
+        this.volviendo.set(false);
+        if (e.status === 400) {
+          this.router.navigate(['/']);
+        } else {
+          this.error.set('No pudimos volver a la pregunta anterior. Intenta de nuevo.');
+        }
+      }
+    });
   }
 
   etiqueta(valor: string): string {

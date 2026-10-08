@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 
 import { ResultadoComponent } from './resultado';
 import { RecorridoResponse, ResultadoDTO } from '../../../models/recorrido.model';
@@ -103,5 +103,39 @@ describe('Resultado', () => {
 
     expect(el.querySelector('.resultado__lista-recomendaciones')).toBeNull();
     expect(el.querySelector('.resultado__panel--tip')?.textContent).toContain('Consulte a su pediatra');
+  });
+
+  describe('corregirUltimaRespuesta()', () => {
+    it('retrocede en el backend y vuelve a la pantalla de pregunta', () => {
+      const router = TestBed.inject(Router);
+      const httpMock = TestBed.inject(HttpTestingController);
+      const navegar = spyOn(router, 'navigate').and.resolveTo(true);
+
+      component.corregirUltimaRespuesta();
+
+      const req = httpMock.expectOne(r => r.url.endsWith('/retroceder'));
+      expect(req.request.method).toBe('POST');
+      req.flush({
+        recorridoId: 'r1',
+        estado: 'EN_CURSO',
+        pregunta: { id: 'q', texto: '¿Q?', opciones: ['SI', 'NO'], tieneImagenes: false, imagenes: [] },
+        resultado: null
+      });
+
+      expect(navegar).toHaveBeenCalledWith(['/pregunta', 'r1']);
+    });
+
+    it('si el backend falla muestra el error y se queda en el resultado', () => {
+      const router = TestBed.inject(Router);
+      const httpMock = TestBed.inject(HttpTestingController);
+      const navegar = spyOn(router, 'navigate').and.resolveTo(true);
+
+      component.corregirUltimaRespuesta();
+      httpMock.expectOne(r => r.url.endsWith('/retroceder'))
+        .flush(null, { status: 500, statusText: 'Server Error' });
+
+      expect(component.error()).toContain('volver a la pregunta anterior');
+      expect(navegar).not.toHaveBeenCalled();
+    });
   });
 });

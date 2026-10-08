@@ -1,7 +1,8 @@
 @if (respuesta(); as r) {
 <div class="pregunta pantalla">
   <div class="pregunta__header">
-    <button type="button" class="pregunta__volver" (click)="volver()" aria-label="Volver">
+    <button type="button" class="pregunta__volver" (click)="volver()" [disabled]="enviando() || volviendo()"
+      aria-label="Volver a la pregunta anterior">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
         stroke-linecap="round" stroke-linejoin="round">
         <path d="M15 18l-6-6 6-6"></path>

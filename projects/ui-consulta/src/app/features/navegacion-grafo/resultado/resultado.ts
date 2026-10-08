@@ -68,6 +68,15 @@ export class ResultadoComponent implements OnInit {
     this.router.navigate(['/']);
   }
 
+  /** Deshace la última respuesta y vuelve a la pregunta que cerró el recorrido. */
+  corregirUltimaRespuesta(): void {
+    this.error.set(null);
+    this.recorridoService.retroceder(this.recorridoId).subscribe({
+      next: r => this.router.navigate(['/pregunta', r.recorridoId]),
+      error: () => this.error.set('No pudimos volver a la pregunta anterior. Intenta de nuevo.')
+    });
+  }
+
   comenzarOtraConsulta(): void {
     this.error.set(null);
     this.recorridoService.iniciar().subscribe({

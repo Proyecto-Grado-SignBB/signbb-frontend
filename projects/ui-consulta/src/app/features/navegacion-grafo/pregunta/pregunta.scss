@@ -27,6 +27,11 @@
   cursor: pointer;
   color: $color-text-secondary;
   flex-shrink: 0;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
 }
 
 .pregunta__titulo {

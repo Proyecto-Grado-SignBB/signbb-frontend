@@ -20,6 +20,14 @@ export class RecorridoService {
     );
   }
 
+  /** Deshace la última respuesta y devuelve la pregunta a la que se vuelve. */
+  retroceder(recorridoId: string): Observable<RecorridoResponse> {
+    return this.http.post<RecorridoResponse>(
+      `${environment.apiUrl}/recorridos/${recorridoId}/retroceder`,
+      {}
+    );
+  }
+
   consultar(recorridoId: string): Observable<RecorridoResponse> {
     return this.http.get<RecorridoResponse>(`${environment.apiUrl}/recorridos/${recorridoId}`);
   }
