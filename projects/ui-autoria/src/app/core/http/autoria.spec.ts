@@ -1,0 +1,93 @@
+import { TestBed } from '@angular/core/testing';
+import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { environment } from '../../../environments/environment';
+import { AutoriaService, avisosDeError, mensajeDeError } from './autoria';
+
+describe('AutoriaService', () => {
+  const base = `${environment.apiUrl}/autoria`;
+  let servicio: AutoriaService;
+  let http: HttpTestingController;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()]
+    });
+    servicio = TestBed.inject(AutoriaService);
+    http = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => http.verify());
+
+  it('lista y crea subgrafos', () => {
+    servicio.listar().subscribe();
+    expect(http.expectOne(`${base}/subgrafos`).request.method).toBe('GET');
+
+    servicio.crear({ nombre: 'Fiebre', puenteId: 'puente_neuro' }).subscribe();
+    const crear = http.expectOne(`${base}/subgrafos`);
+    expect(crear.request.method).toBe('POST');
+    expect(crear.request.body).toEqual({ nombre: 'Fiebre', puenteId: 'puente_neuro' });
+  });
+
+  it('el "+" manda la respuesta de la que cuelga el nodo nuevo', () => {
+    const request = {
+      despuesDe: { nodoId: 'pregunta_1', respuestaId: 'r_4' },
+      tipo: 'CONCLUSION' as const,
+      texto: 'Lleve al bebé a urgencias ahora.',
+      desenlace: 'URGENCIA' as const
+    };
+    servicio.agregarNodo(7, request).subscribe();
+    const req = http.expectOne(`${base}/subgrafos/7/nodos`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual(request);
+  });
+
+  it('editar y eliminar un nodo van a su ruta', () => {
+    servicio.editarNodo(7, 'pregunta_1', { texto: 'x' }).subscribe();
+    expect(http.expectOne(`${base}/subgrafos/7/nodos/pregunta_1`).request.method).toBe('PUT');
+    servicio.eliminarNodo(7, 'pregunta_1').subscribe();
+    expect(http.expectOne(`${base}/subgrafos/7/nodos/pregunta_1`).request.method).toBe('DELETE');
+  });
+
+  it('enlazar manda el nodo destino, o null para volver al "+"', () => {
+    servicio.enlazar(7, 'r_2', 'pregunta_6').subscribe();
+    const a = http.expectOne(`${base}/subgrafos/7/respuestas/r_2/destino`);
+    expect(a.request.method).toBe('PUT');
+    expect(a.request.body).toEqual({ nodoId: 'pregunta_6' });
+
+    servicio.enlazar(7, 'r_2', null).subscribe();
+    expect(http.expectOne(`${base}/subgrafos/7/respuestas/r_2/destino`).request.body).toEqual({ nodoId: null });
+  });
+
+  it('publicar, avisos y categorías', () => {
+    servicio.publicar(7).subscribe();
+    expect(http.expectOne(`${base}/subgrafos/7/publicar`).request.method).toBe('POST');
+    servicio.avisos(7).subscribe();
+    expect(http.expectOne(`${base}/subgrafos/7/avisos`).request.method).toBe('GET');
+    servicio.categorias().subscribe();
+    expect(http.expectOne(`${base}/categorias`).request.method).toBe('GET');
+  });
+});
+
+describe('errores de autoría', () => {
+  const aviso = {
+    codigo: 'RESPUESTA_SIN_CAMINO' as const,
+    bloqueante: true,
+    mensaje: 'La respuesta "No" todavía no dice qué pasa después.',
+    nodoId: 'pregunta_6',
+    respuestaId: 'r_8'
+  };
+
+  it('usa el mensaje y los avisos del 422', () => {
+    const e = new HttpErrorResponse({ status: 422, error: { mensaje: 'Antes de publicar hay que resolver los avisos.', avisos: [aviso] } });
+    expect(mensajeDeError(e, 'x')).toBe('Antes de publicar hay que resolver los avisos.');
+    expect(avisosDeError(e)).toEqual([aviso]);
+  });
+
+  it('sin cuerpo explica el código HTTP', () => {
+    expect(mensajeDeError(new HttpErrorResponse({ status: 409 }), 'x')).toContain('al mismo tiempo');
+    expect(mensajeDeError(new HttpErrorResponse({ status: 404 }), 'x')).toContain('ya no existe');
+    expect(mensajeDeError(new HttpErrorResponse({ status: 500 }), 'por defecto')).toBe('por defecto');
+    expect(avisosDeError(new HttpErrorResponse({ status: 500 }))).toEqual([]);
+  });
+});

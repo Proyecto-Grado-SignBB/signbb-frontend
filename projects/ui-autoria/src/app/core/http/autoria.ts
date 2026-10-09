@@ -1,24 +1,21 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
-  CrearGrafoRequest,
-  DocumentoAutoria,
-  DocumentoDTO,
-  GrafoResumenDTO,
-  MediaSubidaDTO,
-  PreguntaRequest,
-  PublicacionDTO,
-  ReglaDTO,
-  ReglaRequest,
-  ResultadoEdicionDTO,
-  ValidacionDTO
-} from '../../models/autoria.model';
+  Aviso,
+  Categoria,
+  ErrorAutoriaDTO,
+  NodoRequest,
+  ResumenSubgrafoDTO,
+  SubgrafoDTO,
+  SubgrafoRequest
+} from '../../models/lienzo.model';
 
 /**
- * Cliente HTTP del módulo de autoría. Envuelve 1:1 los endpoints reales de
- * ControladorAutoria (rama feature/modulo-autoria del backend).
+ * Cliente HTTP del módulo de autoría. Envuelve 1:1 los endpoints de
+ * ControladorAutoria (rama `autoria` del backend). Cada operación que edita
+ * el lienzo devuelve el borrador completo, así que la pantalla solo redibuja.
  */
 @Injectable({ providedIn: 'root' })
 export class AutoriaService {
@@ -27,89 +24,89 @@ export class AutoriaService {
 
   constructor(private http: HttpClient) { }
 
-  // --- Pantalla 1: tablero -------------------------------------------------
-
-  listar(): Observable<GrafoResumenDTO[]> {
-    return this.http.get<GrafoResumenDTO[]>(`${this.base}/grafos`);
+  /** Categorías: las preguntas puente del grafo raíz. */
+  categorias(): Observable<Categoria[]> {
+    return this.http.get<Categoria[]>(`${this.base}/categorias`);
   }
 
-  crear(request: CrearGrafoRequest): Observable<GrafoResumenDTO> {
-    return this.http.post<GrafoResumenDTO>(`${this.base}/grafos`, request);
+  // --- Tablero ---------------------------------------------------------------
+
+  listar(): Observable<ResumenSubgrafoDTO[]> {
+    return this.http.get<ResumenSubgrafoDTO[]>(`${this.base}/subgrafos`);
   }
 
-  /**
-   * PUENTE: el backend todavía no expone un endpoint de categorías (no hay
-   * `GET /autoria/categorias` ni nada similar). Mientras tanto, el selector
-   * de categoría de la Pantalla 1 usa esta lista fija para poder funcionar
-   * ya en el front. Cuando el backend tenga el endpoint real, basta con
-   * reemplazar el cuerpo de este método por
-   * `this.http.get<string[]>(\`${this.base}/categorias\`)` — la pantalla no
-   * necesita cambiar nada más.
-   */
-  obtenerCategorias(): Observable<string[]> {
-    return of(['Ictericia', 'Cólico del lactante', 'Fiebre', 'Alimentación', 'Otro']);
+  crear(request: SubgrafoRequest): Observable<SubgrafoDTO> {
+    return this.http.post<SubgrafoDTO>(`${this.base}/subgrafos`, request);
   }
 
-  // --- Pantalla 2: documento del borrador ----------------------------------
-
-  obtener(id: number): Observable<DocumentoDTO> {
-    return this.http.get<DocumentoDTO>(`${this.base}/grafos/${id}`);
+  obtener(id: number): Observable<SubgrafoDTO> {
+    return this.http.get<SubgrafoDTO>(`${this.base}/subgrafos/${id}`);
   }
 
-  validar(id: number): Observable<ValidacionDTO> {
-    return this.http.get<ValidacionDTO>(`${this.base}/grafos/${id}/validacion`);
+  actualizar(id: number, request: SubgrafoRequest): Observable<SubgrafoDTO> {
+    return this.http.put<SubgrafoDTO>(`${this.base}/subgrafos/${id}`, request);
   }
 
-  guardar(id: number, documento: DocumentoAutoria): Observable<GrafoResumenDTO> {
-    return this.http.post<GrafoResumenDTO>(`${this.base}/grafos/${id}/guardar`, { documento });
+  eliminar(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.base}/subgrafos/${id}`);
   }
 
-  publicar(id: number): Observable<PublicacionDTO> {
-    return this.http.post<PublicacionDTO>(`${this.base}/grafos/${id}/publicar`, {});
+  // --- Lienzo ----------------------------------------------------------------
+
+  /** La acción del "+": crea el nodo y lo conecta a la respuesta de `despuesDe`. */
+  agregarNodo(id: number, request: NodoRequest): Observable<SubgrafoDTO> {
+    return this.http.post<SubgrafoDTO>(`${this.base}/subgrafos/${id}/nodos`, request);
   }
 
-  // --- Pantalla 3: preguntas ------------------------------------------------
-
-  crearPregunta(id: number, request: PreguntaRequest): Observable<ResultadoEdicionDTO> {
-    return this.http.post<ResultadoEdicionDTO>(`${this.base}/grafos/${id}/preguntas`, request);
+  editarNodo(id: number, nodoId: string, request: NodoRequest): Observable<SubgrafoDTO> {
+    return this.http.put<SubgrafoDTO>(`${this.base}/subgrafos/${id}/nodos/${nodoId}`, request);
   }
 
-  editarPregunta(id: number, nodoId: string, request: PreguntaRequest): Observable<ResultadoEdicionDTO> {
-    return this.http.put<ResultadoEdicionDTO>(
-      `${this.base}/grafos/${id}/preguntas/${nodoId}`,
-      request
+  eliminarNodo(id: number, nodoId: string): Observable<SubgrafoDTO> {
+    return this.http.delete<SubgrafoDTO>(`${this.base}/subgrafos/${id}/nodos/${nodoId}`);
+  }
+
+  /** "Pregunta existente"; con `nodoId` nulo la respuesta vuelve a ser un "+". */
+  enlazar(id: number, respuestaId: string, nodoId: string | null): Observable<SubgrafoDTO> {
+    return this.http.put<SubgrafoDTO>(
+      `${this.base}/subgrafos/${id}/respuestas/${respuestaId}/destino`,
+      { nodoId }
     );
   }
 
-  eliminarPregunta(id: number, nodoId: string): Observable<ResultadoEdicionDTO> {
-    return this.http.delete<ResultadoEdicionDTO>(`${this.base}/grafos/${id}/preguntas/${nodoId}`);
+  avisos(id: number): Observable<Aviso[]> {
+    return this.http.get<Aviso[]>(`${this.base}/subgrafos/${id}/avisos`);
   }
 
-  /** Sube una imagen (multipart) y devuelve la URL pública para metadata.src. */
-  subirMedia(archivo: File): Observable<MediaSubidaDTO> {
-    const formData = new FormData();
-    formData.append('archivo', archivo);
-    return this.http.post<MediaSubidaDTO>(`${this.base}/media`, formData);
+  publicar(id: number): Observable<SubgrafoDTO> {
+    return this.http.post<SubgrafoDTO>(`${this.base}/subgrafos/${id}/publicar`, {});
   }
+}
 
-  // --- Pantalla 4: reglas ----------------------------------------------------
-
-  listarReglas(id: number): Observable<ReglaDTO[]> {
-    return this.http.get<ReglaDTO[]>(`${this.base}/grafos/${id}/reglas`);
+/**
+ * Mensaje legible de un error de la API: el `mensaje` de los 422 de autoría
+ * o un texto según el código HTTP.
+ */
+export function mensajeDeError(error: unknown, porDefecto: string): string {
+  if (error instanceof HttpErrorResponse) {
+    const cuerpo = error.error as Partial<ErrorAutoriaDTO> | null;
+    if (cuerpo && typeof cuerpo.mensaje === 'string' && cuerpo.mensaje) {
+      return cuerpo.mensaje;
+    }
+    if (error.status === 0) return 'No hay conexión con el servidor. Verifica que el backend esté disponible.';
+    if (error.status === 404) return 'Ese elemento ya no existe. Recarga la página.';
+    if (error.status === 409) return 'Alguien más editó este subgrafo al mismo tiempo. Recarga la página.';
   }
+  return porDefecto;
+}
 
-  crearRegla(id: number, request: ReglaRequest): Observable<ResultadoEdicionDTO> {
-    return this.http.post<ResultadoEdicionDTO>(`${this.base}/grafos/${id}/reglas`, request);
+/** Avisos que trae un 422 de autoría (por ejemplo, al publicar), o lista vacía. */
+export function avisosDeError(error: unknown): Aviso[] {
+  if (error instanceof HttpErrorResponse) {
+    const cuerpo = error.error as Partial<ErrorAutoriaDTO> | null;
+    if (cuerpo && Array.isArray(cuerpo.avisos)) {
+      return cuerpo.avisos;
+    }
   }
-
-  editarRegla(id: number, reglaId: string, request: ReglaRequest): Observable<ResultadoEdicionDTO> {
-    return this.http.put<ResultadoEdicionDTO>(
-      `${this.base}/grafos/${id}/reglas/${reglaId}`,
-      request
-    );
-  }
-
-  eliminarRegla(id: number, reglaId: string): Observable<ResultadoEdicionDTO> {
-    return this.http.delete<ResultadoEdicionDTO>(`${this.base}/grafos/${id}/reglas/${reglaId}`);
-  }
+  return [];
 }
