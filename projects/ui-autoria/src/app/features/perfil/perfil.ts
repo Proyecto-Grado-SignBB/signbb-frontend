@@ -10,9 +10,9 @@ import { AutoriaService } from '../../core/http/autoria';
  * nombre es un valor fijo, no viene de una sesión). Esta pantalla deja lista
  * la vista a la que llegaría ese trabajo cuando se construya — por eso los
  * datos de identidad son de solo lectura y estáticos, igual que en el resto
- * de la interfaz. Los conteos de grafos sí son reales (vienen de GET
- * /grafos), pero como GrafoResumenDTO no expone todavía a quién pertenece
- * cada grafo, son el total del sistema, no un filtro "solo los míos" — sería
+ * de la interfaz. Los conteos de subgrafos sí son reales (vienen de GET
+ * /autoria/subgrafos), pero son el total del sistema, no un filtro "solo los
+ * míos": el autor es un texto libre, no un usuario autenticado, y sería
  * deshonesto mostrarlo como si ya distinguiera autores.
  */
 @Component({
@@ -44,19 +44,19 @@ export class PerfilComponent implements OnInit {
     this.cargando.set(true);
     this.error.set(null);
     this.autoria.listar().subscribe({
-      next: grafos => {
-        const publicados = grafos.filter(g => g.estado === 'Publicado');
+      next: subgrafos => {
+        const publicados = subgrafos.filter(g => g.publicadoEn !== null);
         this.conteoPublicados.set(publicados.length);
-        this.conteoBorrador.set(grafos.filter(g => g.estado === 'Borrador').length);
+        this.conteoBorrador.set(subgrafos.filter(g => g.estado !== 'PUBLICADO').length);
         const masReciente = publicados
-          .map(g => g.actualizadoEn)
+          .map(g => g.publicadoEn!)
           .sort()
           .at(-1);
         this.ultimaPublicacion.set(masReciente ? this.tiempoRelativo(masReciente) : null);
         this.cargando.set(false);
       },
       error: () => {
-        this.error.set('No se pudieron cargar los grafos.');
+        this.error.set('No se pudieron cargar los subgrafos.');
         this.cargando.set(false);
       }
     });

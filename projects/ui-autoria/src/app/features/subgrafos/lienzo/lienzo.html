@@ -1,0 +1,129 @@
+<div class="pantalla-autoria">
+  <app-sidebar-autoria seccionActiva="subgrafos" />
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="crumb"><a routerLink="/subgrafos">Subgrafos</a>@if (subgrafo(); as s) { / opción «{{ s.etiquetaOpcion }}»}</div>
+        <h3>
+          {{ subgrafo()?.nombre ?? 'Subgrafo' }}
+          @if (subgrafo(); as s) {
+            <app-etiqueta [tono]="tonoEstado(s)">{{ etiquetaEstado[s.estado] }}</app-etiqueta>
+          }
+        </h3>
+      </div>
+      <div class="topbar-right">
+        @if (mensaje()) {
+          <span class="mensaje-ok" role="status">{{ mensaje() }}</span>
+        }
+        @if (subgrafo(); as s) {
+          <app-boton tono="marca" alto="compacto" ancho="auto" [disabled]="s.estado === 'PUBLICADO'" (click)="abrirPublicar()">
+            {{ s.estado === 'PUBLICADO' ? 'Publicado' : 'Publicar' }}
+          </app-boton>
+        }
+      </div>
+    </div>
+
+    <div class="cuerpo">
+      <div class="zona">
+        @if (error()) {
+          <div class="zona-mensaje"><app-mensaje-error [texto]="error()!" (reintentar)="cargar()" /></div>
+        } @else if (cargando()) {
+          <p class="estado-carga">Cargando el lienzo…</p>
+        } @else if (subgrafo(); as s) {
+          <div class="zona-avisos">
+            <app-avisos [avisos]="s.avisos" (seleccionar)="irAAviso($event)" />
+          </div>
+
+          <div class="scroll">
+            @if (vacio()) {
+              <button type="button" class="primera" data-ref="primera" (click)="abrirPrimera()">
+                <span class="mas-icono">+</span> Primera pregunta
+              </button>
+            }
+
+            @if (distribucion(); as d) {
+              <div class="lienzo" [style.width.px]="d.ancho" [style.height.px]="d.alto">
+                <svg class="lineas" [attr.width]="d.ancho" [attr.height]="d.alto" aria-hidden="true">
+                  @for (r of d.ramas; track r.respuesta.id) {
+                    <path [attr.d]="r.d" class="linea linea--{{ r.tipo }}" />
+                  }
+                </svg>
+
+                @for (r of d.ramas; track r.respuesta.id) {
+                  <div class="etiqueta-rama" [style.left.px]="r.etiquetaX" [style.top.px]="r.etiquetaY"
+                    [title]="r.respuesta.texto">
+                    <i class="punto punto--{{ r.respuesta.gravedad }}"></i>
+                    <span>{{ r.respuesta.texto || '(sin texto)' }}</span>
+                  </div>
+
+                  @if (r.tipo === 'mas') {
+                    <button type="button" class="mas" [attr.data-ref]="r.respuesta.id"
+                      [class.resaltado]="resaltado() === r.respuesta.id"
+                      [style.left.px]="r.x" [style.top.px]="r.y"
+                      [style.width.px]="medidas.anchoMas" [style.height.px]="medidas.anchoMas"
+                      [title]="'¿Qué pasa después de «' + r.respuesta.texto + '»?'"
+                      (click)="abrirRama(r)">+</button>
+                  } @else if (r.tipo === 'enlace') {
+                    <button type="button" class="enlace" [attr.data-ref]="r.respuesta.id"
+                      [class.resaltado]="resaltado() === r.respuesta.id"
+                      [style.left.px]="r.x" [style.top.px]="r.y"
+                      [style.width.px]="medidas.anchoEnlace" [style.height.px]="medidas.altoEnlace"
+                      (click)="abrirRama(r)">↪ va a: {{ r.destinoTexto || '(pregunta sin texto)' }}</button>
+                  }
+                }
+
+                @for (c of d.nodos; track c.nodo.id) {
+                  <button type="button" class="nodo nodo--{{ c.nodo.tipo }} desenlace--{{ c.nodo.desenlace }}"
+                    [attr.data-ref]="c.nodo.id"
+                    [class.suelto]="c.suelto"
+                    [class.resaltado]="resaltado() === c.nodo.id"
+                    [style.left.px]="c.x" [style.top.px]="c.y"
+                    [style.width.px]="medidas.anchoNodo" [style.height.px]="medidas.altoNodo"
+                    (click)="abrirNodo(c.nodo)">
+                    <span class="nodo-tipo">
+                      @if (c.nodo.tipo === 'PREGUNTA') {
+                        {{ esInicio(c.nodo) ? 'Primera pregunta' : 'Pregunta' }}{{ c.nodo.variasRespuestas ? ' · varias' : '' }}
+                      } @else {
+                        {{ c.nodo.desenlace ? etiquetaDesenlace[c.nodo.desenlace] : 'Conclusión' }}
+                      }
+                      @if (c.suelto) { · suelta }
+                    </span>
+                    <span class="nodo-texto">{{ c.nodo.texto || (c.nodo.tipo === 'PREGUNTA' ? 'Pregunta sin texto' : 'Conclusión sin mensaje') }}</span>
+                  </button>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      @if (contexto(); as c) {
+        <app-panel-nodo
+          [contexto]="c"
+          [preguntas]="preguntas()"
+          [ocupado]="ocupado()"
+          [error]="errorPanel()"
+          (crear)="crear($event)"
+          (guardar)="guardar($event)"
+          (eliminar)="eliminar($event)"
+          (enlazar)="enlazar($event)"
+          (cerrar)="cerrarPanel()" />
+      }
+    </div>
+  </div>
+</div>
+
+@if (mostrarPublicar() && subgrafo(); as s) {
+  <app-modal-publicar
+    [nombre]="s.nombre"
+    [etiquetaOpcion]="s.etiquetaOpcion"
+    [preguntaPuente]="preguntaPuente()"
+    [conteoNodos]="s.nodos.length"
+    [avisos]="avisosPublicar()"
+    [publicando]="publicando()"
+    [error]="errorPublicar()"
+    [republicar]="s.publicadoEn !== null"
+    (confirmar)="publicar()"
+    (cancelar)="mostrarPublicar.set(false)" />
+}

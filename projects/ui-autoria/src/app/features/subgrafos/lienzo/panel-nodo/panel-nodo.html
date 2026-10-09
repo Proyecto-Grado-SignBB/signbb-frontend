@@ -1,0 +1,107 @@
+<aside class="panel">
+  <div class="panel-head">
+    <h4>{{ titulo }}</h4>
+    <button type="button" class="btn-cerrar" (click)="cerrar.emit()" title="Cerrar">✕</button>
+  </div>
+
+  <div class="panel-body">
+    @if (despuesDe; as d) {
+      <div class="contexto">
+        <span>Después de:</span>
+        <b>{{ d.pregunta || 'una pregunta sin texto' }}</b>
+        <span class="contexto-respuesta">
+          <i class="punto punto--{{ d.gravedad }}"></i> {{ d.respuesta || '(sin texto)' }}
+        </span>
+      </div>
+    }
+
+    @if (modos.length > 0) {
+      <div class="segmentado" role="tablist">
+        @for (m of modos; track m) {
+          <button type="button" role="tab" [class.activo]="modo === m" [attr.aria-selected]="modo === m" (click)="modo = m">
+            {{ etiquetaModo(m) }}
+          </button>
+        }
+      </div>
+    }
+
+    @if (bloqueadoPorEnlace) {
+      <p class="nota">Esta respuesta ya va a una pregunta existente. Quita el enlace para poner aquí una pregunta o conclusión nueva.</p>
+    } @else if (modo === 'PREGUNTA') {
+      <label class="campo">
+        <span>Pregunta para la cuidadora</span>
+        <textarea rows="2" [(ngModel)]="texto" placeholder="Ej: ¿Cuánto marca el termómetro?"></textarea>
+      </label>
+
+      <label class="check">
+        <input type="checkbox" [(ngModel)]="variasRespuestas" />
+        ¿Puede marcar varias respuestas?
+      </label>
+
+      <div class="respuestas">
+        <span class="respuestas-titulo">Respuestas y qué tan grave es cada una</span>
+        @for (fila of respuestas; track $index; let i = $index) {
+          <div class="respuesta">
+            <input type="text" [(ngModel)]="fila.texto" placeholder="Respuesta {{ i + 1 }}" [attr.aria-label]="'Respuesta ' + (i + 1)" />
+            <div class="semaforo" role="radiogroup" [attr.aria-label]="'Gravedad de la respuesta ' + (i + 1)">
+              @for (g of gravedades; track g) {
+                <button
+                  type="button"
+                  role="radio"
+                  class="luz luz--{{ g }}"
+                  [class.activa]="fila.gravedad === g"
+                  [attr.aria-checked]="fila.gravedad === g"
+                  [title]="etiquetaGravedad[g]"
+                  (click)="elegirGravedad(fila, g)"></button>
+              }
+            </div>
+            <button type="button" class="btn-quitar" (click)="quitarRespuesta(i)"
+              [title]="fila.tieneCamino ? 'Quitar (lo que sigue quedará suelto)' : 'Quitar'">✕</button>
+          </div>
+        }
+        <button type="button" class="btn-agregar" (click)="agregarRespuesta()">+ Agregar respuesta</button>
+      </div>
+    } @else if (modo === 'CONCLUSION') {
+      <div class="desenlaces">
+        @for (d of desenlaces; track d) {
+          <button type="button" class="desenlace desenlace--{{ d }}" [class.activo]="desenlace === d" (click)="desenlace = d">
+            {{ etiquetaDesenlace[d] }}
+          </button>
+        }
+      </div>
+      <label class="campo">
+        <span>Mensaje para la cuidadora</span>
+        <textarea rows="3" [(ngModel)]="texto" placeholder="Ej: Lleve al bebé a urgencias ahora."></textarea>
+      </label>
+    } @else {
+      @if (preguntasDestino.length === 0) {
+        <p class="nota">Todavía no hay otra pregunta en el lienzo a la que esta respuesta pueda ir.</p>
+      } @else {
+        <label class="campo">
+          <span>¿A qué pregunta va?</span>
+          <select [(ngModel)]="destinoExistente">
+            <option [ngValue]="null" disabled>Elige una pregunta…</option>
+            @for (p of preguntasDestino; track p.id) {
+              <option [ngValue]="p.id">{{ p.texto || '(pregunta sin texto)' }}</option>
+            }
+          </select>
+        </label>
+      }
+    }
+
+    @if (error) {
+      <p class="error" role="alert">{{ error }}</p>
+    }
+  </div>
+
+  <div class="panel-foot">
+    @if (esEdicion) {
+      <app-boton tono="alerta" variante="texto" alto="compacto" ancho="auto" [disabled]="ocupado" (click)="eliminarNodo()">Eliminar</app-boton>
+    }
+    @if (contexto.tipo === 'enlace') {
+      <app-boton tono="neutro" variante="contorno" alto="compacto" ancho="auto" [disabled]="ocupado" (click)="quitarEnlace()">Quitar enlace</app-boton>
+    }
+    <span class="espacio"></span>
+    <app-boton tono="marca" alto="compacto" ancho="auto" [disabled]="!puedeEnviar" (click)="enviar()">{{ textoBoton }}</app-boton>
+  </div>
+</aside>

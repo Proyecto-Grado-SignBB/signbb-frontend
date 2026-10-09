@@ -1,0 +1,259 @@
+@use 'tokens-admin' as *;
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+.panel {
+  width: 360px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: $color-surface;
+  border-left: 1px solid $color-line;
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid $color-line;
+
+  h4 {
+    font-family: $font-heading;
+    font-size: 15px;
+    font-weight: 800;
+    color: $color-ink;
+  }
+}
+
+.btn-cerrar {
+  border: none;
+  background: none;
+  font-size: 15px;
+  color: $color-ink-faint;
+  cursor: pointer;
+}
+
+.panel-body {
+  flex: 1;
+  overflow: auto;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.panel-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 20px;
+  border-top: 1px solid $color-line;
+
+  .espacio {
+    flex: 1;
+  }
+}
+
+.contexto {
+  background: $color-surface-2;
+  border: 1px solid $color-line-soft;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  color: $color-ink-soft;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+
+  b {
+    color: $color-ink;
+  }
+}
+
+.contexto-respuesta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.segmentado {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  background: $color-surface-2;
+  border: 1px solid $color-line;
+  border-radius: 12px;
+  padding: 3px;
+
+  button {
+    font-family: $font-body;
+    font-size: 12px;
+    font-weight: 700;
+    border: none;
+    background: none;
+    color: $color-ink-soft;
+    padding: 7px 4px;
+    border-radius: 9px;
+    cursor: pointer;
+
+    &.activo {
+      background: $color-surface;
+      color: $color-brand-dark;
+      box-shadow: 0 1px 2px oklch(20% 0.02 300 / 0.12);
+    }
+  }
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: $color-ink-soft;
+}
+
+textarea,
+input[type='text'],
+select {
+  font-family: $font-body;
+  font-size: 13.5px;
+  padding: 9px 12px;
+  border: 1px solid $color-line;
+  border-radius: 10px;
+  color: $color-ink;
+  background: $color-surface;
+
+  &:focus-visible {
+    outline: 2px solid $color-brand;
+    outline-offset: 1px;
+  }
+}
+
+textarea {
+  resize: vertical;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: $color-ink-soft;
+}
+
+.respuestas {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.respuestas-titulo {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: $color-ink-soft;
+}
+
+.respuesta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  input {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.semaforo {
+  display: flex;
+  gap: 4px;
+}
+
+.luz {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  opacity: 0.35;
+
+  &.activa {
+    opacity: 1;
+    border-color: $color-ink;
+  }
+}
+
+.luz--LEVE, .punto--LEVE { background: $color-calm; }
+.luz--MODERADA, .punto--MODERADA { background: $color-aviso; }
+.luz--GRAVE, .punto--GRAVE { background: $color-alert; }
+
+.punto {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.btn-quitar {
+  border: none;
+  background: none;
+  color: $color-ink-faint;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.btn-agregar {
+  align-self: flex-start;
+  border: 1.5px dashed $color-line;
+  background: none;
+  border-radius: 10px;
+  padding: 7px 12px;
+  font-family: $font-body;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: $color-brand-dark;
+  cursor: pointer;
+}
+
+.desenlaces {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.desenlace {
+  font-family: $font-body;
+  text-align: left;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1.5px solid $color-line;
+  background: $color-surface-2;
+  font-weight: 700;
+  font-size: 13px;
+  color: $color-ink-soft;
+  cursor: pointer;
+
+  &.activo.desenlace--RECOMENDACION { border-color: $color-calm; background: $color-calm-tint; color: $color-calm-dark; }
+  &.activo.desenlace--CONSULTA_MEDICA { border-color: $color-aviso; background: $color-aviso-tint; color: $color-aviso-dark; }
+  &.activo.desenlace--URGENCIA { border-color: $color-alert; background: $color-alert-tint; color: $color-alert-dark; }
+}
+
+.nota {
+  font-size: 12.5px;
+  color: $color-ink-faint;
+  margin: 0;
+}
+
+.error {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: $color-alert-tint;
+  color: $color-alert-dark;
+  font-size: 12.5px;
+  font-weight: 600;
+}

@@ -1,10 +1,11 @@
 import { Component, Input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-export type SeccionAutoria = 'grafos' | 'reglas' | 'perfil';
+export type SeccionAutoria = 'subgrafos' | 'perfil';
 
 /**
- * Navegación lateral del panel de autoría, compartida por las 5 pantallas.
+ * Navegación lateral del panel de autoría (tablero, lienzo y perfil). Las
+ * reglas de alarma aparecen deshabilitadas: llegan en la próxima entrega.
  * El nombre/institución del médico son un placeholder de entrada: aún no
  * existe autenticación de médicos (pendiente, ver plan de fases).
  */
@@ -18,10 +19,8 @@ export type SeccionAutoria = 'grafos' | 'reglas' | 'perfil';
 export class SidebarAutoriaComponent {
   @Input() nombreMedico = 'Dra. Catalina Rodríguez';
   @Input() institucion = 'Fundación Canguro';
-  /** Grafo actualmente abierto: null en el tablero, donde no hay uno en contexto. */
-  @Input() grafoId: number | null = null;
   /** Qué ítem del menú se resalta como activo. */
-  @Input() seccionActiva: SeccionAutoria = 'grafos';
+  @Input() seccionActiva: SeccionAutoria = 'subgrafos';
 
   protected get iniciales(): string {
     const limpio = this.nombreMedico.replace(/^Dra?\.\s*/i, '');
