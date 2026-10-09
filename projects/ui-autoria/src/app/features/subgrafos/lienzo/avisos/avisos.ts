@@ -1,0 +1,26 @@
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Aviso } from '../../../../models/lienzo.model';
+
+/**
+ * Lista de avisos del lienzo, tal como los calcula el backend. Los
+ * bloqueantes van primero; al tocar uno, el lienzo resalta el nodo o el "+"
+ * al que se refiere.
+ */
+@Component({
+  selector: 'app-avisos',
+  standalone: true,
+  templateUrl: './avisos.html',
+  styleUrl: './avisos.scss'
+})
+export class AvisosComponent {
+  @Input() avisos: Aviso[] = [];
+  @Output() seleccionar = new EventEmitter<Aviso>();
+
+  protected get ordenados(): Aviso[] {
+    return [...this.avisos].sort((a, b) => Number(b.bloqueante) - Number(a.bloqueante));
+  }
+
+  protected get bloqueantes(): number {
+    return this.avisos.filter(a => a.bloqueante).length;
+  }
+}

@@ -1,0 +1,24 @@
+<section class="avisos" [class.avisos--ok]="avisos.length === 0">
+  @if (avisos.length === 0) {
+    <p class="resumen">✓ Todo listo: no hay avisos.</p>
+  } @else {
+    <p class="resumen">
+      @if (bloqueantes > 0) {
+        <b>{{ bloqueantes }} por resolver antes de publicar</b>
+      } @else {
+        <b>Se puede publicar</b>
+      }
+    </p>
+    <ul>
+      @for (aviso of ordenados; track $index) {
+        <li>
+          <button type="button" class="aviso" [class.aviso--bloqueante]="aviso.bloqueante"
+            [disabled]="!aviso.nodoId" (click)="seleccionar.emit(aviso)">
+            <i aria-hidden="true">{{ aviso.bloqueante ? '!' : 'i' }}</i>
+            <span>{{ aviso.mensaje }}</span>
+          </button>
+        </li>
+      }
+    </ul>
+  }
+</section>

@@ -1,0 +1,79 @@
+@use 'tokens-admin' as *;
+
+.avisos {
+  background: $color-surface;
+  border: 1px solid $color-line;
+  border-radius: $radius-md;
+  padding: 12px 14px;
+  max-height: 220px;
+  overflow: auto;
+
+  &.avisos--ok {
+    border-color: $color-calm;
+    background: $color-calm-tint;
+  }
+
+  ul {
+    list-style: none;
+    margin: 8px 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
+.resumen {
+  margin: 0;
+  font-size: 13px;
+  color: $color-ink-soft;
+}
+
+.avisos--ok .resumen {
+  color: $color-calm-dark;
+  font-weight: 700;
+}
+
+.aviso {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  text-align: left;
+  font-family: $font-body;
+  font-size: 12.5px;
+  color: $color-ink-soft;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 8px;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: $color-surface-2;
+  }
+
+  &:disabled {
+    cursor: default;
+  }
+
+  i {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-style: normal;
+    font-weight: 800;
+    font-size: 11px;
+    background: $color-neutral-bg;
+    color: $color-ink-soft;
+  }
+
+  &.aviso--bloqueante i {
+    background: $color-aviso-tint;
+    color: $color-aviso-dark;
+  }
+}

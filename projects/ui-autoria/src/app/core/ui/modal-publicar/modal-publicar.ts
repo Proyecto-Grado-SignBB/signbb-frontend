@@ -1,15 +1,12 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { BotonComponent } from 'ui-compartida';
-import { ValidacionDTO } from '../../../models/autoria.model';
+import { Aviso } from '../../../models/lienzo.model';
 
 /**
- * Pantalla 5 (mockup): confirmación antes de publicar. El mockup original
- * muestra una lista de "qué cambió" (diff nuevo/editado/eliminado), pero esa
- * información no existe en el backend — GrafoAutoriaEntity solo guarda el
- * borrador y el publicado como dos strings JSON completos, sin historial de
- * cambios. En su lugar, esta pantalla muestra lo que sí es real: los conteos
- * actuales y las mismas advertencias estructurales de la Pantalla 2
- * (huérfanos, callejones sin salida, ciclos), recién recalculadas.
+ * Confirmación antes de publicar un subgrafo. Muestra dónde aparecerá para
+ * la cuidadora (la opción nueva en la pregunta puente), cuántos nodos tiene y
+ * los avisos actuales. Si el backend responde 422 al publicar, el lienzo pasa
+ * aquí los avisos que vinieron en la respuesta.
  */
 @Component({
   selector: 'app-modal-publicar',
@@ -19,13 +16,26 @@ import { ValidacionDTO } from '../../../models/autoria.model';
   styleUrl: './modal-publicar.scss'
 })
 export class ModalPublicarComponent {
-  @Input() nombreGrafo = '';
-  @Input() conteoPreguntas = 0;
-  @Input() conteoReglas = 0;
-  @Input() validacion: ValidacionDTO | null = null;
-  @Input() validando = false;
+  @Input() nombre = '';
+  /** Texto de la opción que verá la cuidadora. */
+  @Input() etiquetaOpcion = '';
+  /** Pregunta puente donde aparece la opción. */
+  @Input() preguntaPuente = '';
+  @Input() conteoNodos = 0;
+  @Input() avisos: Aviso[] = [];
   @Input() publicando = false;
+  @Input() error: string | null = null;
+  /** true si ya estaba publicado: se reemplaza la versión vigente. */
+  @Input() republicar = false;
 
   @Output() confirmar = new EventEmitter<void>();
   @Output() cancelar = new EventEmitter<void>();
+
+  protected get bloqueantes(): Aviso[] {
+    return this.avisos.filter(a => a.bloqueante);
+  }
+
+  protected get sueltos(): number {
+    return this.avisos.filter(a => a.codigo === 'NODO_SUELTO').length;
+  }
 }
