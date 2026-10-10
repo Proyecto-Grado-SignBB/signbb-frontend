@@ -96,9 +96,11 @@ export interface ErrorAutoriaDTO {
 }
 
 export interface SubgrafoRequest {
+  /** Nombre técnico: solo lo ven los médicos. */
   nombre: string;
   puenteId: string;
-  etiquetaOpcion?: string;
+  /** Nombre para la familia (obligatorio): la opción que verá la cuidadora. */
+  etiquetaOpcion: string;
   autor?: string;
   institucion?: string;
 }
@@ -138,3 +140,18 @@ export const ETIQUETA_ESTADO: Record<EstadoBorrador, string> = {
   PUBLICADO: 'Publicado',
   CAMBIOS_SIN_PUBLICAR: 'Cambios sin publicar'
 };
+
+/** Nombre legible de una categoría ("neurologico" → "Neurológico"). */
+export function nombreCategoria(categoria: string): string {
+  const conTilde: Record<string, string> = {
+    respiracion: 'Respiración',
+    neurologico: 'Neurológico',
+    gastrointestinal: 'Gastrointestinal'
+  };
+  return conTilde[categoria] ?? categoria.charAt(0).toUpperCase() + categoria.slice(1);
+}
+
+/** Explicación para el médico del campo «Nombre para la familia». */
+export const AYUDA_NOMBRE_FAMILIA =
+  'Así verán este signo los papás, mamás y cuidadores cuando lo elijan. Escríbelo sin términos médicos, '
+  + 'como lo describiría una familia: por ejemplo «Piel u ojos amarillos» en lugar de «Ictericia».';

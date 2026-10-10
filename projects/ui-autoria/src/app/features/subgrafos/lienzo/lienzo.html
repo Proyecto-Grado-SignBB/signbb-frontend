@@ -4,7 +4,7 @@
   <div class="main">
     <div class="topbar">
       <div class="topbar-left">
-        <div class="crumb"><a routerLink="/subgrafos">Subgrafos</a>@if (subgrafo(); as s) { / opción «{{ s.etiquetaOpcion }}»}</div>
+        <div class="crumb"><a routerLink="/subgrafos">Subgrafos</a>@if (subgrafo(); as s) { / la familia lo ve como «{{ s.etiquetaOpcion }}»}</div>
         <h3>
           {{ subgrafo()?.nombre ?? 'Subgrafo' }}
           @if (subgrafo(); as s) {
@@ -17,6 +17,7 @@
           <span class="mensaje-ok" role="status">{{ mensaje() }}</span>
         }
         @if (subgrafo(); as s) {
+          <app-boton tono="neutro" variante="contorno" alto="compacto" ancho="auto" (click)="abrirDatos()">Editar datos</app-boton>
           <app-boton tono="marca" alto="compacto" ancho="auto" [disabled]="s.estado === 'PUBLICADO'" (click)="abrirPublicar()">
             {{ s.estado === 'PUBLICADO' ? 'Publicado' : 'Publicar' }}
           </app-boton>
@@ -126,4 +127,25 @@
     [republicar]="s.publicadoEn !== null"
     (confirmar)="publicar()"
     (cancelar)="mostrarPublicar.set(false)" />
+}
+
+@if (porEliminar(); as n) {
+  <app-dialogo-confirmar
+    [titulo]="n.tipo === 'CONCLUSION' ? 'Eliminar conclusión' : 'Eliminar pregunta'"
+    [mensaje]="mensajeEliminar(n)"
+    [ocupado]="eliminando()"
+    [error]="errorEliminar()"
+    (confirmar)="confirmarEliminar()"
+    (cancelar)="cancelarEliminar()" />
+}
+
+@if (mostrarDatos() && subgrafo(); as s) {
+  <app-modal-datos
+    [datos]="{ nombre: s.nombre, etiquetaOpcion: s.etiquetaOpcion }"
+    [categoria]="nombreCategoria(s.categoria)"
+    [publicado]="s.publicadoEn !== null"
+    [guardando]="guardandoDatos()"
+    [error]="errorDatos()"
+    (guardar)="guardarDatos($event)"
+    (cancelar)="mostrarDatos.set(false)" />
 }

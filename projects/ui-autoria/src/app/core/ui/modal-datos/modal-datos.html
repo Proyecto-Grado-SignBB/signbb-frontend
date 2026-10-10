@@ -1,0 +1,44 @@
+<div class="backdrop" (click)="cerrar()">
+  <div class="panel" role="dialog" aria-modal="true" aria-label="Datos del subgrafo" (click)="$event.stopPropagation()">
+    <div class="panel-head">
+      <h3>Datos del subgrafo</h3>
+      <button type="button" class="btn-cerrar" title="Cerrar" [disabled]="guardando" (click)="cerrar()">✕</button>
+    </div>
+
+    <form class="panel-body" (ngSubmit)="enviar()">
+      <label class="campo">
+        <span>Nombre del subgrafo</span>
+        <input type="text" name="nombre" [(ngModel)]="nombre" />
+        <small>Nombre técnico; solo lo ven los médicos.</small>
+      </label>
+
+      <label class="campo">
+        <span>Nombre para la familia</span>
+        <input type="text" name="etiquetaOpcion" [(ngModel)]="etiquetaOpcion" (blur)="tocadoEtiqueta = true"
+          placeholder="Ej: Piel u ojos amarillos" [class.invalido]="tocadoEtiqueta && !etiquetaOpcion.trim()" />
+        <small>{{ ayudaNombreFamilia }}</small>
+        @if (tocadoEtiqueta && !etiquetaOpcion.trim()) {
+          <small class="falta">Escribe cómo lo verán las familias.</small>
+        }
+      </label>
+
+      @if (categoria) {
+        <p class="texto-modal">Categoría: <b>{{ categoria }}</b></p>
+      }
+      @if (publicado) {
+        <p class="texto-modal">Ya está publicado: las familias verán el cambio cuando vuelvas a publicar.</p>
+      }
+      @if (error) {
+        <div class="error-modal" role="alert">{{ error }}</div>
+      }
+      <button type="submit" hidden></button>
+    </form>
+
+    <div class="panel-foot">
+      <app-boton tono="neutro" variante="texto" alto="compacto" ancho="auto" [disabled]="guardando" (click)="cerrar()">Cancelar</app-boton>
+      <app-boton tono="marca" alto="compacto" ancho="auto" [disabled]="guardando || !valido" (click)="enviar()">
+        {{ guardando ? 'Guardando…' : 'Guardar' }}
+      </app-boton>
+    </div>
+  </div>
+</div>

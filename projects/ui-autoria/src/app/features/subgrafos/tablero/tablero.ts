@@ -3,23 +3,40 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { BotonComponent, EtiquetaComponent, MensajeErrorComponent } from 'ui-compartida';
 import { SidebarAutoriaComponent } from '../../../core/layout/sidebar-autoria/sidebar-autoria';
+import { DialogoConfirmarComponent } from '../../../core/ui/dialogo-confirmar/dialogo-confirmar';
 import { AutoriaService, mensajeDeError } from '../../../core/http/autoria';
-import { Categoria, ETIQUETA_ESTADO, EstadoBorrador, ResumenSubgrafoDTO } from '../../../models/lienzo.model';
+import {
+  AYUDA_NOMBRE_FAMILIA,
+  Categoria,
+  ETIQUETA_ESTADO,
+  EstadoBorrador,
+  ResumenSubgrafoDTO,
+  nombreCategoria
+} from '../../../models/lienzo.model';
 
 /**
  * Tablero de subgrafos del médico: los lista con su estado y crea uno nuevo
- * con su nombre, la categoría (la pregunta puente del grafo raíz donde se
- * ofrecerá) y el texto de la opción que verá la cuidadora.
+ * con su nombre técnico, la categoría (la pregunta puente del grafo raíz
+ * donde se ofrecerá) y el nombre para la familia, que es la opción que verá
+ * la cuidadora. Eliminar un borrador se confirma en un diálogo propio.
  */
 @Component({
   selector: 'app-tablero',
   standalone: true,
-  imports: [FormsModule, SidebarAutoriaComponent, BotonComponent, EtiquetaComponent, MensajeErrorComponent],
+  imports: [
+    FormsModule,
+    SidebarAutoriaComponent,
+    DialogoConfirmarComponent,
+    BotonComponent,
+    EtiquetaComponent,
+    MensajeErrorComponent
+  ],
   templateUrl: './tablero.html',
   styleUrl: './tablero.scss'
 })
 export class TableroComponent implements OnInit {
   protected readonly etiquetaEstado = ETIQUETA_ESTADO;
+  protected readonly ayudaNombreFamilia = AYUDA_NOMBRE_FAMILIA;
 
   protected readonly subgrafos = signal<ResumenSubgrafoDTO[]>([]);
   protected readonly cargando = signal(true);
@@ -30,9 +47,18 @@ export class TableroComponent implements OnInit {
   protected readonly errorCrear = signal<string | null>(null);
   protected nombreNuevo = '';
   protected etiquetaNueva = '';
+  protected tocadoEtiqueta = false;
 
   protected readonly categorias = signal<Categoria[]>([]);
+  protected readonly errorCategorias = signal<string | null>(null);
   protected readonly puenteSeleccionado = signal<string | null>(null);
+
+  /** Borrador que el médico pidió eliminar (diálogo abierto), o null. */
+  protected readonly porEliminar = signal<ResumenSubgrafoDTO | null>(null);
+  protected readonly eliminando = signal(false);
+  protected readonly errorEliminar = signal<string | null>(null);
+  /** Confirmación breve de la última acción ("Se eliminó…"). */
+  protected readonly mensaje = signal<string | null>(null);
 
   /** Placeholder hasta que exista autenticación de médicos (ver sidebar-autoria). */
   protected readonly autor = 'Dra. Catalina Rodríguez';
@@ -52,9 +78,15 @@ export class TableroComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarSubgrafos();
+    this.cargarCategorias();
+  }
+
+  protected cargarCategorias(): void {
+    this.errorCategorias.set(null);
     this.autoria.categorias().subscribe({
       next: categorias => this.categorias.set(categorias),
-      error: () => { /* el selector de categoría queda vacío y no se puede crear */ }
+      error: e => this.errorCategorias.set(
+        mensajeDeError(e, 'No se pudieron cargar las categorías. Intenta de nuevo.'))
     });
   }
 
@@ -81,6 +113,7 @@ export class TableroComponent implements OnInit {
     this.mostrarFormularioCrear.set(false);
     this.nombreNuevo = '';
     this.etiquetaNueva = '';
+    this.tocadoEtiqueta = false;
     this.puenteSeleccionado.set(null);
     this.errorCrear.set(null);
   }
@@ -90,11 +123,13 @@ export class TableroComponent implements OnInit {
   }
 
   protected get puedeCrear(): boolean {
-    return this.nombreNuevo.trim().length > 0 && this.puenteSeleccionado() !== null;
+    return this.nombreNuevo.trim().length > 0 && this.etiquetaNueva.trim().length > 0
+      && this.puenteSeleccionado() !== null;
   }
 
   protected confirmarCrear(): void {
     const puenteId = this.puenteSeleccionado();
+    this.tocadoEtiqueta = true;
     if (!this.puedeCrear || this.creando() || puenteId === null) {
       return;
     }
@@ -122,30 +157,50 @@ export class TableroComponent implements OnInit {
     this.router.navigate(['/subgrafos', id]);
   }
 
-  /** Solo se pueden borrar los que nunca se publicaron. */
+  /** Solo se pueden borrar los que nunca se publicaron: abre la confirmación. */
   protected eliminar(subgrafo: ResumenSubgrafoDTO): void {
-    if (!confirm(`¿Eliminar el borrador «${subgrafo.nombre}»? No se puede deshacer.`)) {
+    this.errorEliminar.set(null);
+    this.porEliminar.set(subgrafo);
+  }
+
+  protected cancelarEliminar(): void {
+    this.porEliminar.set(null);
+    this.errorEliminar.set(null);
+  }
+
+  protected confirmarEliminar(): void {
+    const subgrafo = this.porEliminar();
+    if (!subgrafo || this.eliminando()) {
       return;
     }
+    this.eliminando.set(true);
+    this.errorEliminar.set(null);
     this.autoria.eliminar(subgrafo.id).subscribe({
-      next: () => this.cargarSubgrafos(),
-      error: e => this.error.set(mensajeDeError(e, 'No se pudo eliminar el borrador.'))
+      next: () => {
+        this.eliminando.set(false);
+        this.porEliminar.set(null);
+        this.avisar(`Se eliminó el borrador «${subgrafo.nombre}».`);
+        this.cargarSubgrafos();
+      },
+      error: e => {
+        this.eliminando.set(false);
+        this.errorEliminar.set(mensajeDeError(e, 'No se pudo eliminar el borrador. Intenta de nuevo.'));
+      }
     });
+  }
+
+  private avisar(texto: string): void {
+    this.mensaje.set(texto);
+    setTimeout(() => {
+      if (this.mensaje() === texto) this.mensaje.set(null);
+    }, 4000);
   }
 
   protected tonoEstado(estado: EstadoBorrador): 'calma' | 'aviso' | 'marca' {
     return estado === 'PUBLICADO' ? 'calma' : estado === 'CAMBIOS_SIN_PUBLICAR' ? 'aviso' : 'marca';
   }
 
-  /** Nombre legible de una categoría ("neurologico" → "Neurológico"). */
-  protected legible(categoria: string): string {
-    const conTilde: Record<string, string> = {
-      respiracion: 'Respiración',
-      neurologico: 'Neurológico',
-      gastrointestinal: 'Gastrointestinal'
-    };
-    return conTilde[categoria] ?? categoria.charAt(0).toUpperCase() + categoria.slice(1);
-  }
+  protected readonly legible = nombreCategoria;
 
   /** Pregunta puente de la categoría elegida, para la ayuda del formulario. */
   protected get preguntaElegida(): string | null {
