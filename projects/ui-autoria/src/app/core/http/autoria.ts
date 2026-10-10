@@ -94,8 +94,10 @@ export function mensajeDeError(error: unknown, porDefecto: string): string {
       return cuerpo.mensaje;
     }
     if (error.status === 0) return 'No hay conexión con el servidor. Verifica que el backend esté disponible.';
+    if (error.status === 400) return 'Algo en los datos no es válido. Revisa e intenta de nuevo.';
     if (error.status === 404) return 'Ese elemento ya no existe. Recarga la página.';
     if (error.status === 409) return 'Alguien más editó este subgrafo al mismo tiempo. Recarga la página.';
+    if (error.status >= 500) return 'El servidor tuvo un problema. Intenta de nuevo en un momento.';
   }
   return porDefecto;
 }

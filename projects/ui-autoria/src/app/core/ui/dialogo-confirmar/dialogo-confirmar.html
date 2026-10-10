@@ -1,0 +1,24 @@
+<div class="backdrop" (click)="cerrar()">
+  <div class="panel panel--chico" role="alertdialog" aria-modal="true" [attr.aria-label]="titulo"
+    (click)="$event.stopPropagation()">
+    <div class="panel-head">
+      <h3>{{ titulo }}</h3>
+      <button type="button" class="btn-cerrar" title="Cerrar" [disabled]="ocupado" (click)="cerrar()">✕</button>
+    </div>
+
+    <div class="panel-body">
+      <p class="texto-modal">{{ mensaje }}</p>
+      @if (error) {
+        <div class="error-modal" role="alert">{{ error }}</div>
+      }
+    </div>
+
+    <div class="panel-foot">
+      <app-boton #botonCancelar tono="neutro" variante="texto" alto="compacto" ancho="auto" [disabled]="ocupado"
+        (click)="cerrar()">Cancelar</app-boton>
+      <app-boton tono="alerta" alto="compacto" ancho="auto" [disabled]="ocupado" (click)="aceptar()">
+        {{ ocupado ? textoOcupado : (error ? 'Intentar de nuevo' : textoConfirmar) }}
+      </app-boton>
+    </div>
+  </div>
+</div>

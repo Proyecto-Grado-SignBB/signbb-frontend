@@ -23,10 +23,11 @@ describe('AutoriaService', () => {
     servicio.listar().subscribe();
     expect(http.expectOne(`${base}/subgrafos`).request.method).toBe('GET');
 
-    servicio.crear({ nombre: 'Fiebre', puenteId: 'puente_neuro' }).subscribe();
+    const request = { nombre: 'Fiebre', puenteId: 'puente_neuro', etiquetaOpcion: 'Fiebre o calentura' };
+    servicio.crear(request).subscribe();
     const crear = http.expectOne(`${base}/subgrafos`);
     expect(crear.request.method).toBe('POST');
-    expect(crear.request.body).toEqual({ nombre: 'Fiebre', puenteId: 'puente_neuro' });
+    expect(crear.request.body).toEqual(request);
   });
 
   it('el "+" manda la respuesta de la que cuelga el nodo nuevo', () => {
@@ -87,7 +88,10 @@ describe('errores de autoría', () => {
   it('sin cuerpo explica el código HTTP', () => {
     expect(mensajeDeError(new HttpErrorResponse({ status: 409 }), 'x')).toContain('al mismo tiempo');
     expect(mensajeDeError(new HttpErrorResponse({ status: 404 }), 'x')).toContain('ya no existe');
-    expect(mensajeDeError(new HttpErrorResponse({ status: 500 }), 'por defecto')).toBe('por defecto');
+    expect(mensajeDeError(new HttpErrorResponse({ status: 400 }), 'x')).toContain('no es válido');
+    expect(mensajeDeError(new HttpErrorResponse({ status: 503 }), 'x')).toContain('El servidor tuvo un problema');
+    expect(mensajeDeError(new HttpErrorResponse({ status: 0 }), 'x')).toContain('No hay conexión');
+    expect(mensajeDeError(new Error('otro'), 'por defecto')).toBe('por defecto');
     expect(avisosDeError(new HttpErrorResponse({ status: 500 }))).toEqual([]);
   });
 });
