@@ -31,22 +31,27 @@ export class AutoriaService {
 
   // --- Tablero ---------------------------------------------------------------
 
+  /** Lista los borradores del tablero, del último editado al primero. */
   listar(): Observable<ResumenSubgrafoDTO[]> {
     return this.http.get<ResumenSubgrafoDTO[]>(`${this.base}/subgrafos`);
   }
 
+  /** Crea un borrador con el lienzo vacío. */
   crear(request: SubgrafoRequest): Observable<SubgrafoDTO> {
     return this.http.post<SubgrafoDTO>(`${this.base}/subgrafos`, request);
   }
 
+  /** Obtiene un borrador completo (lienzo y avisos). */
   obtener(id: number): Observable<SubgrafoDTO> {
     return this.http.get<SubgrafoDTO>(`${this.base}/subgrafos/${id}`);
   }
 
+  /** Cambia los datos del subgrafo (nombre, categoría, nombre para la familia…). */
   actualizar(id: number, request: SubgrafoRequest): Observable<SubgrafoDTO> {
     return this.http.put<SubgrafoDTO>(`${this.base}/subgrafos/${id}`, request);
   }
 
+  /** Borra un borrador que nunca se publicó. */
   eliminar(id: number): Observable<void> {
     return this.http.delete<void>(`${this.base}/subgrafos/${id}`);
   }
@@ -58,10 +63,12 @@ export class AutoriaService {
     return this.http.post<SubgrafoDTO>(`${this.base}/subgrafos/${id}/nodos`, request);
   }
 
+  /** Edita el texto, el desenlace o las respuestas de un nodo. */
   editarNodo(id: number, nodoId: string, request: NodoRequest): Observable<SubgrafoDTO> {
     return this.http.put<SubgrafoDTO>(`${this.base}/subgrafos/${id}/nodos/${nodoId}`, request);
   }
 
+  /** Elimina un nodo y su rama; las respuestas que llegaban vuelven a ser un "+". */
   eliminarNodo(id: number, nodoId: string): Observable<SubgrafoDTO> {
     return this.http.delete<SubgrafoDTO>(`${this.base}/subgrafos/${id}/nodos/${nodoId}`);
   }
@@ -74,10 +81,12 @@ export class AutoriaService {
     );
   }
 
+  /** Avisos actuales del lienzo. */
   avisos(id: number): Observable<Aviso[]> {
     return this.http.get<Aviso[]>(`${this.base}/subgrafos/${id}/avisos`);
   }
 
+  /** Publica el borrador; si hay avisos bloqueantes, responde 422 con ellos. */
   publicar(id: number): Observable<SubgrafoDTO> {
     return this.http.post<SubgrafoDTO>(`${this.base}/subgrafos/${id}/publicar`, {});
   }

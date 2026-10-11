@@ -4,15 +4,21 @@ import { Observable } from 'rxjs';
 import { RecorridoResponse, ResponderRequest } from '../../models/recorrido.model';
 import { environment } from '../../../environments/environment';
 
+/**
+ * Cliente HTTP del recorrido de triaje. La identidad de la sesión es el
+ * `recorridoId`; no guarda estado en el cliente.
+ */
 @Injectable({ providedIn: 'root' })
 export class RecorridoService {
 
   constructor(private http: HttpClient) { }
 
+  /** Inicia un recorrido y devuelve la primera pregunta. */
   iniciar(): Observable<RecorridoResponse> {
     return this.http.post<RecorridoResponse>(`${environment.apiUrl}/recorridos`, {});
   }
 
+  /** Responde la pregunta actual (una opción o selección múltiple) y avanza. */
   responder(recorridoId: string, request: ResponderRequest): Observable<RecorridoResponse> {
     return this.http.post<RecorridoResponse>(
       `${environment.apiUrl}/recorridos/${recorridoId}/respuestas`,
@@ -28,6 +34,7 @@ export class RecorridoService {
     );
   }
 
+  /** Consulta el estado del recorrido: pregunta actual o resultado final. */
   consultar(recorridoId: string): Observable<RecorridoResponse> {
     return this.http.get<RecorridoResponse>(`${environment.apiUrl}/recorridos/${recorridoId}`);
   }

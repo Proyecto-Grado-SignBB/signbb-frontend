@@ -49,23 +49,33 @@ interface FilaRespuesta {
   styleUrl: './panel-nodo.scss'
 })
 export class PanelNodoComponent implements OnChanges {
+  /** Para qué se abrió el panel. */
   @Input({ required: true }) contexto!: ContextoPanel;
   /** Preguntas del lienzo, para "Pregunta existente". */
   @Input() preguntas: NodoLienzo[] = [];
+  /** True mientras el lienzo guarda el cambio. */
   @Input() ocupado = false;
+  /** Error a mostrar si la operación falla. */
   @Input() error: string | null = null;
 
   /** La acción del "+" o la primera pregunta. */
   @Output() crear = new EventEmitter<NodoRequest>();
+  /** Guarda los cambios de un nodo existente. */
   @Output() guardar = new EventEmitter<{ nodoId: string; request: NodoRequest }>();
+  /** Elimina el nodo que se está editando. */
   @Output() eliminar = new EventEmitter<string>();
   /** "Pregunta existente"; `nodoId` nulo quita el enlace (la respuesta vuelve a ser un "+"). */
   @Output() enlazar = new EventEmitter<{ respuestaId: string; nodoId: string | null }>();
+  /** Cierra el panel sin cambios. */
   @Output() cerrar = new EventEmitter<void>();
 
+  /** Gravedades seleccionables de una respuesta. */
   protected readonly gravedades: Gravedad[] = ['LEVE', 'MODERADA', 'GRAVE'];
+  /** Texto legible de cada gravedad. */
   protected readonly etiquetaGravedad = ETIQUETA_GRAVEDAD;
+  /** Desenlaces seleccionables de una conclusión. */
   protected readonly desenlaces: Desenlace[] = ['RECOMENDACION', 'CONSULTA_MEDICA', 'URGENCIA'];
+  /** Texto legible de cada desenlace. */
   protected readonly etiquetaDesenlace = ETIQUETA_DESENLACE;
 
   protected modo: ModoPanel = 'PREGUNTA';
@@ -75,10 +85,12 @@ export class PanelNodoComponent implements OnChanges {
   protected respuestas: FilaRespuesta[] = [];
   protected destinoExistente: string | null = null;
 
+  /** Reinicia el formulario cada vez que cambia el contexto. */
   ngOnChanges(): void {
     this.reiniciar();
   }
 
+  /** Carga el formulario según el contexto (crear, editar o enlazar). */
   private reiniciar(): void {
     const c = this.contexto;
     this.destinoExistente = null;
@@ -102,12 +114,14 @@ export class PanelNodoComponent implements OnChanges {
     }
   }
 
+  /** Fila de respuesta vacía. */
   private filaNueva(): FilaRespuesta {
     return { id: null, texto: '', gravedad: 'LEVE', tieneCamino: false };
   }
 
   // --- Lo que muestra el panel -------------------------------------------------
 
+  /** Título del panel según el contexto. */
   protected get titulo(): string {
     switch (this.contexto.tipo) {
       case 'primera': return 'Primera pregunta';
@@ -127,6 +141,7 @@ export class PanelNodoComponent implements OnChanges {
   }
 
   /** El control segmentado solo aparece al crear después de un "+" o sobre un enlace. */
+  /** Modos del control segmentado, o vacío si no aplica. */
   protected get modos(): ModoPanel[] {
     switch (this.contexto.tipo) {
       case 'mas':
@@ -135,6 +150,7 @@ export class PanelNodoComponent implements OnChanges {
     }
   }
 
+  /** Texto legible de un modo del panel. */
   protected etiquetaModo(modo: ModoPanel): string {
     return modo === 'PREGUNTA' ? 'Pregunta' : modo === 'CONCLUSION' ? 'Conclusión' : 'Pregunta existente';
   }
@@ -146,6 +162,7 @@ export class PanelNodoComponent implements OnChanges {
     return this.preguntas.filter(p => p.id !== origen);
   }
 
+  /** True si el panel está editando un nodo existente. */
   protected get esEdicion(): boolean {
     return this.contexto.tipo === 'editar';
   }
@@ -155,6 +172,7 @@ export class PanelNodoComponent implements OnChanges {
     return this.contexto.tipo === 'enlace' && this.modo !== 'EXISTENTE';
   }
 
+  /** True si el formulario se puede enviar. */
   protected get puedeEnviar(): boolean {
     if (this.ocupado || this.bloqueadoPorEnlace) return false;
     switch (this.modo) {
@@ -164,6 +182,7 @@ export class PanelNodoComponent implements OnChanges {
     }
   }
 
+  /** Texto del botón de acción principal. */
   protected get textoBoton(): string {
     if (this.ocupado) return 'Guardando…';
     if (this.esEdicion) return 'Guardar';
@@ -172,20 +191,24 @@ export class PanelNodoComponent implements OnChanges {
 
   // --- Respuestas ---------------------------------------------------------------
 
+  /** Agrega un renglón de respuesta. */
   protected agregarRespuesta(): void {
     this.respuestas = [...this.respuestas, this.filaNueva()];
   }
 
+  /** Quita el renglón de respuesta indicado. */
   protected quitarRespuesta(indice: number): void {
     this.respuestas = this.respuestas.filter((_, i) => i !== indice);
   }
 
+  /** Fija la gravedad de una fila de respuesta. */
   protected elegirGravedad(fila: FilaRespuesta, gravedad: Gravedad): void {
     fila.gravedad = gravedad;
   }
 
   // --- Acciones -----------------------------------------------------------------
 
+  /** Emite la operación correspondiente (crear, guardar o enlazar). */
   protected enviar(): void {
     if (!this.puedeEnviar) return;
     const c = this.contexto;
@@ -207,6 +230,7 @@ export class PanelNodoComponent implements OnChanges {
     }
   }
 
+  /** Quita el enlace de una respuesta (vuelve a ser un "+"). */
   protected quitarEnlace(): void {
     const c = this.contexto;
     if (c.tipo === 'enlace') {
@@ -214,12 +238,14 @@ export class PanelNodoComponent implements OnChanges {
     }
   }
 
+  /** Pide eliminar el nodo que se está editando. */
   protected eliminarNodo(): void {
     if (this.contexto.tipo === 'editar') {
       this.eliminar.emit(this.contexto.nodo.id);
     }
   }
 
+  /** Arma la petición de nodo según el modo del panel. */
   private request(): NodoRequest {
     if (this.modo === 'CONCLUSION') {
       return { texto: this.texto.trim(), desenlace: this.desenlace };

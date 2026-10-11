@@ -23,15 +23,24 @@ import { AutoriaService } from '../../core/http/autoria';
   styleUrl: './perfil.scss'
 })
 export class PerfilComponent implements OnInit {
+  /** True mientras se cargan los conteos. */
   protected readonly cargando = signal(true);
+  /** Error a mostrar si falla la carga. */
   protected readonly error = signal<string | null>(null);
+  /** Número de subgrafos publicados. */
   protected readonly conteoPublicados = signal(0);
+  /** Número de subgrafos que no están publicados. */
   protected readonly conteoBorrador = signal(0);
+  /** Fecha relativa de la última publicación, o nula. */
   protected readonly ultimaPublicacion = signal<string | null>(null);
 
+  /** Nombre del médico (placeholder hasta que exista autenticación). */
   protected readonly nombreMedico = 'Dra. Catalina Rodríguez';
+  /** Institución del médico. */
   protected readonly institucion = 'Fundación Canguro';
+  /** Correo del médico. */
   protected readonly correo = 'c.rodriguez@fundacioncanguro.co';
+  /** Rol del médico. */
   protected readonly rol = 'Autor clínico';
 
   constructor(private autoria: AutoriaService) {}
@@ -40,6 +49,7 @@ export class PerfilComponent implements OnInit {
     this.cargar();
   }
 
+  /** Carga los subgrafos y calcula los conteos del perfil. */
   protected cargar(): void {
     this.cargando.set(true);
     this.error.set(null);
@@ -62,6 +72,7 @@ export class PerfilComponent implements OnInit {
     });
   }
 
+  /** Convierte una fecha ISO en texto relativo ("hoy", "hace 3 días"). */
   private tiempoRelativo(iso: string): string {
     const fecha = new Date(iso);
     if (Number.isNaN(fecha.getTime())) {
@@ -75,6 +86,7 @@ export class PerfilComponent implements OnInit {
     return diffMeses === 1 ? 'hace 1 mes' : `hace ${diffMeses} meses`;
   }
 
+  /** Iniciales del nombre del médico, para el avatar. */
   protected get iniciales(): string {
     const limpio = this.nombreMedico.replace(/^Dra?\.\s*/i, '');
     return limpio

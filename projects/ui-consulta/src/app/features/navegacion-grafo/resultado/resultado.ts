@@ -7,6 +7,11 @@ import { BotonComponent, InsigniaIconoComponent, TonoInsignia, AvisoLegalCompone
 /** Id del desenlace de sistema que el backend usa al cerrar por el máximo de preguntas. */
 const ID_LIMITE_PREGUNTAS = 'sistema/limite_preguntas';
 
+/**
+ * Pantalla del desenlace: muestra el nivel de alerta, el mensaje y las
+ * recomendaciones del recorrido finalizado. Permite corregir la última
+ * respuesta, volver al inicio o empezar otra consulta.
+ */
 @Component({
   selector: 'app-resultado',
   standalone: true,
@@ -15,10 +20,13 @@ const ID_LIMITE_PREGUNTAS = 'sistema/limite_preguntas';
   styleUrl: './resultado.scss'
 })
 export class ResultadoComponent implements OnInit {
+  /** Estado del recorrido finalizado. */
   respuesta = signal<RecorridoResponse | null>(null);
+  /** Mensaje de error de la última operación. */
   error = signal<string | null>(null);
   private recorridoId = '';
 
+  /** Tono de la insignia según el nivel de alerta del resultado. */
   tonoInsignia = computed<TonoInsignia>(() => {
     switch (this.respuesta()?.resultado?.nivel) {
       case 'URGENCIA': return 'alerta';
@@ -56,6 +64,7 @@ export class ResultadoComponent implements OnInit {
     this.cargar();
   }
 
+  /** Carga el desenlace del recorrido. */
   cargar(): void {
     this.error.set(null);
     this.recorridoService.consultar(this.recorridoId).subscribe({
@@ -64,6 +73,7 @@ export class ResultadoComponent implements OnInit {
     });
   }
 
+  /** Vuelve a la pantalla inicial. */
   volverAlInicio(): void {
     this.router.navigate(['/']);
   }
@@ -77,6 +87,7 @@ export class ResultadoComponent implements OnInit {
     });
   }
 
+  /** Inicia un recorrido nuevo desde el resultado. */
   comenzarOtraConsulta(): void {
     this.error.set(null);
     this.recorridoService.iniciar().subscribe({

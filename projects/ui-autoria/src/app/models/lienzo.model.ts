@@ -7,12 +7,16 @@
 /** Semáforo de una respuesta: verde, amarillo o rojo. */
 export type Gravedad = 'LEVE' | 'MODERADA' | 'GRAVE';
 
+/** Clase de nodo del lienzo: pregunta o conclusión. */
 export type TipoNodo = 'PREGUNTA' | 'CONCLUSION';
 
+/** Desenlace de una conclusión. */
 export type Desenlace = 'RECOMENDACION' | 'CONSULTA_MEDICA' | 'URGENCIA';
 
+/** Estado de un borrador respecto a lo que ve la cuidadora. */
 export type EstadoBorrador = 'BORRADOR' | 'PUBLICADO' | 'CAMBIOS_SIN_PUBLICAR';
 
+/** Clases de aviso del lienzo (todas bloquean la publicación salvo `NODO_SUELTO`). */
 export type CodigoAviso =
   | 'SIN_INICIO'
   | 'TEXTO_VACIO'
@@ -31,13 +35,17 @@ export interface RespuestaLienzo {
   destino: string | null;
 }
 
+/** Nodo del lienzo: una pregunta con sus respuestas o una conclusión. */
 export interface NodoLienzo {
   id: string;
   tipo: TipoNodo;
   /** Enunciado de la pregunta, o mensaje para la cuidadora si es conclusión. */
   texto: string;
+  /** Si la cuidadora puede marcar varias respuestas (solo preguntas). */
   variasRespuestas: boolean;
+  /** Desenlace (solo conclusiones). */
   desenlace: Desenlace | null;
+  /** Respuestas de la pregunta (vacía en una conclusión). */
   respuestas: RespuestaLienzo[];
 }
 
@@ -57,6 +65,7 @@ export interface Categoria {
   pregunta: string;
 }
 
+/** Fila del tablero de subgrafos. */
 export interface ResumenSubgrafoDTO {
   id: number;
   grafoId: string;
@@ -95,6 +104,7 @@ export interface ErrorAutoriaDTO {
   avisos: Aviso[];
 }
 
+/** Datos de un subgrafo, para crearlo o cambiar sus datos. */
 export interface SubgrafoRequest {
   /** Nombre técnico: solo lo ven los médicos. */
   nombre: string;
@@ -123,18 +133,21 @@ export interface NodoRequest {
   respuestas?: OpcionRequest[];
 }
 
+/** Texto legible de cada gravedad. */
 export const ETIQUETA_GRAVEDAD: Record<Gravedad, string> = {
   LEVE: 'Leve',
   MODERADA: 'Moderada',
   GRAVE: 'Grave'
 };
 
+/** Texto legible de cada desenlace. */
 export const ETIQUETA_DESENLACE: Record<Desenlace, string> = {
   RECOMENDACION: 'Recomendación',
   CONSULTA_MEDICA: 'Consultar al médico',
   URGENCIA: 'Ir a urgencias'
 };
 
+/** Texto legible de cada estado del borrador. */
 export const ETIQUETA_ESTADO: Record<EstadoBorrador, string> = {
   BORRADOR: 'Borrador',
   PUBLICADO: 'Publicado',

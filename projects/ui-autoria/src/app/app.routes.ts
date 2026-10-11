@@ -1,5 +1,10 @@
 import { Routes } from '@angular/router';
 
+/**
+ * Rutas de la app: tablero de subgrafos, lienzo de un subgrafo y perfil. Cada
+ * pantalla se carga de forma diferida; cualquier ruta desconocida redirige al
+ * tablero.
+ */
 export const routes: Routes = [
   { path: '', redirectTo: 'subgrafos', pathMatch: 'full' },
   {

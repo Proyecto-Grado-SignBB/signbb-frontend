@@ -6,6 +6,9 @@
 /out-tsc
 /bazel-out
 
+# Documentación generada por Compodoc (las guías viven en projects/*/docs/)
+/docs
+
 # Node
 /node_modules
 npm-debug.log

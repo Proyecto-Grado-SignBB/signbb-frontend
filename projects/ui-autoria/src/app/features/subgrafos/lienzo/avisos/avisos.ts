@@ -13,13 +13,17 @@ import { Aviso } from '../../../../models/lienzo.model';
   styleUrl: './avisos.scss'
 })
 export class AvisosComponent {
+  /** Avisos del lienzo. */
   @Input() avisos: Aviso[] = [];
+  /** Emite el aviso tocado, para resaltar el nodo al que se refiere. */
   @Output() seleccionar = new EventEmitter<Aviso>();
 
+  /** Avisos ordenados con los bloqueantes primero. */
   protected get ordenados(): Aviso[] {
     return [...this.avisos].sort((a, b) => Number(b.bloqueante) - Number(a.bloqueante));
   }
 
+  /** Cantidad de avisos que impiden publicar. */
   protected get bloqueantes(): number {
     return this.avisos.filter(a => a.bloqueante).length;
   }

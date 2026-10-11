@@ -25,6 +25,12 @@ const ORDEN_OPCIONES_IMAGEN = ['NO', 'SI'];
  */
 const ENFRIAMIENTO_VOLVER_MS = 400;
 
+/**
+ * Pantalla de una pregunta en curso. Carga el estado del recorrido por su
+ * `recorridoId` y muestra la pregunta según su tipo (binaria, de imagen o de
+ * selección múltiple); al responder avanza o navega al resultado. Permite
+ * retroceder a la pregunta anterior.
+ */
 @Component({
   selector: 'app-pregunta',
   standalone: true,
@@ -33,27 +39,38 @@ const ENFRIAMIENTO_VOLVER_MS = 400;
   styleUrl: './pregunta.scss'
 })
 export class PreguntaComponent implements OnInit {
+  /** Estado actual del recorrido (pregunta en curso). */
   respuesta = signal<RecorridoResponse | null>(null);
+  /** Opción elegida en preguntas de selección única. */
   seleccionActual = signal<string | null>(null);
+  /** Opciones marcadas en preguntas de selección múltiple. */
   opcionesSeleccionadas = signal<Set<string>>(new Set());
+  /** True mientras se envía una respuesta. */
   enviando = signal(false);
   /** True mientras «volver» está en curso o en su pausa anticlic (ver ENFRIAMIENTO_VOLVER_MS). */
   volviendo = signal(false);
+  /** Mensaje de error de la última operación. */
   error = signal<string | null>(null);
 
+  /** Índice de la imagen visible en el carrusel. */
   indiceImagen = signal(0);
+  /** Número de imágenes del carrusel. */
   totalImagenes = 3;
   private inicioArrastreX = 0;
 
+  /** True si la pregunta es de imágenes. */
   esImagen = computed(() => this.respuesta()?.pregunta?.tieneImagenes ?? false);
 
+  /** True si la pregunta admite selección múltiple. */
   esSeleccionMultiple = computed(() =>
     !this.esImagen() && this.respuesta()?.pregunta?.tipoInteraccion === 'SELECCION_MULTIPLE');
 
+  /** True si la pregunta es binaria (dos opciones o menos, sin imágenes). */
   esBinaria = computed(() =>
     !this.esImagen() && !this.esSeleccionMultiple()
     && (this.respuesta()?.pregunta?.opciones.length ?? 0) <= 2);
 
+  /** Opciones de una pregunta de imagen, en el orden NO/SI de los botones. */
   opcionesImagen = computed(() => {
     const opciones = this.respuesta()?.pregunta?.opciones ?? [];
     return [...opciones].sort(
@@ -74,6 +91,7 @@ export class PreguntaComponent implements OnInit {
     this.cargar();
   }
 
+  /** Carga (o recarga) el estado del recorrido. */
   cargar(): void {
     this.error.set(null);
     this.recorridoService.consultar(this.recorridoId).subscribe({
@@ -116,10 +134,12 @@ export class PreguntaComponent implements OnInit {
     });
   }
 
+  /** Texto legible de una opción; si no hay traducción, usa el valor crudo. */
   etiqueta(valor: string): string {
     return ETIQUETAS_OPCION[valor] ?? valor;
   }
 
+  /** Selecciona una opción: envía de inmediato si es binaria o de imagen, o espera confirmación. */
   seleccionar(valor: string): void {
     if (this.esBinaria() || this.esImagen()) {
       this.enviar(valor);
@@ -128,6 +148,7 @@ export class PreguntaComponent implements OnInit {
     }
   }
 
+  /** Confirma la opción elegida en una pregunta de selección única. */
   continuar(): void {
     const valor = this.seleccionActual();
     if (valor) {
@@ -135,10 +156,12 @@ export class PreguntaComponent implements OnInit {
     }
   }
 
+  /** True si la opción está marcada en una pregunta de selección múltiple. */
   estaSeleccionada(opcion: string): boolean {
     return this.opcionesSeleccionadas().has(opcion);
   }
 
+  /** Marca o desmarca una opción en una pregunta de selección múltiple. */
   alternarOpcion(opcion: string): void {
     const actuales = new Set(this.opcionesSeleccionadas());
     if (actuales.has(opcion)) {
@@ -149,6 +172,7 @@ export class PreguntaComponent implements OnInit {
     this.opcionesSeleccionadas.set(actuales);
   }
 
+  /** Envía todas las opciones marcadas; no hace nada si no hay ninguna. */
   continuarMultiple(): void {
     const opciones = Array.from(this.opcionesSeleccionadas());
     if (opciones.length === 0) {
@@ -157,24 +181,29 @@ export class PreguntaComponent implements OnInit {
     this.enviarSolicitud({ opciones, tipo: 'SELECCION_MULTIPLE' });
   }
 
+  /** Va a una imagen del carrusel, acotando el índice al rango válido. */
   irAImagen(i: number): void {
     this.indiceImagen.set(Math.max(0, Math.min(this.totalImagenes - 1, i)));
   }
 
+  /** Guarda el punto donde empezó el gesto de arrastre. */
   onArrastreInicio(x: number): void {
     this.inicioArrastreX = x;
   }
 
+  /** Cambia de imagen si el arrastre horizontal supera el umbral. */
   onArrastreFin(x: number): void {
     const delta = x - this.inicioArrastreX;
     if (delta < -35) this.irAImagen(this.indiceImagen() + 1);
     else if (delta > 35) this.irAImagen(this.indiceImagen() - 1);
   }
 
+  /** Envía una respuesta de una sola opción. */
   private enviar(valor: string): void {
     this.enviarSolicitud({ respuesta: valor });
   }
 
+  /** Envía la respuesta al backend y navega al resultado si el recorrido terminó. */
   private enviarSolicitud(request: ResponderRequest): void {
     this.error.set(null);
     this.enviando.set(true);

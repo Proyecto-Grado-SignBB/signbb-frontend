@@ -17,11 +17,14 @@ export type SeccionAutoria = 'subgrafos' | 'perfil';
   styleUrl: './sidebar-autoria.scss'
 })
 export class SidebarAutoriaComponent {
+  /** Nombre del médico (placeholder hasta que exista autenticación). */
   @Input() nombreMedico = 'Dra. Catalina Rodríguez';
+  /** Institución del médico (placeholder). */
   @Input() institucion = 'Fundación Canguro';
   /** Qué ítem del menú se resalta como activo. */
   @Input() seccionActiva: SeccionAutoria = 'subgrafos';
 
+  /** Iniciales del nombre del médico, para el avatar. */
   protected get iniciales(): string {
     const limpio = this.nombreMedico.replace(/^Dra?\.\s*/i, '');
     return limpio

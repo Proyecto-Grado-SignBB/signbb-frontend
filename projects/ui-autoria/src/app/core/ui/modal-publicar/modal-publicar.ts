@@ -16,25 +16,34 @@ import { Aviso } from '../../../models/lienzo.model';
   styleUrl: './modal-publicar.scss'
 })
 export class ModalPublicarComponent {
+  /** Nombre técnico del subgrafo. */
   @Input() nombre = '';
   /** Texto de la opción que verá la cuidadora. */
   @Input() etiquetaOpcion = '';
   /** Pregunta puente donde aparece la opción. */
   @Input() preguntaPuente = '';
+  /** Número de nodos que se publicarán. */
   @Input() conteoNodos = 0;
+  /** Avisos actuales del lienzo. */
   @Input() avisos: Aviso[] = [];
+  /** True mientras se publica. */
   @Input() publicando = false;
+  /** Error a mostrar si la publicación falla. */
   @Input() error: string | null = null;
   /** true si ya estaba publicado: se reemplaza la versión vigente. */
   @Input() republicar = false;
 
+  /** Emite cuando el usuario confirma publicar. */
   @Output() confirmar = new EventEmitter<void>();
+  /** Emite al cancelar. */
   @Output() cancelar = new EventEmitter<void>();
 
+  /** Avisos que impiden publicar. */
   protected get bloqueantes(): Aviso[] {
     return this.avisos.filter(a => a.bloqueante);
   }
 
+  /** Cantidad de nodos sueltos (no bloquean, no se publican). */
   protected get sueltos(): number {
     return this.avisos.filter(a => a.codigo === 'NODO_SUELTO').length;
   }

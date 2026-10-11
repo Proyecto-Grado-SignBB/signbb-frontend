@@ -5,6 +5,10 @@ import { provideHttpClient } from '@angular/common/http';
 import { routes } from './app.routes';
 import { provideServiceWorker } from '@angular/service-worker';
 
+/**
+ * Configuración de arranque de la app: router, HttpClient y service worker
+ * (PWA, activo solo en producción).
+ */
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),

@@ -6,7 +6,14 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "docs:consulta": "compodoc -p projects/ui-consulta/tsconfig.doc.json -d docs/ui-consulta --language es-ES --includes projects/ui-consulta/docs --includesName \"Guías\" --name \"SignBB · Consulta\"",
+    "docs:autoria": "compodoc -p projects/ui-autoria/tsconfig.doc.json -d docs/ui-autoria --language es-ES --includes projects/ui-autoria/docs --includesName \"Guías\" --name \"SignBB · Autoría\"",
+    "docs:compartida": "compodoc -p projects/ui-compartida/tsconfig.doc.json -d docs/ui-compartida --language es-ES --includes projects/ui-compartida/docs --includesName \"Guías\" --name \"SignBB · UI Compartida\"",
+    "docs": "npm run docs:compartida && npm run docs:consulta && npm run docs:autoria",
+    "docs:serve:consulta": "compodoc -p projects/ui-consulta/tsconfig.doc.json -s -w -r 8091",
+    "docs:serve:autoria": "compodoc -p projects/ui-autoria/tsconfig.doc.json -s -w -r 8092",
+    "docs:serve:compartida": "compodoc -p projects/ui-compartida/tsconfig.doc.json -s -w -r 8090"
   },
   "prettier": {
     "printWidth": 100,
@@ -37,6 +44,7 @@
     "@angular/build": "^20.3.6",
     "@angular/cli": "^20.3.6",
     "@angular/compiler-cli": "^20.3.0",
+    "@compodoc/compodoc": "^2.0.0",
     "@types/jasmine": "~5.1.0",
     "jasmine-core": "~5.9.0",
     "karma": "~6.4.0",

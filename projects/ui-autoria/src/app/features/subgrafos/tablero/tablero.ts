@@ -35,27 +35,40 @@ import {
   styleUrl: './tablero.scss'
 })
 export class TableroComponent implements OnInit {
+  /** Texto legible de cada estado del borrador. */
   protected readonly etiquetaEstado = ETIQUETA_ESTADO;
+  /** Texto de ayuda del campo «Nombre para la familia». */
   protected readonly ayudaNombreFamilia = AYUDA_NOMBRE_FAMILIA;
 
+  /** Subgrafos del tablero. */
   protected readonly subgrafos = signal<ResumenSubgrafoDTO[]>([]);
+  /** True mientras se carga la lista. */
   protected readonly cargando = signal(true);
+  /** Error de carga de la lista. */
   protected readonly error = signal<string | null>(null);
 
+  /** True si el formulario de crear está abierto. */
   protected readonly mostrarFormularioCrear = signal(false);
+  /** True mientras se crea el subgrafo. */
   protected readonly creando = signal(false);
+  /** Error del formulario de crear. */
   protected readonly errorCrear = signal<string | null>(null);
   protected nombreNuevo = '';
   protected etiquetaNueva = '';
   protected tocadoEtiqueta = false;
 
+  /** Categorías disponibles (preguntas puente del grafo raíz). */
   protected readonly categorias = signal<Categoria[]>([]);
+  /** Error al cargar las categorías. */
   protected readonly errorCategorias = signal<string | null>(null);
+  /** Categoría elegida en el formulario de crear. */
   protected readonly puenteSeleccionado = signal<string | null>(null);
 
   /** Borrador que el médico pidió eliminar (diálogo abierto), o null. */
   protected readonly porEliminar = signal<ResumenSubgrafoDTO | null>(null);
+  /** True mientras se elimina. */
   protected readonly eliminando = signal(false);
+  /** Error de la última eliminación. */
   protected readonly errorEliminar = signal<string | null>(null);
   /** Confirmación breve de la última acción ("Se eliminó…"). */
   protected readonly mensaje = signal<string | null>(null);
@@ -64,12 +77,15 @@ export class TableroComponent implements OnInit {
   protected readonly autor = 'Dra. Catalina Rodríguez';
   protected readonly institucion = 'Fundación Canguro';
 
+  /** Subgrafos publicados o con cambios sin publicar. */
   protected readonly totalPublicados = computed(
     () => this.subgrafos().filter(s => s.estado !== 'BORRADOR').length
   );
+  /** Subgrafos que no están publicados. */
   protected readonly totalBorradores = computed(
     () => this.subgrafos().filter(s => s.estado !== 'PUBLICADO').length
   );
+  /** Suma de nodos de todos los subgrafos. */
   protected readonly totalNodos = computed(
     () => this.subgrafos().reduce((acc, s) => acc + s.nodos, 0)
   );
@@ -81,6 +97,7 @@ export class TableroComponent implements OnInit {
     this.cargarCategorias();
   }
 
+  /** Carga las categorías (preguntas puente) para el formulario. */
   protected cargarCategorias(): void {
     this.errorCategorias.set(null);
     this.autoria.categorias().subscribe({
@@ -90,6 +107,7 @@ export class TableroComponent implements OnInit {
     });
   }
 
+  /** Carga la lista de subgrafos del tablero. */
   protected cargarSubgrafos(): void {
     this.cargando.set(true);
     this.error.set(null);
@@ -105,10 +123,12 @@ export class TableroComponent implements OnInit {
     });
   }
 
+  /** Abre el formulario de crear. */
   protected abrirFormularioCrear(): void {
     this.mostrarFormularioCrear.set(true);
   }
 
+  /** Cierra y limpia el formulario de crear. */
   protected cancelarCrear(): void {
     this.mostrarFormularioCrear.set(false);
     this.nombreNuevo = '';
@@ -118,15 +138,18 @@ export class TableroComponent implements OnInit {
     this.errorCrear.set(null);
   }
 
+  /** Elige la categoría del nuevo subgrafo. */
   protected seleccionarCategoria(puenteId: string): void {
     this.puenteSeleccionado.set(puenteId);
   }
 
+  /** True si el formulario de crear es válido. */
   protected get puedeCrear(): boolean {
     return this.nombreNuevo.trim().length > 0 && this.etiquetaNueva.trim().length > 0
       && this.puenteSeleccionado() !== null;
   }
 
+  /** Crea el subgrafo y abre su lienzo. */
   protected confirmarCrear(): void {
     const puenteId = this.puenteSeleccionado();
     this.tocadoEtiqueta = true;
@@ -153,6 +176,7 @@ export class TableroComponent implements OnInit {
     });
   }
 
+  /** Abre el lienzo de un subgrafo. */
   protected abrirSubgrafo(id: number): void {
     this.router.navigate(['/subgrafos', id]);
   }
@@ -163,11 +187,13 @@ export class TableroComponent implements OnInit {
     this.porEliminar.set(subgrafo);
   }
 
+  /** Cancela el diálogo de eliminar. */
   protected cancelarEliminar(): void {
     this.porEliminar.set(null);
     this.errorEliminar.set(null);
   }
 
+  /** Elimina el borrador confirmado y recarga la lista. */
   protected confirmarEliminar(): void {
     const subgrafo = this.porEliminar();
     if (!subgrafo || this.eliminando()) {
@@ -189,6 +215,7 @@ export class TableroComponent implements OnInit {
     });
   }
 
+  /** Muestra un mensaje de confirmación que desaparece solo. */
   private avisar(texto: string): void {
     this.mensaje.set(texto);
     setTimeout(() => {
@@ -196,10 +223,12 @@ export class TableroComponent implements OnInit {
     }, 4000);
   }
 
+  /** Tono de la etiqueta según el estado del borrador. */
   protected tonoEstado(estado: EstadoBorrador): 'calma' | 'aviso' | 'marca' {
     return estado === 'PUBLICADO' ? 'calma' : estado === 'CAMBIOS_SIN_PUBLICAR' ? 'aviso' : 'marca';
   }
 
+  /** Nombre legible de una categoría, expuesto a la plantilla. */
   protected readonly legible = nombreCategoria;
 
   /** Pregunta puente de la categoría elegida, para la ayuda del formulario. */
@@ -207,6 +236,7 @@ export class TableroComponent implements OnInit {
     return this.categorias().find(c => c.puenteId === this.puenteSeleccionado())?.pregunta ?? null;
   }
 
+  /** Resumen de una fila del tablero (nodos y última edición). */
   protected resumen(subgrafo: ResumenSubgrafoDTO): string {
     if (subgrafo.nodos === 0) {
       return 'Subgrafo nuevo, sin contenido todavía';
@@ -215,6 +245,7 @@ export class TableroComponent implements OnInit {
     return `${nodos} · editado ${this.tiempoRelativo(subgrafo.actualizadoEn)}`;
   }
 
+  /** Convierte una fecha ISO en texto relativo ("hoy", "hace 3 días"). */
   private tiempoRelativo(iso: string): string {
     const fecha = new Date(iso);
     if (Number.isNaN(fecha.getTime())) {

@@ -52,6 +52,7 @@ export interface Rama {
   etiquetaY: number;
 }
 
+/** Resultado del cálculo de posiciones: nodos, ramas y tamaño total del lienzo. */
 export interface Distribucion {
   nodos: CajaNodo[];
   ramas: Rama[];
@@ -132,14 +133,17 @@ export function distribuir(inicio: string | null, nodos: NodoLienzo[]): Distribu
   };
 }
 
+/** Coordenada X (borde izquierdo) de una columna. */
 function xDe(profundidad: number): number {
   return MEDIDAS.margen + profundidad * MEDIDAS.columna;
 }
 
+/** Coordenada Y (borde superior) de una fila. */
 function yDe(fila: number): number {
   return MEDIDAS.margen + fila * MEDIDAS.fila;
 }
 
+/** Arma la rama (línea en ángulo recto y etiqueta) de una respuesta. */
 function rama(
   origen: NodoLienzo,
   profundidad: number,
