@@ -81,6 +81,11 @@ export class AutoriaService {
   publicar(id: number): Observable<SubgrafoDTO> {
     return this.http.post<SubgrafoDTO>(`${this.base}/subgrafos/${id}/publicar`, {});
   }
+
+  /** Descarta los cambios sin publicar: el borrador vuelve a su última publicación. */
+  descartar(id: number): Observable<SubgrafoDTO> {
+    return this.http.post<SubgrafoDTO>(`${this.base}/subgrafos/${id}/descartar`, {});
+  }
 }
 
 /**

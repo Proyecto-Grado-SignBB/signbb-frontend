@@ -17,6 +17,14 @@
           <span class="mensaje-ok" role="status">{{ mensaje() }}</span>
         }
         @if (subgrafo(); as s) {
+          @if (s.estado === 'CAMBIOS_SIN_PUBLICAR') {
+            <app-boton tono="neutro" variante="contorno" alto="compacto" ancho="auto"
+              [disabled]="!s.puedeDescartar"
+              [title]="s.puedeDescartar
+                ? 'Vuelve el subgrafo a como está publicado'
+                : 'Se publicó antes de que se guardara una copia: podrás descartar cambios después de su próxima publicación'"
+              (click)="abrirDescartar()">Descartar cambios</app-boton>
+          }
           <app-boton tono="neutro" variante="contorno" alto="compacto" ancho="auto" (click)="abrirDatos()">Editar datos</app-boton>
           <app-boton tono="marca" alto="compacto" ancho="auto" [disabled]="s.estado === 'PUBLICADO'" (click)="abrirPublicar()">
             {{ s.estado === 'PUBLICADO' ? 'Publicado' : 'Publicar' }}
@@ -36,7 +44,11 @@
             <app-avisos [avisos]="s.avisos" (seleccionar)="irAAviso($event)" />
           </div>
 
-          <div class="scroll">
+          <div class="vista">
+          <div class="scroll" #scroll [class.arrastrando]="arrastrando()"
+            (scroll)="alScroll()" (wheel)="alRueda($event)"
+            (pointerdown)="alPulsar($event)" (pointermove)="alMover($event)"
+            (pointerup)="alSoltar()" (pointercancel)="alSoltar()">
             @if (vacio()) {
               <button type="button" class="primera" data-ref="primera" (click)="abrirPrimera()">
                 <span class="mas-icono">+</span> Primera pregunta
@@ -44,7 +56,9 @@
             }
 
             @if (distribucion(); as d) {
-              <div class="lienzo" [style.width.px]="d.ancho" [style.height.px]="d.alto">
+              <div class="sizer" [style.width.px]="d.ancho * escala()" [style.height.px]="d.alto * escala()">
+              <div class="lienzo" [style.width.px]="d.ancho" [style.height.px]="d.alto"
+                [style.transform]="'scale(' + escala() + ')'">
                 <svg class="lineas" [attr.width]="d.ancho" [attr.height]="d.alto" aria-hidden="true">
                   @for (r of d.ramas; track r.respuesta.id) {
                     <path [attr.d]="r.d" class="linea linea--{{ r.tipo }}" />
@@ -94,7 +108,33 @@
                   </button>
                 }
               </div>
+              </div>
             }
+          </div>
+
+          @if (!vacio()) {
+            <div class="controles-zoom" role="group" aria-label="Zoom del lienzo">
+              <button type="button" (click)="alejar()" [disabled]="!puedeAlejar()" aria-label="Alejar" title="Alejar">−</button>
+              <button type="button" class="porcentaje" (click)="restablecer()" title="Volver al 100 %">{{ porcentaje() }} %</button>
+              <button type="button" (click)="acercar()" [disabled]="!puedeAcercar()" aria-label="Acercar" title="Acercar">+</button>
+              <button type="button" class="ajustar" (click)="ajustar()" title="Ver todo el lienzo en la pantalla">Ajustar</button>
+            </div>
+          }
+
+          @if (minimapa(); as m) {
+            <svg class="minimapa" [attr.width]="m.ancho" [attr.height]="m.alto"
+              [attr.viewBox]="'0 0 ' + m.contenidoAncho + ' ' + m.contenidoAlto"
+              role="img" aria-label="Mini-mapa del lienzo: toca una zona para ir a ella"
+              (pointerdown)="alPulsarMinimapa($event)" (pointermove)="alMoverMinimapa($event)"
+              (pointerup)="alSoltarMinimapa()" (pointercancel)="alSoltarMinimapa()">
+              @for (c of distribucion().nodos; track c.nodo.id) {
+                <rect class="mm-nodo mm-nodo--{{ c.nodo.tipo }}" [class.mm-suelto]="c.suelto"
+                  [attr.x]="c.x" [attr.y]="c.y" [attr.width]="medidas.anchoNodo" [attr.height]="medidas.altoNodo" rx="14" />
+              }
+              <rect class="mm-vista" [attr.x]="m.area.x" [attr.y]="m.area.y"
+                [attr.width]="m.area.ancho" [attr.height]="m.area.alto" />
+            </svg>
+          }
           </div>
         }
       </div>
@@ -137,6 +177,18 @@
     [error]="errorEliminar()"
     (confirmar)="confirmarEliminar()"
     (cancelar)="cancelarEliminar()" />
+}
+
+@if (mostrarDescartar() && subgrafo(); as s) {
+  <app-dialogo-confirmar
+    titulo="Descartar cambios"
+    [mensaje]="'Se perderán los cambios que hiciste en «' + s.nombre + '» desde que lo publicaste. El subgrafo volverá a como lo ven ahora las cuidadoras. No se puede deshacer.'"
+    textoConfirmar="Descartar cambios"
+    textoOcupado="Descartando…"
+    [ocupado]="descartando()"
+    [error]="errorDescartar()"
+    (confirmar)="confirmarDescartar()"
+    (cancelar)="cancelarDescartar()" />
 }
 
 @if (mostrarDatos() && subgrafo(); as s) {

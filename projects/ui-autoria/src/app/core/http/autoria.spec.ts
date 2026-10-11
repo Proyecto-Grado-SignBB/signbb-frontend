@@ -60,6 +60,13 @@ describe('AutoriaService', () => {
     expect(http.expectOne(`${base}/subgrafos/7/respuestas/r_2/destino`).request.body).toEqual({ nodoId: null });
   });
 
+  it('descartar cambios hace POST a /descartar y devuelve el borrador', () => {
+    servicio.descartar(7).subscribe();
+    const peticion = http.expectOne(`${base}/subgrafos/7/descartar`);
+    expect(peticion.request.method).toBe('POST');
+    expect(peticion.request.body).toEqual({});
+  });
+
   it('publicar, avisos y categorías', () => {
     servicio.publicar(7).subscribe();
     expect(http.expectOne(`${base}/subgrafos/7/publicar`).request.method).toBe('POST');

@@ -87,6 +87,8 @@ export interface SubgrafoDTO {
   creadoEn: string;
   actualizadoEn: string;
   publicadoEn: string | null;
+  /** Hay una copia de lo publicado a la que se puede volver con «Descartar cambios». */
+  puedeDescartar: boolean;
 }
 
 /** Cuerpo de los 422 de autoría. */
