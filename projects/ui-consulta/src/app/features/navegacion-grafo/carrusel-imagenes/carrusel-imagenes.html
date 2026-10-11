@@ -1,0 +1,36 @@
+<div class="carrusel" (touchstart)="inicioArrastre($event.touches[0].clientX)"
+  (touchend)="finArrastre($event.changedTouches[0].clientX)">
+  <div class="carrusel__pista" [style.width.%]="total() * 100"
+    [style.transform]="'translateX(-' + (indice() * (100 / total())) + '%)'">
+    @for (d of diapositivas(); track $index) {
+    <div class="carrusel__slide" [style.width.%]="100 / total()">
+      @if (d) {
+      <img class="carrusel__imagen" [src]="d" alt="" draggable="false" (error)="fallo(d)" />
+      } @else {
+      <svg width="150" height="150" viewBox="0 0 88 88">
+        <circle cx="44" cy="44" r="38" fill="oklch(86% 0.10 95)"></circle>
+        <circle cx="27" cy="52" r="7" fill="oklch(76% 0.13 95)" opacity="0.55"></circle>
+        <circle cx="61" cy="52" r="7" fill="oklch(76% 0.13 95)" opacity="0.55"></circle>
+        <circle cx="33" cy="38" r="3.2" fill="oklch(30% 0.02 60)"></circle>
+        <circle cx="55" cy="38" r="3.2" fill="oklch(30% 0.02 60)"></circle>
+        <path d="M35 58 Q44 63 53 58" fill="none" stroke="oklch(30% 0.02 60)" stroke-width="2.2"
+          stroke-linecap="round"></path>
+      </svg>
+      }
+    </div>
+    }
+  </div>
+  @if (total() > 1) {
+  <div class="carrusel__contador">{{ indice() + 1 }} / {{ total() }}</div>
+  }
+</div>
+
+@if (total() > 1) {
+<div class="carrusel__puntos">
+  @for (d of diapositivas(); track $index; let i = $index) {
+  <span class="carrusel__punto" [class.carrusel__punto--activo]="indice() === i" (click)="irAImagen(i)"></span>
+  }
+</div>
+
+<p class="carrusel__ayuda">Desliza hacia la izquierda para ver otros ejemplos del mismo signo.</p>
+}

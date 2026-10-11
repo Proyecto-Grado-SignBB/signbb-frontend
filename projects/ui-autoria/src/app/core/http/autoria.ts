@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   Aviso,
@@ -80,6 +80,17 @@ export class AutoriaService {
 
   publicar(id: number): Observable<SubgrafoDTO> {
     return this.http.post<SubgrafoDTO>(`${this.base}/subgrafos/${id}/publicar`, {});
+  }
+
+  /**
+   * Sube una imagen de apoyo y devuelve el nombre con el que quedó guardada
+   * (es lo que va en `imagenes` del nodo). Es independiente del subgrafo: la
+   * imagen solo pasa a ser de una pregunta al guardarla en ella.
+   */
+  subirImagen(archivo: File): Observable<string> {
+    const datos = new FormData();
+    datos.append('archivo', archivo);
+    return this.http.post<{ nombre: string }>(`${this.base}/imagenes`, datos).pipe(map(r => r.nombre));
   }
 
   /** Descarta los cambios sin publicar: el borrador vuelve a su última publicación. */

@@ -114,4 +114,52 @@ describe('PreguntaComponent', () => {
         tick(400);
       }));
   });
+
+  describe('imágenes de la pregunta', () => {
+    const IMG_1 = '11111111-1111-1111-1111-111111111111.png';
+    const IMG_2 = '22222222-2222-2222-2222-222222222222.jpg';
+
+    function mostrar(tipoInteraccion: 'SELECCION_UNICA' | 'SELECCION_MULTIPLE', opciones: string[], imagenes: string[]): HTMLElement {
+      component.respuesta.set({
+        recorridoId: 'r1',
+        estado: 'EN_CURSO',
+        pregunta: {
+          id: 'q1', texto: '¿Cómo se ve la piel?', opciones, tipoInteraccion,
+          tieneImagenes: imagenes.length > 0, imagenes
+        },
+        resultado: null
+      });
+      fixture.detectChanges();
+      return fixture.nativeElement;
+    }
+
+    it('una pregunta de una respuesta con imágenes las muestra y responde al tocar una opción', () => {
+      const el = mostrar('SELECCION_UNICA', ['SI', 'NO'], [IMG_1, IMG_2]);
+
+      expect(component.esImagen()).toBeTrue();
+      const fotos = el.querySelectorAll<HTMLImageElement>('app-carrusel-imagenes .carrusel__imagen');
+      expect(fotos.length).toBe(2);
+      expect(fotos[0].src).toContain(`/media/${IMG_1}`);
+    });
+
+    it('una pregunta de varias respuestas con imágenes usa la vista de selección y muestra las imágenes arriba', () => {
+      const el = mostrar('SELECCION_MULTIPLE', ['COME_MENOS', 'SOMNOLENCIA'], [IMG_1]);
+
+      expect(component.esImagen()).toBeFalse();
+      expect(component.esSeleccionMultiple()).toBeTrue();
+      expect(el.querySelectorAll('app-carrusel-imagenes .carrusel__imagen').length).toBe(1);
+      expect(el.querySelectorAll('.pregunta__checkbox').length).toBe(2);
+
+      // Tocar una opción solo la marca: se responde con «Continuar».
+      el.querySelector<HTMLButtonElement>('.pregunta__opcion')!.click();
+      httpMock.expectNone(r => r.url.endsWith('/responder'));
+      expect(component.opcionesSeleccionadas().size).toBe(1);
+    });
+
+    it('una pregunta de varias respuestas sin imágenes no muestra carrusel', () => {
+      const el = mostrar('SELECCION_MULTIPLE', ['COME_MENOS', 'SOMNOLENCIA'], []);
+
+      expect(el.querySelector('app-carrusel-imagenes')).toBeNull();
+    });
+  });
 });

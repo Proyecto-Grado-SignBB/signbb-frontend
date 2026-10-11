@@ -38,6 +38,30 @@
         ¿Puede marcar varias respuestas?
       </label>
 
+      <div class="imagenes">
+        <span class="respuestas-titulo">Imágenes de apoyo (opcional, hasta {{ maxImagenes }})</span>
+        <div class="miniaturas">
+          @for (nombre of imagenes; track nombre; let i = $index) {
+            <div class="miniatura">
+              <img [src]="urlImagen(nombre)" alt="" />
+              <button type="button" class="btn-quitar-imagen" (click)="quitarImagen(i)"
+                title="Quitar imagen" [attr.aria-label]="'Quitar imagen ' + (i + 1)">✕</button>
+            </div>
+          }
+          @if (imagenes.length < maxImagenes) {
+            <label class="agregar-imagen" [class.ocupada]="subiendo">
+              <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" [disabled]="subiendo"
+                (change)="elegirImagen($event)" />
+              {{ subiendo ? 'Subiendo…' : '+ Imagen' }}
+            </label>
+          }
+        </div>
+        <p class="nota">png, jpeg, webp o gif, de hasta 1 MB cada una.</p>
+        @if (errorImagen) {
+          <p class="error" role="alert">{{ errorImagen }}</p>
+        }
+      </div>
+
       <div class="respuestas">
         <span class="respuestas-titulo">Respuestas y qué tan grave es cada una</span>
         @for (fila of respuestas; track $index; let i = $index) {

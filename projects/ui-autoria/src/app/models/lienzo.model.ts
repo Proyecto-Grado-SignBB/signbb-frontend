@@ -39,6 +39,8 @@ export interface NodoLienzo {
   variasRespuestas: boolean;
   desenlace: Desenlace | null;
   respuestas: RespuestaLienzo[];
+  /** Nombres de las imágenes de apoyo de la pregunta (máximo 3), en orden. */
+  imagenes?: string[];
 }
 
 /** Aviso del lienzo, en lenguaje humano. Los bloqueantes impiden publicar. */
@@ -123,6 +125,8 @@ export interface NodoRequest {
   variasRespuestas?: boolean;
   desenlace?: Desenlace | null;
   respuestas?: OpcionRequest[];
+  /** Nombres devueltos al subir cada imagen (solo preguntas). Omitido, al editar se conservan las actuales. */
+  imagenes?: string[];
 }
 
 export const ETIQUETA_GRAVEDAD: Record<Gravedad, string> = {

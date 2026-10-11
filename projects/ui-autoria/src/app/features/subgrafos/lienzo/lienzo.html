@@ -102,6 +102,7 @@
                       } @else {
                         {{ c.nodo.desenlace ? etiquetaDesenlace[c.nodo.desenlace] : 'Conclusión' }}
                       }
+                      @if (c.nodo.imagenes?.length) { · {{ c.nodo.imagenes!.length === 1 ? '1 imagen' : c.nodo.imagenes!.length + ' imágenes' }} }
                       @if (c.suelto) { · suelta }
                     </span>
                     <span class="nodo-texto">{{ c.nodo.texto || (c.nodo.tipo === 'PREGUNTA' ? 'Pregunta sin texto' : 'Conclusión sin mensaje') }}</span>

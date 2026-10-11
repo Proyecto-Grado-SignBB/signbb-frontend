@@ -1,4 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { environment } from '../../../../../environments/environment';
 import { NodoLienzo, NodoRequest } from '../../../../models/lienzo.model';
 import { ContextoPanel, PanelNodoComponent } from './panel-nodo';
 
@@ -41,7 +44,10 @@ describe('PanelNodoComponent', () => {
   }
 
   beforeEach(async () => {
-    await TestBed.configureTestingModule({ imports: [PanelNodoComponent] }).compileComponents();
+    await TestBed.configureTestingModule({
+      imports: [PanelNodoComponent],
+      providers: [provideHttpClient(), provideHttpClientTesting()]
+    }).compileComponents();
     fixture = TestBed.createComponent(PanelNodoComponent);
     el = fixture.nativeElement;
   });
@@ -63,6 +69,7 @@ describe('PanelNodoComponent', () => {
     expect(emitido).toEqual({
       texto: '¿Está decaído o no quiere comer?',
       variasRespuestas: false,
+      imagenes: [],
       respuestas: [
         { id: null, texto: 'Sí', gravedad: 'MODERADA' },
         { id: null, texto: 'No', gravedad: 'LEVE' }
@@ -124,5 +131,103 @@ describe('PanelNodoComponent', () => {
       { id: 'r_3', texto: 'Más de 39,5 °C', gravedad: 'GRAVE' }
     ]);
     expect(guardado?.request.tipo).toBeUndefined();
+  });
+
+  describe('imágenes de apoyo', () => {
+    const IMG_1 = '11111111-1111-1111-1111-111111111111.png';
+    const IMG_2 = '22222222-2222-2222-2222-222222222222.jpg';
+    const CON_IMAGENES: NodoLienzo = { ...TERMOMETRO, imagenes: [IMG_1, IMG_2] };
+
+    function elegirArchivo(archivo: File): void {
+      const entrada = el.querySelector<HTMLInputElement>('.agregar-imagen input')!;
+      const dt = new DataTransfer();
+      dt.items.add(archivo);
+      entrada.files = dt.files;
+      entrada.dispatchEvent(new Event('change'));
+      fixture.detectChanges();
+    }
+
+    it('al editar muestra las imágenes que ya tiene la pregunta', async () => {
+      await abrir({ tipo: 'editar', nodo: CON_IMAGENES });
+
+      const fotos = [...el.querySelectorAll<HTMLImageElement>('.miniatura img')];
+      expect(fotos.length).toBe(2);
+      expect(fotos[0].src).toContain(`/media/${IMG_1}`);
+      expect(fotos[0].getAttribute('alt')).toBe('');
+      expect(el.querySelector('.agregar-imagen')).not.toBeNull();
+    });
+
+    it('con tres imágenes ya no ofrece agregar otra', async () => {
+      await abrir({ tipo: 'editar', nodo: { ...TERMOMETRO, imagenes: [IMG_1, IMG_2, '33333333-3333-3333-3333-333333333333.webp'] } });
+
+      expect(el.querySelectorAll('.miniatura').length).toBe(3);
+      expect(el.querySelector('.agregar-imagen')).toBeNull();
+    });
+
+    it('quitar una imagen la saca de lo que se guarda', async () => {
+      await abrir({ tipo: 'editar', nodo: CON_IMAGENES });
+      let guardado: { nodoId: string; request: NodoRequest } | undefined;
+      fixture.componentInstance.guardar.subscribe(g => (guardado = g));
+
+      el.querySelector<HTMLButtonElement>('.btn-quitar-imagen')!.click();
+      fixture.detectChanges();
+      enviar();
+
+      expect(guardado?.request.imagenes).toEqual([IMG_2]);
+    });
+
+    it('sube la imagen elegida y la agrega a la pregunta', async () => {
+      const http = TestBed.inject(HttpTestingController);
+      await abrir({ tipo: 'editar', nodo: TERMOMETRO });
+      let guardado: { nodoId: string; request: NodoRequest } | undefined;
+      fixture.componentInstance.guardar.subscribe(g => (guardado = g));
+
+      elegirArchivo(new File([new Uint8Array(10)], 'termometro.png', { type: 'image/png' }));
+      const subida = http.expectOne(`${environment.apiUrl}/autoria/imagenes`);
+      expect(el.querySelector('.agregar-imagen')?.textContent).toContain('Subiendo');
+      subida.flush({ nombre: IMG_1 });
+      fixture.detectChanges();
+
+      expect(el.querySelectorAll('.miniatura').length).toBe(1);
+      enviar();
+      expect(guardado?.request.imagenes).toEqual([IMG_1]);
+      http.verify();
+    });
+
+    it('no sube lo que pesa más de 1 MB ni lo que no es imagen, y explica por qué', async () => {
+      const http = TestBed.inject(HttpTestingController);
+      await abrir({ tipo: 'editar', nodo: TERMOMETRO });
+
+      elegirArchivo(new File([new Uint8Array(1024 * 1024 + 1)], 'grande.png', { type: 'image/png' }));
+      expect(el.querySelector('.error')?.textContent).toContain('máximo es 1 MB');
+
+      elegirArchivo(new File(['hola'], 'nota.txt', { type: 'text/plain' }));
+      expect(el.querySelector('.error')?.textContent).toContain('png, jpeg, webp o gif');
+
+      http.expectNone(`${environment.apiUrl}/autoria/imagenes`);
+      expect(el.querySelectorAll('.miniatura').length).toBe(0);
+    });
+
+    it('si el servidor rechaza la imagen muestra su mensaje', async () => {
+      const http = TestBed.inject(HttpTestingController);
+      await abrir({ tipo: 'editar', nodo: TERMOMETRO });
+
+      elegirArchivo(new File([new Uint8Array(10)], 'x.png', { type: 'image/png' }));
+      http.expectOne(`${environment.apiUrl}/autoria/imagenes`)
+        .flush({ mensaje: 'Solo se aceptan imágenes png, jpeg, webp o gif.', avisos: [] }, { status: 422, statusText: 'Unprocessable' });
+      fixture.detectChanges();
+
+      expect(el.querySelector('.error')?.textContent).toContain('Solo se aceptan imágenes');
+      expect(el.querySelectorAll('.miniatura').length).toBe(0);
+    });
+
+    it('una pregunta nueva sale con la lista de imágenes vacía', async () => {
+      await abrir({ tipo: 'primera' });
+      let creado: NodoRequest | undefined;
+      fixture.componentInstance.crear.subscribe(r => (creado = r));
+      await escribir('textarea', '¿Fiebre?');
+      enviar();
+      expect(creado?.imagenes).toEqual([]);
+    });
   });
 });
