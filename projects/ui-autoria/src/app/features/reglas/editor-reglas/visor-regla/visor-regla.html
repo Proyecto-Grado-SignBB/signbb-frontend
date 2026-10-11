@@ -1,0 +1,56 @@
+<div class="visor-panel">
+  <div class="casos-vista">
+    @for (vista of vistas(); track $index; let i = $index) {
+      @if (i > 0) {
+        <div class="conector-o"><span>O</span></div>
+      }
+
+      @if (vista.vacio) {
+        <div class="caso-vista caso-vista--vacio">
+          <div class="caso-vista-head">
+            <span class="caso-num">Caso {{ i + 1 }}</span>
+            <span class="caso-hint">Sin respuestas todavía</span>
+          </div>
+          <p class="caso-vacio">Agrega al menos una respuesta para definir este caso.</p>
+        </div>
+      } @else {
+        <div class="caso-vista">
+          <div class="caso-vista-head">
+            <span class="caso-num">Caso {{ i + 1 }}</span>
+            <span class="caso-hint">Se activa si se marcan TODAS estas respuestas</span>
+          </div>
+
+          <div class="grafo-scroll">
+            <div class="grafo-lienzo" [style.width.px]="vista.ancho" [style.height.px]="vista.alto">
+              <svg class="lineas" [attr.width]="vista.ancho" [attr.height]="vista.alto" aria-hidden="true">
+                @for (enlace of vista.enlaces; track $index) {
+                  <path class="linea linea--resaltada" [attr.d]="enlace.d" />
+                }
+              </svg>
+
+              @for (enlace of vista.enlaces; track $index) {
+                <span class="gelabel gelabel--resaltada"
+                  [style.left.px]="enlace.etiquetaX" [style.top.px]="enlace.etiquetaY">{{ enlace.etiqueta }}</span>
+              }
+
+              @for (paso of vista.pasos; track paso.id) {
+                <div class="gnodo" [class.gnodo--destino]="paso.tipo === 'terminal'"
+                  [style.left.px]="paso.x" [style.top.px]="paso.y">
+                  <span class="gnodo-tag">{{ paso.tipo === 'terminal' ? 'Destino' : 'dispara' }}</span>
+                  <span class="gnodo-tipo">{{ paso.tipo === 'terminal' ? 'Conclusión' : 'Pregunta' }}</span>
+                  <span class="gnodo-texto">{{ paso.texto }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    }
+  </div>
+
+  <div class="grafo-leyenda">
+    <div class="fila"><span class="muestra muestra--dispara"></span> Pregunta implicada en el caso</div>
+    <div class="fila"><span class="muestra muestra--respuesta"></span> Respuesta que debe estar marcada</div>
+    <div class="fila"><span class="muestra muestra--destino"></span> Conclusión destino</div>
+  </div>
+</div>

@@ -1,9 +1,9 @@
 import { Routes } from '@angular/router';
 
 /**
- * Rutas de la app: tablero de subgrafos, lienzo de un subgrafo y perfil. Cada
- * pantalla se carga de forma diferida; cualquier ruta desconocida redirige al
- * tablero.
+ * Rutas de la app: tablero de subgrafos, lienzo de un subgrafo, tablero de
+ * bases de reglas, editor de una base y perfil. Cada pantalla se carga de forma
+ * diferida; cualquier ruta desconocida redirige al tablero de subgrafos.
  */
 export const routes: Routes = [
   { path: '', redirectTo: 'subgrafos', pathMatch: 'full' },
@@ -14,6 +14,14 @@ export const routes: Routes = [
   {
     path: 'subgrafos/:id',
     loadComponent: () => import('./features/subgrafos/lienzo/lienzo').then(m => m.LienzoComponent)
+  },
+  {
+    path: 'reglas',
+    loadComponent: () => import('./features/reglas/tablero-reglas/tablero-reglas').then(m => m.TableroReglasComponent)
+  },
+  {
+    path: 'reglas/:id',
+    loadComponent: () => import('./features/reglas/editor-reglas/editor-reglas').then(m => m.EditorReglasComponent)
   },
   {
     path: 'perfil',

@@ -68,6 +68,41 @@ describe('AutoriaService', () => {
     servicio.categorias().subscribe();
     expect(http.expectOne(`${base}/categorias`).request.method).toBe('GET');
   });
+
+  it('lista y crea bases de reglas', () => {
+    servicio.listarBases().subscribe();
+    expect(http.expectOne(`${base}/bases`).request.method).toBe('GET');
+
+    const request = { nombre: 'Reglas de fiebre', descripcion: 'x', grafoId: 'grafo_fiebre' };
+    servicio.crearBase(request).subscribe();
+    const crear = http.expectOne(`${base}/bases`);
+    expect(crear.request.method).toBe('POST');
+    expect(crear.request.body).toEqual(request);
+  });
+
+  it('agrega, edita y elimina reglas de una base', () => {
+    const regla = { nombre: 'R', casos: [[{ idNodo: 'pregunta_1', respuesta: 'SI' }]], nivel: 'URGENCIA' as const, nodoDestino: 'conclusion_1' };
+    servicio.agregarRegla(3, regla).subscribe();
+    const crear = http.expectOne(`${base}/bases/3/reglas`);
+    expect(crear.request.method).toBe('POST');
+    expect(crear.request.body).toEqual(regla);
+
+    servicio.editarRegla(3, 'R_1', regla).subscribe();
+    expect(http.expectOne(`${base}/bases/3/reglas/R_1`).request.method).toBe('PUT');
+
+    servicio.eliminarRegla(3, 'R_1').subscribe();
+    expect(http.expectOne(`${base}/bases/3/reglas/R_1`).request.method).toBe('DELETE');
+  });
+
+  it('publicar base, avisos y catálogo', () => {
+    servicio.publicarBase(3).subscribe();
+    expect(http.expectOne(`${base}/bases/3/publicar`).request.method).toBe('POST');
+    servicio.avisosBase(3).subscribe();
+    expect(http.expectOne(`${base}/bases/3/avisos`).request.method).toBe('GET');
+    servicio.catalogo('grafo_fiebre').subscribe();
+    const cat = http.expectOne(`${base}/bases/catalogo?grafoId=grafo_fiebre`);
+    expect(cat.request.method).toBe('GET');
+  });
 });
 
 describe('errores de autoría', () => {

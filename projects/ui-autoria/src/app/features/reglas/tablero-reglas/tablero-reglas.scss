@@ -1,0 +1,247 @@
+@use 'tokens-admin' as *;
+
+.pantalla-autoria {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 30px;
+  border-bottom: 1px solid $color-line;
+  background: $color-surface;
+}
+
+.topbar-left .crumb {
+  font-size: 12px;
+  color: $color-ink-faint;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.topbar-left h3 {
+  font-size: 19px;
+  font-weight: 800;
+  color: $color-ink;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mensaje-ok {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: $color-calm-dark;
+}
+
+.content {
+  flex: 1;
+  min-height: 0;
+  padding: 28px 30px;
+  overflow: auto;
+}
+
+.estado-carga,
+.estado-vacio {
+  color: $color-ink-faint;
+  font-size: 14px;
+  padding: 12px 0;
+}
+
+// --- Tarjeta de creación ----------------------------------------------------
+
+.crear-card {
+  background: $color-surface;
+  border: 1px solid $color-line;
+  border-radius: $radius-lg;
+  padding: 20px;
+  margin-bottom: 22px;
+
+  h4 {
+    font-size: 15px;
+    margin-bottom: 14px;
+    color: $color-ink;
+  }
+}
+
+.crear-campos {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  margin-bottom: 16px;
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: $color-ink-soft;
+  }
+
+  input,
+  textarea,
+  select {
+    font-family: $font-body;
+    font-size: 13.5px;
+    padding: 9px 12px;
+    border: 1px solid $color-line;
+    border-radius: 10px;
+    color: $color-ink;
+    background: $color-surface;
+
+    &:focus-visible {
+      outline: 2px solid $color-brand;
+      outline-offset: 1px;
+    }
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 64px;
+  }
+
+  small {
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.45;
+    color: $color-ink-faint;
+  }
+}
+
+.crear-acciones {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+// --- Tarjetas de base -------------------------------------------------------
+
+.base-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.base-card {
+  background: $color-surface;
+  border: 1px solid $color-line;
+  border-radius: $radius-lg;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: $shadow-card;
+
+  .top-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  h4 {
+    font-family: $font-heading;
+    font-size: 15.5px;
+    font-weight: 800;
+    color: $color-ink;
+  }
+
+  .grafo-id {
+    font-size: 11.5px;
+    color: $color-ink-faint;
+    font-weight: 600;
+  }
+
+  p {
+    margin: 0;
+    font-size: 12.5px;
+    color: $color-ink-faint;
+    line-height: 1.45;
+  }
+
+  .foot {
+    margin-top: auto;
+    padding-top: 8px;
+    border-top: 1px solid $color-line-soft;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .n-reglas {
+    font-family: $font-heading;
+    font-size: 13px;
+    font-weight: 800;
+    color: $color-ink-soft;
+
+    small {
+      color: $color-ink-faint;
+      font-weight: 600;
+      font-family: $font-body;
+    }
+  }
+
+  .acciones-card {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+}
+
+.new-base-card {
+  border: 1.5px dashed $color-line;
+  border-radius: $radius-lg;
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px;
+  color: $color-ink-faint;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  background: none;
+  cursor: pointer;
+
+  &:hover {
+    border-color: $color-brand;
+    color: $color-brand-dark;
+  }
+
+  .plus {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: $color-brand-tint;
+    color: $color-brand-dark;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    line-height: 1;
+  }
+}
+
+@media (max-width: 900px) {
+  .base-grid {
+    grid-template-columns: 1fr;
+  }
+}

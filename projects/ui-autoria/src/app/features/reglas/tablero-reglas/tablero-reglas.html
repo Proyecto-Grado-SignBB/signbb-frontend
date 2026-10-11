@@ -1,0 +1,119 @@
+<div class="pantalla-autoria">
+  <app-sidebar-autoria seccionActiva="reglas" />
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="crumb">Autoría</div>
+        <h3>Reglas de alarma</h3>
+      </div>
+      <div class="topbar-right">
+        @if (mensaje()) {
+          <span class="mensaje-ok" role="status">{{ mensaje() }}</span>
+        }
+        <app-boton tono="marca" alto="compacto" ancho="auto" (click)="abrirFormularioCrear()">
+          + Nueva base de reglas
+        </app-boton>
+      </div>
+    </div>
+
+    <div class="content">
+      @if (error()) {
+        <app-mensaje-error [texto]="error()!" (reintentar)="cargarBases()" />
+      }
+
+      @if (mostrarFormularioCrear()) {
+        <div class="crear-card">
+          <h4>Nueva base de reglas</h4>
+          <div class="crear-campos">
+            <label>
+              <span>Nombre de la base</span>
+              <input type="text" [(ngModel)]="nombreNuevo" placeholder="Ej: Ictericia en la piel" />
+              <small>Nombre técnico; solo lo ven los médicos.</small>
+            </label>
+
+            <label>
+              <span>Descripción</span>
+              <textarea rows="2" [(ngModel)]="descripcionNueva"
+                placeholder="Explica para qué sirven estas reglas…"></textarea>
+            </label>
+
+            <label>
+              <span>Subgrafo</span>
+              @if (errorSubgrafos()) {
+                <app-mensaje-error [texto]="errorSubgrafos()!" (reintentar)="cargarSubgrafos()" />
+              }
+              <select [(ngModel)]="grafoSeleccionado">
+                <option value="">— Elige un subgrafo —</option>
+                @for (sub of subgrafos(); track sub.grafoId) {
+                  <option [value]="sub.grafoId">{{ sub.nombre }} · {{ sub.grafoId }}</option>
+                }
+              </select>
+              <small>Las reglas se asocian a los nodos de ese subgrafo.</small>
+            </label>
+          </div>
+
+          @if (errorCrear()) {
+            <app-mensaje-error [texto]="errorCrear()!" (reintentar)="confirmarCrear()" />
+          }
+
+          <div class="crear-acciones">
+            <app-boton tono="neutro" variante="texto" alto="compacto" ancho="auto" (click)="cancelarCrear()">
+              Cancelar
+            </app-boton>
+            <app-boton tono="marca" alto="compacto" ancho="auto" [disabled]="!puedeCrear || creando()"
+              (click)="confirmarCrear()">{{ creando() ? 'Creando…' : 'Crear base' }}</app-boton>
+          </div>
+        </div>
+      }
+
+      @if (cargando()) {
+        <p class="estado-carga">Cargando bases de reglas…</p>
+      } @else if (bases().length === 0) {
+        <p class="estado-vacio">Todavía no hay bases de reglas. Crea una para empezar.</p>
+      } @else {
+        <div class="base-grid">
+          @for (base of bases(); track base.id) {
+            <div class="base-card">
+              <div class="top-row">
+                <h4>{{ base.nombre }}</h4>
+                <app-etiqueta [tono]="tonoEstado(base.estado)">{{ etiquetaEstado[base.estado] }}</app-etiqueta>
+              </div>
+              <span class="grafo-id">{{ base.grafoId }}</span>
+              @if (base.descripcion) {
+                <p>{{ base.descripcion }}</p>
+              }
+              <div class="foot">
+                <span class="n-reglas">{{ base.reglas }} <small>regla{{ base.reglas === 1 ? '' : 's' }}</small></span>
+                <div class="acciones-card">
+                  <app-boton tono="alerta" variante="texto" alto="compacto" ancho="auto" (click)="eliminar(base)">
+                    Eliminar
+                  </app-boton>
+                  <app-boton tono="marca" variante="contorno" alto="compacto" ancho="auto" (click)="abrirBase(base.id)">
+                    Abrir base →
+                  </app-boton>
+                </div>
+              </div>
+            </div>
+          }
+
+          <button type="button" class="new-base-card" (click)="abrirFormularioCrear()">
+            <span class="plus">+</span>
+            Crear una base de reglas nueva
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+@if (porEliminar(); as base) {
+  <app-dialogo-confirmar
+    titulo="¿Eliminar la base?"
+    [mensaje]="'Se eliminará «' + base.nombre + '» y sus reglas. Solo se puede borrar si nunca se publicó.'"
+    textoConfirmar="Eliminar"
+    [ocupado]="eliminando()"
+    [error]="errorEliminar()"
+    (confirmar)="confirmarEliminar()"
+    (cancelar)="cancelarEliminar()" />
+}

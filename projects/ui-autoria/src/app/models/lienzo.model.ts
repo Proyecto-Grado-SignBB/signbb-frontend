@@ -25,7 +25,13 @@ export type CodigoAviso =
   | 'RESPUESTA_SIN_CAMINO'
   | 'SIN_DESENLACE'
   | 'CICLO'
-  | 'NODO_SUELTO';
+  | 'NODO_SUELTO'
+  | 'REGLA_SIN_NOMBRE'
+  | 'REGLA_SIN_CONDICIONES'
+  | 'REGLA_SIN_DESTINO'
+  | 'REGLA_NIVEL_NORMAL'
+  | 'REGLA_CONDICION_INVALIDA'
+  | 'REGLA_DESTINO_INEXISTENTE';
 
 /** Una respuesta de una pregunta; `destino` nulo es un "+" pendiente. */
 export interface RespuestaLienzo {

@@ -11,6 +11,13 @@ import {
   SubgrafoDTO,
   SubgrafoRequest
 } from '../../models/lienzo.model';
+import {
+  BaseReglaDTO,
+  BaseReglaRequest,
+  CatalogoDTO,
+  ReglaRequest,
+  ResumenBaseReglaDTO
+} from '../../models/regla.model';
 
 /**
  * Cliente HTTP del módulo de autoría. Envuelve 1:1 los endpoints de
@@ -89,6 +96,65 @@ export class AutoriaService {
   /** Publica el borrador; si hay avisos bloqueantes, responde 422 con ellos. */
   publicar(id: number): Observable<SubgrafoDTO> {
     return this.http.post<SubgrafoDTO>(`${this.base}/subgrafos/${id}/publicar`, {});
+  }
+
+  // --- Reglas ----------------------------------------------------------------
+
+  /** Lista las bases de reglas del tablero, del último editado al primero. */
+  listarBases(): Observable<ResumenBaseReglaDTO[]> {
+    return this.http.get<ResumenBaseReglaDTO[]>(`${this.base}/bases`);
+  }
+
+  /** Crea una base de reglas vacía para el grafo indicado. */
+  crearBase(request: BaseReglaRequest): Observable<BaseReglaDTO> {
+    return this.http.post<BaseReglaDTO>(`${this.base}/bases`, request);
+  }
+
+  /** Obtiene una base completa (reglas y avisos). */
+  obtenerBase(id: number): Observable<BaseReglaDTO> {
+    return this.http.get<BaseReglaDTO>(`${this.base}/bases/${id}`);
+  }
+
+  /** Cambia el nombre o la descripción de la base; el grafo no cambia. */
+  actualizarBase(id: number, request: BaseReglaRequest): Observable<BaseReglaDTO> {
+    return this.http.put<BaseReglaDTO>(`${this.base}/bases/${id}`, request);
+  }
+
+  /** Borra una base que nunca se publicó. */
+  eliminarBase(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.base}/bases/${id}`);
+  }
+
+  /** Agrega una regla a la base. */
+  agregarRegla(id: number, request: ReglaRequest): Observable<BaseReglaDTO> {
+    return this.http.post<BaseReglaDTO>(`${this.base}/bases/${id}/reglas`, request);
+  }
+
+  /** Edita una regla de la base. */
+  editarRegla(id: number, reglaId: string, request: ReglaRequest): Observable<BaseReglaDTO> {
+    return this.http.put<BaseReglaDTO>(`${this.base}/bases/${id}/reglas/${reglaId}`, request);
+  }
+
+  /** Elimina una regla de la base. */
+  eliminarRegla(id: number, reglaId: string): Observable<BaseReglaDTO> {
+    return this.http.delete<BaseReglaDTO>(`${this.base}/bases/${id}/reglas/${reglaId}`);
+  }
+
+  /** Avisos actuales de la base de reglas. */
+  avisosBase(id: number): Observable<Aviso[]> {
+    return this.http.get<Aviso[]>(`${this.base}/bases/${id}/avisos`);
+  }
+
+  /** Publica la base como la activa de su grafo. */
+  publicarBase(id: number): Observable<BaseReglaDTO> {
+    return this.http.post<BaseReglaDTO>(`${this.base}/bases/${id}/publicar`, {});
+  }
+
+  /** Catálogo de nodos y respuestas de un grafo, para el editor de reglas. */
+  catalogo(grafoId: string): Observable<CatalogoDTO> {
+    return this.http.get<CatalogoDTO>(`${this.base}/bases/catalogo`, {
+      params: { grafoId }
+    });
   }
 }
 
