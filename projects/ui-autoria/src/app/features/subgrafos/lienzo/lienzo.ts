@@ -167,6 +167,12 @@ export class LienzoComponent implements OnInit {
   }
 
   protected cargar(): void {
+    // Una dirección como /subgrafos/abc no tiene a qué subgrafo apuntar: no vale la pena preguntarle al servidor.
+    if (!Number.isInteger(this.id) || this.id <= 0) {
+      this.error.set('Ese subgrafo no existe. Vuelve a «Subgrafos» y elige uno de la lista.');
+      this.cargando.set(false);
+      return;
+    }
     this.cargando.set(true);
     this.error.set(null);
     this.autoria.obtener(this.id).subscribe({

@@ -62,10 +62,59 @@ describe('TableroComponent', () => {
 
     expect(el.textContent).toContain('sin términos médicos');
     expect(el.textContent).toContain('Escribe cómo lo verán las familias.');
-    expect(boton('Crear y abrir el lienzo').disabled).toBeTrue();
+
+    boton('Crear y abrir el lienzo').click();
+    fixture.detectChanges();
+    http.expectNone(`${BASE}/subgrafos`);
 
     await escribir('Ej: Piel u ojos amarillos', 'Piel u ojos amarillos');
-    expect(boton('Crear y abrir el lienzo').disabled).toBeFalse();
+    expect(el.textContent).not.toContain('Escribe cómo lo verán las familias.');
+  });
+
+  it('sin nombre del subgrafo lo explica y no crea nada', async () => {
+    boton('+ Nuevo subgrafo').click();
+    fixture.detectChanges();
+    boton('Piel').click();
+    await escribir('Ej: Piel u ojos amarillos', 'Piel u ojos amarillos');
+    await escribir('Ej: Ictericia en la piel', '  ');
+
+    expect(el.textContent).toContain('Escribe el nombre del subgrafo.');
+    boton('Crear y abrir el lienzo').click();
+    fixture.detectChanges();
+    http.expectNone(`${BASE}/subgrafos`);
+
+    await escribir('Ej: Ictericia en la piel', 'Ictericia en la piel');
+    expect(el.textContent).not.toContain('Escribe el nombre del subgrafo.');
+  });
+
+  it('sin categoría lo explica al intentar crear y deja de avisar al elegirla', async () => {
+    boton('+ Nuevo subgrafo').click();
+    fixture.detectChanges();
+    await escribir('Ej: Ictericia en la piel', 'Ictericia en la piel');
+    await escribir('Ej: Piel u ojos amarillos', 'Piel u ojos amarillos');
+    expect(el.textContent).not.toContain('Elige una categoría.');
+
+    boton('Crear y abrir el lienzo').click();
+    fixture.detectChanges();
+
+    expect(el.textContent).toContain('Elige una categoría.');
+    http.expectNone(`${BASE}/subgrafos`);
+
+    boton('Piel').click();
+    fixture.detectChanges();
+    expect(el.textContent).not.toContain('Elige una categoría.');
+  });
+
+  it('al pulsar crear con todo vacío explica cada cosa que falta', () => {
+    boton('+ Nuevo subgrafo').click();
+    fixture.detectChanges();
+    boton('Crear y abrir el lienzo').click();
+    fixture.detectChanges();
+
+    expect(el.textContent).toContain('Escribe el nombre del subgrafo.');
+    expect(el.textContent).toContain('Elige una categoría.');
+    expect(el.textContent).toContain('Escribe cómo lo verán las familias.');
+    http.expectNone(`${BASE}/subgrafos`);
   });
 
   it('eliminar pide confirmación en la interfaz, no en el navegador', () => {

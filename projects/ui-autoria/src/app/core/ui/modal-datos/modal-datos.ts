@@ -35,12 +35,14 @@ export class ModalDatosComponent implements OnChanges {
 
   protected nombre = '';
   protected etiquetaOpcion = '';
+  protected tocadoNombre = false;
   protected tocadoEtiqueta = false;
 
   ngOnChanges(cambios: SimpleChanges): void {
     if (cambios['datos']) {
       this.nombre = this.datos.nombre;
       this.etiquetaOpcion = this.datos.etiquetaOpcion;
+      this.tocadoNombre = false;
       this.tocadoEtiqueta = false;
     }
   }
@@ -57,6 +59,7 @@ export class ModalDatosComponent implements OnChanges {
   }
 
   protected enviar(): void {
+    this.tocadoNombre = true;
     this.tocadoEtiqueta = true;
     if (this.valido && !this.guardando) {
       this.guardar.emit({ nombre: this.nombre.trim(), etiquetaOpcion: this.etiquetaOpcion.trim() });

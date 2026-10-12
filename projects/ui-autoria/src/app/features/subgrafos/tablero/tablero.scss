@@ -293,6 +293,14 @@
   border-color: $color-alert;
 }
 
+.crear-categoria .falta {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: $color-alert-dark;
+}
+
 .crear-ayuda {
   font-weight: 400;
   color: $color-ink-faint;
