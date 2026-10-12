@@ -1,0 +1,85 @@
+@switch (nivel) {
+@case ('URGENCIA') {
+<svg class="ilu ilu--hospital" viewBox="0 0 160 160" aria-hidden="true" focusable="false">
+  <ellipse cx="80" cy="152" rx="62" ry="5" fill="#000" opacity=".12" />
+  <g>
+    <path class="rayo" d="M58 22 l-9 -7" stroke="#FF5A5F" stroke-width="3.5" stroke-linecap="round" />
+    <path class="rayo rayo--b" d="M62 14 l-4 -10" stroke="#FF5A5F" stroke-width="3.5" stroke-linecap="round" />
+    <path class="rayo" d="M102 22 l9 -7" stroke="#FF5A5F" stroke-width="3.5" stroke-linecap="round" />
+    <path class="rayo rayo--b" d="M98 14 l4 -10" stroke="#FF5A5F" stroke-width="3.5" stroke-linecap="round" />
+    <path class="rayo rayo--b" d="M80 11 v-9" stroke="#FF5A5F" stroke-width="3.5" stroke-linecap="round" />
+    <path class="luz" d="M71 38 a9 9 0 0 1 18 0 z" fill="#FF5A5F" />
+  </g>
+  <rect x="68" y="37" width="24" height="5" rx="2" fill="#8896A6" />
+  <rect x="52" y="42" width="56" height="34" rx="5" fill="#EEF2F7" stroke="#C3CEDA" stroke-width="2.5" />
+  <g class="cruz"><path d="M76 49h8v7h7v8h-7v7h-8v-7h-7v-8h7z" fill="#E5484D" /></g>
+  <rect x="22" y="70" width="116" height="78" rx="7" fill="#FFFFFF" stroke="#C3CEDA" stroke-width="2.5" />
+  <g fill="#BFE3F5" stroke="#9CC4DC" stroke-width="1.5">
+    <rect class="vent" x="32" y="82" width="15" height="15" rx="2.5" />
+    <rect class="vent vent--2" x="54" y="82" width="15" height="15" rx="2.5" />
+    <rect class="vent vent--3" x="91" y="82" width="15" height="15" rx="2.5" />
+    <rect class="vent vent--4" x="113" y="82" width="15" height="15" rx="2.5" />
+    <rect class="vent vent--2" x="32" y="104" width="15" height="15" rx="2.5" />
+    <rect class="vent vent--3" x="54" y="104" width="15" height="15" rx="2.5" />
+    <rect class="vent vent--4" x="91" y="104" width="15" height="15" rx="2.5" />
+    <rect class="vent" x="113" y="104" width="15" height="15" rx="2.5" />
+  </g>
+  <rect x="68" y="122" width="24" height="26" rx="3" fill="#8FB8D8" stroke="#6E9BBE" stroke-width="2" />
+  <path d="M80 122v26" stroke="#6E9BBE" stroke-width="2" />
+  <rect x="62" y="116" width="36" height="7" rx="2.5" fill="#E5484D" />
+</svg>
+}
+@case ('CONSULTAR_MEDICO') {
+<svg class="ilu ilu--medico" viewBox="0 0 160 160" aria-hidden="true" focusable="false">
+  <ellipse cx="80" cy="156" rx="46" ry="4" fill="#000" opacity=".10" />
+  <path d="M20 160 Q20 118 80 116 Q140 118 140 160 Z" fill="#FFFFFF" stroke="#C9D5E0" stroke-width="2.5" />
+  <path d="M62 119 L80 148 L98 119 Z" fill="#4FB3BF" />
+  <path d="M62 119 L80 138 L70 120Z" fill="#fff" stroke="#C9D5E0" stroke-width="2" stroke-linejoin="round" />
+  <path d="M98 119 L80 138 L90 120Z" fill="#fff" stroke="#C9D5E0" stroke-width="2" stroke-linejoin="round" />
+  <path class="esteto" d="M56 119 Q50 152 78 154 Q104 154 104 119" fill="none" stroke="#3D4B5C" stroke-width="4"
+    stroke-linecap="round" />
+  <circle class="esteto" cx="78" cy="154" r="6.5" fill="#9FB0C0" stroke="#3D4B5C" stroke-width="3" />
+  <g transform="translate(116 140)">
+    <rect x="-9" y="-9" width="18" height="18" rx="4" fill="#fff" stroke="#C9D5E0" stroke-width="2" />
+    <path d="M-2.5 -6h5v3.5h3.5v5h-3.5v3.5h-5v-3.5h-3.5v-5h3.5z" fill="#E5484D" transform="scale(.9)" />
+  </g>
+  <g class="cabeza">
+    <rect x="68" y="100" width="24" height="22" rx="8" fill="#EDB98A" />
+    <circle cx="44" cy="74" r="7" fill="#F2C197" />
+    <circle cx="116" cy="74" r="7" fill="#F2C197" />
+    <circle cx="80" cy="72" r="37" fill="#F6CFA6" />
+    <path d="M43 68 Q40 34 80 33 Q120 34 117 68 Q106 50 80 50 Q54 50 43 68 Z" fill="#5A3A2A" />
+    <path d="M45 58 Q80 42 115 58" fill="none" stroke="#D3DCE5" stroke-width="5" stroke-linecap="round" />
+    <circle cx="80" cy="50" r="12" fill="#E8F1F8" stroke="#A9B8C7" stroke-width="3" />
+    <circle cx="80" cy="50" r="6.5" fill="#BFD6E8" />
+    <g class="destello"><path d="M80 37 l1.8 4.6 4.6 1.8 -4.6 1.8 -1.8 4.6 -1.8 -4.6 -4.6 -1.8 4.6 -1.8z" fill="#fff" /></g>
+    <g class="ojo"><ellipse cx="67" cy="76" rx="3.6" ry="4.6" fill="#3A2A22" /></g>
+    <g class="ojo"><ellipse cx="93" cy="76" rx="3.6" ry="4.6" fill="#3A2A22" /></g>
+    <path d="M60 66 Q67 62 74 66" fill="none" stroke="#5A3A2A" stroke-width="2.6" stroke-linecap="round" />
+    <path d="M86 66 Q93 62 100 66" fill="none" stroke="#5A3A2A" stroke-width="2.6" stroke-linecap="round" />
+    <ellipse cx="58" cy="86" rx="7" ry="4.5" fill="#FF8FA3" opacity=".5" />
+    <ellipse cx="102" cy="86" rx="7" ry="4.5" fill="#FF8FA3" opacity=".5" />
+    <path d="M68 90 Q80 102 92 90" fill="none" stroke="#8A3A30" stroke-width="3.4" stroke-linecap="round" />
+  </g>
+</svg>
+}
+@default {
+<svg class="ilu ilu--feliz" viewBox="0 0 160 160" aria-hidden="true" focusable="false">
+  <ellipse class="sombra" cx="80" cy="150" rx="34" ry="5" fill="#000" opacity=".12" />
+  <g class="flota">
+    <circle cx="80" cy="82" r="54" fill="#FFD95A" />
+    <circle cx="80" cy="82" r="54" fill="none" stroke="#F0B73A" stroke-width="3" />
+    <ellipse cx="46" cy="96" rx="11" ry="7" fill="#FF8FA3" opacity=".55" />
+    <ellipse cx="114" cy="96" rx="11" ry="7" fill="#FF8FA3" opacity=".55" />
+    <g class="ojo"><ellipse cx="62" cy="74" rx="6" ry="8.5" fill="#4A3426" /><circle cx="64" cy="71" r="2.2" fill="#fff" /></g>
+    <g class="ojo"><ellipse cx="98" cy="74" rx="6" ry="8.5" fill="#4A3426" /><circle cx="100" cy="71" r="2.2" fill="#fff" /></g>
+    <path d="M54 98 Q80 128 106 98 Z" fill="#8A3A30" stroke="#8A3A30" stroke-width="4" stroke-linejoin="round" />
+    <path d="M66 110 Q80 104 94 110 Q80 122 66 110 Z" fill="#FF8A8A" />
+  </g>
+  <g class="brillo"><path d="M22 38 l3 8 8 3 -8 3 -3 8 -3 -8 -8 -3 8 -3z" fill="#FFF3B0" /></g>
+  <g class="brillo brillo--b"><path d="M138 32 l2.5 6.5 6.5 2.5 -6.5 2.5 -2.5 6.5 -2.5 -6.5 -6.5 -2.5 6.5 -2.5z" fill="#FFF3B0" /></g>
+  <g class="corazon"><path d="M136 112 c0 -6 -9 -6 -9 0 c0 5 9 10 9 10 s9 -5 9 -10 c0 -6 -9 -6 -9 0z" fill="#FF7A93" /></g>
+  <g class="corazon corazon--b"><path d="M20 108 c0 -4.5 -7 -4.5 -7 0 c0 4 7 8 7 8 s7 -4 7 -8 c0 -4.5 -7 -4.5 -7 0z" fill="#FF7A93" /></g>
+</svg>
+}
+}

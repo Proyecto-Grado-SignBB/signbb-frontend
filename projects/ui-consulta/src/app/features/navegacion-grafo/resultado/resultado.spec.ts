@@ -105,6 +105,36 @@ describe('Resultado', () => {
     expect(el.querySelector('.resultado__panel--tip')?.textContent).toContain('Consulte a su pediatra');
   });
 
+  describe('ilustración animada', () => {
+    it('muestra la carita feliz en NORMAL, entre el título y el texto', () => {
+      const el = mostrar({ nivel: 'NORMAL' });
+
+      expect(el.querySelector('app-ilustracion-resultado .ilu--feliz')).not.toBeNull();
+      const hijos = Array.from(el.querySelector('.resultado__hero > div')!.children).map(h => h.tagName.toLowerCase());
+      expect(hijos).toEqual(['h1', 'app-ilustracion-resultado', 'p']);
+    });
+
+    it('muestra el médico en CONSULTAR_MEDICO', () => {
+      const el = mostrar({ nivel: 'CONSULTAR_MEDICO' });
+
+      expect(el.querySelector('app-ilustracion-resultado .ilu--medico')).not.toBeNull();
+      expect(el.querySelector('.ilu--feliz')).toBeNull();
+    });
+
+    it('muestra el hospital en URGENCIA', () => {
+      const el = mostrar({ nivel: 'URGENCIA', razones: ['Quejido al respirar'] });
+
+      expect(el.querySelector('app-ilustracion-resultado .ilu--hospital')).not.toBeNull();
+      expect(el.querySelector('.ilu--medico')).toBeNull();
+    });
+
+    it('es decorativa: va oculta para lectores de pantalla', () => {
+      const el = mostrar({ nivel: 'NORMAL' });
+
+      expect(el.querySelector('app-ilustracion-resultado svg')?.getAttribute('aria-hidden')).toBe('true');
+    });
+  });
+
   describe('corregirUltimaRespuesta()', () => {
     it('retrocede en el backend y vuelve a la pantalla de pregunta', () => {
       const router = TestBed.inject(Router);

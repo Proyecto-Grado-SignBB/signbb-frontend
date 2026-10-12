@@ -1,0 +1,247 @@
+:host {
+  display: block;
+  width: 150px;
+  height: 150px;
+  margin: 0 auto;
+}
+
+.ilu {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.ilu * {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* Carita feliz */
+.flota {
+  animation: flota 2.6s ease-in-out infinite;
+}
+
+.sombra {
+  animation: sombra 2.6s ease-in-out infinite;
+}
+
+.ojo {
+  animation: parpadeo 4.2s infinite;
+}
+
+.brillo {
+  animation: titila 2.2s ease-in-out infinite;
+}
+
+.brillo--b {
+  animation-delay: 0.9s;
+}
+
+.corazon {
+  animation: sube 3.2s ease-in-out infinite;
+  opacity: 0;
+}
+
+.corazon--b {
+  animation-delay: 1.5s;
+}
+
+/* Médico */
+.cabeza {
+  transform-origin: 50% 100%;
+  animation: asiente 3.4s ease-in-out infinite;
+}
+
+.destello {
+  animation: titila 2s ease-in-out infinite;
+}
+
+.esteto {
+  transform-origin: 50% 0;
+  animation: balanceo 3.4s ease-in-out infinite;
+}
+
+/* Hospital */
+.cruz {
+  animation: late 1.6s ease-in-out infinite;
+}
+
+.luz {
+  animation: sirena 1s steps(2, jump-none) infinite;
+}
+
+.rayo {
+  animation: rayo 1s steps(2, jump-none) infinite;
+}
+
+.vent {
+  animation: ventana 3s ease-in-out infinite;
+}
+
+.vent--2 {
+  animation-delay: 0.7s;
+}
+
+.vent--3 {
+  animation-delay: 1.4s;
+}
+
+.vent--4 {
+  animation-delay: 2.1s;
+}
+
+@keyframes flota {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+@keyframes sombra {
+
+  0%,
+  100% {
+    transform: scaleX(1);
+    opacity: 0.12;
+  }
+
+  50% {
+    transform: scaleX(0.82);
+    opacity: 0.07;
+  }
+}
+
+@keyframes parpadeo {
+
+  0%,
+  92%,
+  100% {
+    transform: scaleY(1);
+  }
+
+  95% {
+    transform: scaleY(0.08);
+  }
+}
+
+@keyframes titila {
+
+  0%,
+  100% {
+    transform: scale(0.6);
+    opacity: 0.35;
+  }
+
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+}
+
+@keyframes sube {
+  0% {
+    transform: translateY(8px) scale(0.6);
+    opacity: 0;
+  }
+
+  25% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(-16px) scale(1);
+    opacity: 0;
+  }
+}
+
+@keyframes asiente {
+
+  0%,
+  100% {
+    transform: rotate(-2.5deg);
+  }
+
+  50% {
+    transform: rotate(2.5deg);
+  }
+}
+
+@keyframes balanceo {
+
+  0%,
+  100% {
+    transform: rotate(1.5deg);
+  }
+
+  50% {
+    transform: rotate(-1.5deg);
+  }
+}
+
+@keyframes late {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.22);
+  }
+}
+
+@keyframes sirena {
+  0% {
+    fill: #ff5a5f;
+  }
+
+  100% {
+    fill: #ffb3b5;
+  }
+}
+
+@keyframes rayo {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes ventana {
+
+  0%,
+  100% {
+    fill: #bfe3f5;
+  }
+
+  50% {
+    fill: #ffe08a;
+  }
+}
+
+/* En pantallas bajas se reduce para que no empuje el contenido. */
+@media (max-height: 700px) {
+  :host {
+    width: 120px;
+    height: 120px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ilu * {
+    animation: none !important;
+  }
+
+  .corazon {
+    opacity: 1;
+  }
+}
