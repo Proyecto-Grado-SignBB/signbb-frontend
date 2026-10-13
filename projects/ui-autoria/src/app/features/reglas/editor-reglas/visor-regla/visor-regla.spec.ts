@@ -40,4 +40,27 @@ describe('VisorReglaComponent', () => {
     expect(el.querySelector('.controles-zoom')).toBeTruthy();
     expect(el.querySelector('.grafo-lienzo--grande')).toBeTruthy();
   });
+
+  it('al expandir ajusta-llenando: escala el caso para ocupar la ventana', async () => {
+    const expandir = [...el.querySelectorAll<HTMLButtonElement>('button')]
+      .find(b => b.textContent?.trim() === 'Expandir');
+    expandir!.click();
+    fixture.detectChanges();
+    await new Promise(resolve => setTimeout(resolve, 0));
+    fixture.detectChanges();
+
+    const scroll = el.querySelector<HTMLElement>('.overlay-scroll')!;
+    const sizer = el.querySelector<HTMLElement>('.overlay-scroll .grafo-sizer')!;
+    const lienzo = el.querySelector<HTMLElement>('.grafo-lienzo--grande')!;
+    const estilo = getComputedStyle(scroll);
+    const disponibleW = scroll.clientWidth
+      - parseFloat(estilo.paddingLeft) - parseFloat(estilo.paddingRight);
+    const disponibleH = scroll.clientHeight
+      - parseFloat(estilo.paddingTop) - parseFloat(estilo.paddingBottom);
+    const anchoBase = parseFloat(lienzo.style.width);
+    const altoBase = parseFloat(lienzo.style.height);
+    const esperada = Math.min(2, Math.max(0.25, Math.min(disponibleW / anchoBase, disponibleH / altoBase)));
+
+    expect(parseFloat(sizer.style.width)).toBeCloseTo(anchoBase * esperada, 0);
+  });
 });

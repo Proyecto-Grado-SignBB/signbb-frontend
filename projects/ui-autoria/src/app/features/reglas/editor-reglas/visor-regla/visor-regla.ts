@@ -12,14 +12,13 @@ import {
 import { NgTemplateOutlet } from '@angular/common';
 import { CatalogoDTO, Condicion } from '../../../../models/regla.model';
 import {
-  ESCALA,
+  ESCALA_AMPLIADA,
   MINIMAPA,
   areaVisible,
   centrarEn,
   escalaMinimapa,
-  escalaParaAjustar,
+  escalaParaLlenar,
   factorDeRueda,
-  limitarEscala,
   noCabeEnLaVista,
   zoomEnPunto
 } from '../../../../core/grafo/vista';
@@ -125,8 +124,8 @@ export class VisorReglaComponent {
 
   protected readonly escalaExp = signal(1);
   protected readonly porcentajeExp = computed(() => Math.round(this.escalaExp() * 100));
-  protected readonly puedeAcercarExp = computed(() => this.escalaExp() < ESCALA.max - 0.001);
-  protected readonly puedeAlejarExp = computed(() => this.escalaExp() > ESCALA.min + 0.001);
+  protected readonly puedeAcercarExp = computed(() => this.escalaExp() < ESCALA_AMPLIADA.max - 0.001);
+  protected readonly puedeAlejarExp = computed(() => this.escalaExp() > ESCALA_AMPLIADA.min + 0.001);
   protected readonly arrastrandoExp = signal(false);
 
   private readonly medidaVistaExp = signal({ izquierda: 0, arriba: 0, ancho: 0, alto: 0 });
@@ -182,25 +181,29 @@ export class VisorReglaComponent {
   }
 
   protected acercarExp(): void {
-    this.cambiarEscalaExp(this.escalaExp() * ESCALA.paso);
+    this.cambiarEscalaExp(this.escalaExp() * ESCALA_AMPLIADA.paso);
   }
 
   protected alejarExp(): void {
-    this.cambiarEscalaExp(this.escalaExp() / ESCALA.paso);
+    this.cambiarEscalaExp(this.escalaExp() / ESCALA_AMPLIADA.paso);
   }
 
   protected restablecerExp(): void {
     this.cambiarEscalaExp(1);
   }
 
-  /** Ajusta el zoom para ver todo el caso y vuelve a su esquina superior izquierda. */
+  /** Ajusta el zoom para llenar la vista con el caso (puede ampliar) y vuelve al origen. */
   protected ajustarExp(): void {
     const el = this.zonaExp()?.nativeElement;
     const d = this.vistaExpandida();
     if (!el || !d) {
       return;
     }
-    this.cambiarEscalaExp(escalaParaAjustar(d.ancho, d.alto, el.clientWidth, el.clientHeight));
+    const estilo = getComputedStyle(el);
+    const disponibleW = el.clientWidth - parseFloat(estilo.paddingLeft) - parseFloat(estilo.paddingRight);
+    const disponibleH = el.clientHeight - parseFloat(estilo.paddingTop) - parseFloat(estilo.paddingBottom);
+    this.cambiarEscalaExp(
+      escalaParaLlenar(d.ancho, d.alto, disponibleW, disponibleH, ESCALA_AMPLIADA.max));
     el.scrollTo({ left: 0, top: 0 });
     this.medirVistaExp();
   }
@@ -229,7 +232,9 @@ export class VisorReglaComponent {
   private cambiarEscalaExp(deseada: number, punto?: { x: number; y: number }): void {
     const el = this.zonaExp()?.nativeElement;
     const antes = this.escalaExp();
-    const despues = limitarEscala(deseada);
+    const despues = Number.isFinite(deseada)
+      ? Math.min(ESCALA_AMPLIADA.max, Math.max(ESCALA_AMPLIADA.min, deseada))
+      : 1;
     if (despues === antes) {
       return;
     }

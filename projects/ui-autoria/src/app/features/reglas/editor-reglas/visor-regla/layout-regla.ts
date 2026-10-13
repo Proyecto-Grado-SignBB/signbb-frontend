@@ -12,9 +12,30 @@ export const MEDIDAS_REGLA = {
   separacionEtiquetas: 24
 };
 
-/** Ancho aproximado de una etiqueta de respuesta (fuente de 11.5 px, una línea). */
+/** Holgura de la etiqueta de respuesta: padding (18) + borde (2) + aire a los lados. */
+const HOLGURA_ETIQUETA = 32;
+
+let contextoTexto: CanvasRenderingContext2D | null | undefined;
+
+/** Ancho de una etiqueta de respuesta: medido con la fuente real, o estimado. */
 function anchoEtiqueta(texto: string): number {
-  return Math.round(texto.length * 6.6) + 28;
+  const medido = medirTexto(texto);
+  const base = medido ?? Math.round(texto.length * 7.2);
+  return Math.ceil(base) + HOLGURA_ETIQUETA;
+}
+
+/** Mide el texto con la fuente de las etiquetas; `null` si no hay canvas (SSR). */
+function medirTexto(texto: string): number | null {
+  if (contextoTexto === undefined) {
+    contextoTexto = typeof document === 'undefined'
+      ? null
+      : document.createElement('canvas').getContext('2d');
+  }
+  if (!contextoTexto) {
+    return null;
+  }
+  contextoTexto.font = '800 11.5px "Public Sans", sans-serif';
+  return contextoTexto.measureText(texto).width;
 }
 
 /** Un nodo ubicado en el visor: una pregunta implicada o la conclusión destino. */

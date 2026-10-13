@@ -15,6 +15,13 @@ export const ESCALA = {
   paso: 1.25
 } as const;
 
+/** Límites del zoom en la ventana ampliada: permite ampliar hasta 200 %. */
+export const ESCALA_AMPLIADA = {
+  min: 0.25,
+  max: 2,
+  paso: 1.25
+} as const;
+
 /** Tamaño máximo, en píxeles, de la caja del mini-mapa. */
 export const MINIMAPA = { ancho: 200, alto: 130 } as const;
 
@@ -65,6 +72,26 @@ export function escalaParaAjustar(
     return 1;
   }
   return limitarEscala(Math.min(1, anchoVista / anchoContenido, altoVista / altoContenido));
+}
+
+/**
+ * Escala para LLENAR la vista con el contenido, permitiendo ampliar por encima
+ * del 100 % hasta `max` (a diferencia de {@link escalaParaAjustar}, que nunca
+ * amplía). Respeta el mínimo de {@link ESCALA_AMPLIADA} y devuelve 1 si los
+ * tamaños no son válidos.
+ */
+export function escalaParaLlenar(
+  anchoContenido: number,
+  altoContenido: number,
+  anchoVista: number,
+  altoVista: number,
+  max: number
+): number {
+  if (anchoContenido <= 0 || altoContenido <= 0 || anchoVista <= 0 || altoVista <= 0) {
+    return 1;
+  }
+  const ratio = Math.min(anchoVista / anchoContenido, altoVista / altoContenido);
+  return Math.min(max, Math.max(ESCALA_AMPLIADA.min, ratio));
 }
 
 /**

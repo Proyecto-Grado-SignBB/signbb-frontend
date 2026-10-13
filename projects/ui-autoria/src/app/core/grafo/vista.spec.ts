@@ -1,9 +1,11 @@
 import {
   ESCALA,
+  ESCALA_AMPLIADA,
   areaVisible,
   centrarEn,
   escalaMinimapa,
   escalaParaAjustar,
+  escalaParaLlenar,
   factorDeRueda,
   limitarEscala,
   noCabeEnLaVista,
@@ -65,6 +67,25 @@ describe('vista del lienzo', () => {
     it('con medidas vacías devuelve 100 %', () => {
       expect(escalaParaAjustar(0, 100, 1000, 800)).toBe(1);
       expect(escalaParaAjustar(100, 100, 0, 800)).toBe(1);
+    });
+  });
+
+  describe('escalaParaLlenar', () => {
+    it('amplía un contenido pequeño hasta el máximo permitido', () => {
+      expect(escalaParaLlenar(300, 200, 1000, 800, ESCALA_AMPLIADA.max)).toBe(ESCALA_AMPLIADA.max);
+    });
+
+    it('llena por el lado más restrictivo sin pasar del máximo', () => {
+      expect(escalaParaLlenar(2000, 1000, 1000, 800, 2)).toBeCloseTo(0.5, 5);
+      expect(escalaParaLlenar(500, 1000, 1000, 500, 2)).toBeCloseTo(0.5, 5);
+    });
+
+    it('no baja del mínimo aunque el contenido sea enorme', () => {
+      expect(escalaParaLlenar(100000, 100000, 1000, 800, 2)).toBe(ESCALA_AMPLIADA.min);
+    });
+
+    it('con medidas vacías devuelve 100 %', () => {
+      expect(escalaParaLlenar(0, 100, 1000, 800, 2)).toBe(1);
     });
   });
 
