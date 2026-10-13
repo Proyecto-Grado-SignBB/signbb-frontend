@@ -2,6 +2,7 @@ import { Component, OnInit, signal, computed } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RecorridoService } from '../../../core/http/recorrido';
 import { RecorridoResponse } from '../../../models/recorrido.model';
+import { IlustracionResultadoComponent } from '../ilustracion-resultado/ilustracion-resultado';
 import { BotonComponent, InsigniaIconoComponent, TonoInsignia, AvisoLegalComponent, MensajeErrorComponent } from 'ui-compartida';
 
 /** Id del desenlace de sistema que el backend usa al cerrar por el máximo de preguntas. */
@@ -15,7 +16,7 @@ const ID_LIMITE_PREGUNTAS = 'sistema/limite_preguntas';
 @Component({
   selector: 'app-resultado',
   standalone: true,
-  imports: [BotonComponent, InsigniaIconoComponent, AvisoLegalComponent, MensajeErrorComponent],
+  imports: [IlustracionResultadoComponent, BotonComponent, InsigniaIconoComponent, AvisoLegalComponent, MensajeErrorComponent],
   templateUrl: './resultado.html',
   styleUrl: './resultado.scss'
 })

@@ -53,6 +53,8 @@ export interface NodoLienzo {
   desenlace: Desenlace | null;
   /** Respuestas de la pregunta (vacía en una conclusión). */
   respuestas: RespuestaLienzo[];
+  /** Nombres de las imágenes de apoyo de la pregunta (máximo 3), en orden. */
+  imagenes?: string[];
 }
 
 /** Aviso del lienzo, en lenguaje humano. Los bloqueantes impiden publicar. */
@@ -102,6 +104,8 @@ export interface SubgrafoDTO {
   creadoEn: string;
   actualizadoEn: string;
   publicadoEn: string | null;
+  /** Hay una copia de lo publicado a la que se puede volver con «Descartar cambios». */
+  puedeDescartar: boolean;
 }
 
 /** Cuerpo de los 422 de autoría. */
@@ -137,6 +141,8 @@ export interface NodoRequest {
   variasRespuestas?: boolean;
   desenlace?: Desenlace | null;
   respuestas?: OpcionRequest[];
+  /** Nombres devueltos al subir cada imagen (solo preguntas). Omitido, al editar se conservan las actuales. */
+  imagenes?: string[];
 }
 
 /** Texto legible de cada gravedad. */

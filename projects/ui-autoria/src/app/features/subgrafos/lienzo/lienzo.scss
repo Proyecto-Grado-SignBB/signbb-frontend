@@ -85,11 +85,33 @@
   padding: 24px;
 }
 
+// Recuadro donde se ve el lienzo. Los controles de zoom y el mini-mapa flotan
+// sobre él, sin moverse cuando el lienzo se desplaza.
+.vista {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 .scroll {
   flex: 1;
   min-height: 0;
   overflow: auto;
   padding: 8px 0 24px;
+  cursor: grab;
+
+  &.arrastrando {
+    cursor: grabbing;
+    user-select: none;
+  }
+}
+
+// Ocupa el tamaño del lienzo ya con zoom, para que las barras de desplazamiento
+// midan lo que se ve; el lienzo dentro se escala desde su esquina superior izquierda.
+.sizer {
+  position: relative;
 }
 
 .primera {
@@ -123,6 +145,7 @@
 
 .lienzo {
   position: relative;
+  transform-origin: 0 0;
 }
 
 .lineas {
@@ -264,4 +287,95 @@
   &:hover {
     border-color: $color-brand;
   }
+}
+
+// --- Zoom y mini-mapa -----------------------------------------------------------
+
+.controles-zoom {
+  position: absolute;
+  left: 24px;
+  bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  background: $color-surface;
+  border: 1px solid $color-line;
+  border-radius: $radius-pill;
+  box-shadow: $shadow-card;
+
+  button {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: $radius-pill;
+    background: transparent;
+    font-family: $font-body;
+    font-size: 15px;
+    font-weight: 700;
+    color: $color-ink;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      background: $color-brand-tint;
+      color: $color-brand-dark;
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+  }
+
+  .porcentaje,
+  .ajustar {
+    font-size: 12.5px;
+  }
+
+  .porcentaje {
+    min-width: 58px;
+  }
+
+  .ajustar {
+    margin-left: 2px;
+    border-left: 1px solid $color-line-soft;
+    border-radius: 0 $radius-pill $radius-pill 0;
+  }
+}
+
+.minimapa {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  background: $color-surface;
+  border: 1px solid $color-line;
+  border-radius: 10px;
+  box-shadow: $shadow-card;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.mm-nodo {
+  fill: $color-brand-tint;
+  stroke: $color-brand;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+
+  &.mm-nodo--CONCLUSION {
+    fill: $color-calm-tint;
+    stroke: $color-calm;
+  }
+
+  &.mm-suelto {
+    opacity: 0.5;
+  }
+}
+
+.mm-vista {
+  fill: $color-brand;
+  fill-opacity: 0.12;
+  stroke: $color-brand;
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
 }

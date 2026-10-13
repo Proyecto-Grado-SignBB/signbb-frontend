@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { RecorridoService } from '../../../core/http/recorrido';
 import { RecorridoResponse, ResponderRequest } from '../../../models/recorrido.model';
 import { BotonComponent, EtiquetaComponent, AvisoLegalComponent, MensajeErrorComponent } from 'ui-compartida';
+import { CarruselImagenesComponent } from '../carrusel-imagenes/carrusel-imagenes';
 
 const ETIQUETAS_OPCION: Record<string, string> = {
   SI: 'Sí',
@@ -34,7 +35,7 @@ const ENFRIAMIENTO_VOLVER_MS = 400;
 @Component({
   selector: 'app-pregunta',
   standalone: true,
-  imports: [BotonComponent, EtiquetaComponent, AvisoLegalComponent, MensajeErrorComponent],
+  imports: [BotonComponent, EtiquetaComponent, AvisoLegalComponent, MensajeErrorComponent, CarruselImagenesComponent],
   templateUrl: './pregunta.html',
   styleUrl: './pregunta.scss'
 })
@@ -58,12 +59,17 @@ export class PreguntaComponent implements OnInit {
   totalImagenes = 3;
   private inicioArrastreX = 0;
 
-  /** True si la pregunta es de imágenes. */
-  esImagen = computed(() => this.respuesta()?.pregunta?.tieneImagenes ?? false);
+  /**
+   * Pregunta con imágenes de una sola respuesta: vista de comparación visual,
+   * donde tocar una opción responde. Si es de selección múltiple se usa la
+   * vista de selección, con las imágenes arriba.
+   */
+  esImagen = computed(() =>
+    (this.respuesta()?.pregunta?.tieneImagenes ?? false) && !this.esSeleccionMultiple());
 
   /** True si la pregunta admite selección múltiple. */
   esSeleccionMultiple = computed(() =>
-    !this.esImagen() && this.respuesta()?.pregunta?.tipoInteraccion === 'SELECCION_MULTIPLE');
+    this.respuesta()?.pregunta?.tipoInteraccion === 'SELECCION_MULTIPLE');
 
   /** True si la pregunta es binaria (dos opciones o menos, sin imágenes). */
   esBinaria = computed(() =>
@@ -97,7 +103,6 @@ export class PreguntaComponent implements OnInit {
     this.recorridoService.consultar(this.recorridoId).subscribe({
       next: r => {
         this.respuesta.set(r);
-        this.indiceImagen.set(0);
         this.opcionesSeleccionadas.set(new Set());
       },
       error: () => this.error.set('No pudimos cargar la pregunta. Intenta de nuevo.')
@@ -119,7 +124,6 @@ export class PreguntaComponent implements OnInit {
       next: r => {
         this.seleccionActual.set(null);
         this.opcionesSeleccionadas.set(new Set());
-        this.indiceImagen.set(0);
         this.respuesta.set(r);
         setTimeout(() => this.volviendo.set(false), ENFRIAMIENTO_VOLVER_MS);
       },
@@ -216,7 +220,6 @@ export class PreguntaComponent implements OnInit {
           this.router.navigate(['/resultado', this.recorridoId]);
         } else {
           this.respuesta.set(r);
-          this.indiceImagen.set(0);
         }
       },
       error: () => {

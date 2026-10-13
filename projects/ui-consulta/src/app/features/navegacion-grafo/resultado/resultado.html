@@ -15,10 +15,10 @@
   </div>
 
   <div class="resultado__hero">
-    <app-insignia-icono [tono]="tonoInsignia()" [solido]="true" [tamano]="104">
+    <app-insignia-icono [tono]="tonoInsignia()" [solido]="true" [tamano]="80">
       @switch (r.resultado?.nivel) {
       @case ('URGENCIA') {
-      <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
         stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="10"></circle>
         <line x1="12" y1="7.5" x2="12" y2="12.5"></line>
@@ -26,7 +26,7 @@
       </svg>
       }
       @case ('CONSULTAR_MEDICO') {
-      <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
         stroke-linecap="round" stroke-linejoin="round">
         <path d="M8 3v6a4 4 0 0 0 8 0V3"></path>
         <path d="M12 13v4"></path>
@@ -35,7 +35,7 @@
       </svg>
       }
       @default {
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
         stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="10"></circle>
         <polyline points="8 12.5 10.8 15.3 16 9.5"></polyline>
@@ -52,8 +52,10 @@
         @default { Todo tranquilo por ahora }
         }
       </h1>
+      <app-ilustracion-resultado class="resultado__ilustracion"
+        [nivel]="r.resultado?.nivel"></app-ilustracion-resultado>
       @if (r.resultado?.nivel === 'NORMAL') {
-      <p class="resultado__subtitulo">No se detectan signos de alarma respiratoria en este momento.</p>
+      <p class="resultado__subtitulo">No se detectan signos de alarma en este momento.</p>
       } @else if (r.resultado?.nivel === 'CONSULTAR_MEDICO') {
       <p class="resultado__subtitulo">No es una emergencia, pero tu bebé presenta señales que conviene revisar
         pronto.</p>

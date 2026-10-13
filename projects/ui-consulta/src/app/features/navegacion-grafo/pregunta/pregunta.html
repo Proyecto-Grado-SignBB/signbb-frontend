@@ -18,54 +18,7 @@
       <h1>{{ r.pregunta?.texto }}</h1>
     </div>
 
-    <div class="carrusel" (touchstart)="onArrastreInicio($event.touches[0].clientX)"
-      (touchend)="onArrastreFin($event.changedTouches[0].clientX)">
-      <div class="carrusel__pista" [style.transform]="'translateX(-' + (indiceImagen() * (100 / totalImagenes)) + '%)'">
-        <div class="carrusel__slide">
-          <svg width="150" height="150" viewBox="0 0 88 88">
-            <circle cx="44" cy="44" r="38" fill="oklch(86% 0.10 95)"></circle>
-            <circle cx="27" cy="52" r="7" fill="oklch(76% 0.13 95)" opacity="0.55"></circle>
-            <circle cx="61" cy="52" r="7" fill="oklch(76% 0.13 95)" opacity="0.55"></circle>
-            <circle cx="33" cy="38" r="3.2" fill="oklch(30% 0.02 60)"></circle>
-            <circle cx="55" cy="38" r="3.2" fill="oklch(30% 0.02 60)"></circle>
-            <path d="M35 58 Q44 63 53 58" fill="none" stroke="oklch(30% 0.02 60)" stroke-width="2.2"
-              stroke-linecap="round"></path>
-          </svg>
-        </div>
-        <div class="carrusel__slide">
-          <svg width="150" height="150" viewBox="0 0 88 88">
-            <circle cx="44" cy="44" r="38" fill="oklch(80% 0.13 92)"></circle>
-            <circle cx="27" cy="52" r="7" fill="oklch(70% 0.15 92)" opacity="0.55"></circle>
-            <circle cx="61" cy="52" r="7" fill="oklch(70% 0.15 92)" opacity="0.55"></circle>
-            <circle cx="33" cy="38" r="3.2" fill="oklch(30% 0.02 60)"></circle>
-            <circle cx="55" cy="38" r="3.2" fill="oklch(30% 0.02 60)"></circle>
-            <path d="M35 58 Q44 63 53 58" fill="none" stroke="oklch(30% 0.02 60)" stroke-width="2.2"
-              stroke-linecap="round"></path>
-          </svg>
-        </div>
-        <div class="carrusel__slide">
-          <svg width="150" height="150" viewBox="0 0 88 88">
-            <circle cx="44" cy="44" r="38" fill="oklch(90% 0.07 97)"></circle>
-            <circle cx="27" cy="52" r="7" fill="oklch(80% 0.10 97)" opacity="0.55"></circle>
-            <circle cx="61" cy="52" r="7" fill="oklch(80% 0.10 97)" opacity="0.55"></circle>
-            <circle cx="33" cy="38" r="3.2" fill="oklch(30% 0.02 60)"></circle>
-            <circle cx="55" cy="38" r="3.2" fill="oklch(30% 0.02 60)"></circle>
-            <path d="M35 58 Q44 63 53 58" fill="none" stroke="oklch(30% 0.02 60)" stroke-width="2.2"
-              stroke-linecap="round"></path>
-          </svg>
-        </div>
-      </div>
-      <div class="carrusel__contador">{{ indiceImagen() + 1 }} / {{ totalImagenes }}</div>
-    </div>
-
-    <div class="carrusel__puntos">
-      @for (i of [0, 1, 2]; track i) {
-      <span class="carrusel__punto" [class.carrusel__punto--activo]="indiceImagen() === i"
-        (click)="irAImagen(i)"></span>
-      }
-    </div>
-
-    <p class="pregunta__ayuda">Desliza hacia la izquierda para ver otros ejemplos del mismo signo.</p>
+    <app-carrusel-imagenes [imagenes]="r.pregunta?.imagenes"></app-carrusel-imagenes>
   </div>
 
   <div class="pregunta__acciones pregunta__acciones--imagen">
@@ -83,6 +36,10 @@
       <h1>{{ r.pregunta?.texto }}</h1>
       <p class="pregunta__subtitulo">Elige todas las opciones que apliquen a lo que observas.</p>
     </div>
+
+    @if (r.pregunta?.tieneImagenes) {
+    <app-carrusel-imagenes [imagenes]="r.pregunta?.imagenes"></app-carrusel-imagenes>
+    }
 
     <div class="pregunta__lista">
       @for (opcion of r.pregunta?.opciones; track opcion) {

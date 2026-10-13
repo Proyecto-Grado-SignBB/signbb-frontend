@@ -26,8 +26,12 @@
           <div class="crear-campos">
             <label>
               <span>Nombre del subgrafo</span>
-              <input type="text" [(ngModel)]="nombreNuevo" placeholder="Ej: Ictericia en la piel" />
+              <input type="text" [(ngModel)]="nombreNuevo" (blur)="tocadoNombre = true"
+                placeholder="Ej: Ictericia en la piel" [class.invalido]="faltaNombre" />
               <small>Nombre técnico; solo lo ven los médicos.</small>
+              @if (faltaNombre) {
+                <small class="falta">Escribe el nombre del subgrafo.</small>
+              }
             </label>
           </div>
 
@@ -46,6 +50,9 @@
                   (click)="seleccionarCategoria(cat.puenteId)">{{ legible(cat.nombre) }}</button>
               }
             </div>
+            @if (faltaCategoria) {
+              <small class="falta">Elige una categoría.</small>
+            }
           </div>
 
           <div class="crear-campos">
@@ -57,9 +64,9 @@
                 }
               </span>
               <input type="text" [(ngModel)]="etiquetaNueva" (blur)="tocadoEtiqueta = true"
-                placeholder="Ej: Piel u ojos amarillos" [class.invalido]="tocadoEtiqueta && !etiquetaNueva.trim()" />
+                placeholder="Ej: Piel u ojos amarillos" [class.invalido]="faltaEtiqueta" />
               <small>{{ ayudaNombreFamilia }}</small>
-              @if (tocadoEtiqueta && !etiquetaNueva.trim()) {
+              @if (faltaEtiqueta) {
                 <small class="falta">Escribe cómo lo verán las familias.</small>
               }
             </label>
@@ -75,7 +82,7 @@
               tono="marca"
               alto="compacto"
               ancho="auto"
-              [disabled]="!puedeCrear || creando()"
+              [disabled]="creando()"
               (click)="confirmarCrear()">{{ creando() ? 'Creando…' : 'Crear y abrir el lienzo' }}</app-boton>
           </div>
         </div>

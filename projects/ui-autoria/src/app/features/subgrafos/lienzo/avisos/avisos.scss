@@ -1,12 +1,17 @@
 @use 'tokens-admin' as *;
 
+// Cuántos avisos se ven a la vez; si hay más, la lista se desplaza. El título
+// («N por resolver…») queda siempre a la vista.
+$avisos-visibles: 3;
+// Alto de un aviso de una línea (18 px de texto e ícono + 6 px de relleno arriba y abajo).
+$alto-aviso: 30px;
+$espacio-entre-avisos: 4px;
+
 .avisos {
   background: $color-surface;
   border: 1px solid $color-line;
   border-radius: $radius-md;
   padding: 12px 14px;
-  max-height: 220px;
-  overflow: auto;
 
   &.avisos--ok {
     border-color: $color-calm;
@@ -16,10 +21,12 @@
   ul {
     list-style: none;
     margin: 8px 0 0;
-    padding: 0;
+    padding: 0 4px 0 0;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: $espacio-entre-avisos;
+    max-height: $avisos-visibles * $alto-aviso + ($avisos-visibles - 1) * $espacio-entre-avisos;
+    overflow-y: auto;
   }
 }
 
@@ -42,6 +49,7 @@
   text-align: left;
   font-family: $font-body;
   font-size: 12.5px;
+  line-height: 18px;
   color: $color-ink-soft;
   background: none;
   border: none;

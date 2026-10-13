@@ -30,6 +30,20 @@ describe('AutoriaService', () => {
     expect(crear.request.body).toEqual(request);
   });
 
+  it('sube una imagen como multipart y devuelve su nombre', () => {
+    const archivo = new File([new Uint8Array([1, 2, 3])], 'foto.png', { type: 'image/png' });
+    let nombre: string | undefined;
+    servicio.subirImagen(archivo).subscribe(n => (nombre = n));
+
+    const peticion = http.expectOne(`${base}/imagenes`);
+    expect(peticion.request.method).toBe('POST');
+    expect(peticion.request.body instanceof FormData).toBeTrue();
+    expect((peticion.request.body as FormData).get('archivo')).toBeTruthy();
+    peticion.flush({ nombre: '11111111-1111-1111-1111-111111111111.png' });
+
+    expect(nombre).toBe('11111111-1111-1111-1111-111111111111.png');
+  });
+
   it('el "+" manda la respuesta de la que cuelga el nodo nuevo', () => {
     const request = {
       despuesDe: { nodoId: 'pregunta_1', respuestaId: 'r_4' },
@@ -58,6 +72,13 @@ describe('AutoriaService', () => {
 
     servicio.enlazar(7, 'r_2', null).subscribe();
     expect(http.expectOne(`${base}/subgrafos/7/respuestas/r_2/destino`).request.body).toEqual({ nodoId: null });
+  });
+
+  it('descartar cambios hace POST a /descartar y devuelve el borrador', () => {
+    servicio.descartar(7).subscribe();
+    const peticion = http.expectOne(`${base}/subgrafos/7/descartar`);
+    expect(peticion.request.method).toBe('POST');
+    expect(peticion.request.body).toEqual({});
   });
 
   it('publicar, avisos y categorías', () => {

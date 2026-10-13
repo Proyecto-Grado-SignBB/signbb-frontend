@@ -55,7 +55,10 @@ export class TableroComponent implements OnInit {
   protected readonly errorCrear = signal<string | null>(null);
   protected nombreNuevo = '';
   protected etiquetaNueva = '';
+  protected tocadoNombre = false;
   protected tocadoEtiqueta = false;
+  /** True desde que el médico pulsa "Crear": a partir de ahí se explica todo lo que falta. */
+  protected intentoCrear = false;
 
   /** Categorías disponibles (preguntas puente del grafo raíz). */
   protected readonly categorias = signal<Categoria[]>([]);
@@ -133,7 +136,9 @@ export class TableroComponent implements OnInit {
     this.mostrarFormularioCrear.set(false);
     this.nombreNuevo = '';
     this.etiquetaNueva = '';
+    this.tocadoNombre = false;
     this.tocadoEtiqueta = false;
+    this.intentoCrear = false;
     this.puenteSeleccionado.set(null);
     this.errorCrear.set(null);
   }
@@ -141,6 +146,18 @@ export class TableroComponent implements OnInit {
   /** Elige la categoría del nuevo subgrafo. */
   protected seleccionarCategoria(puenteId: string): void {
     this.puenteSeleccionado.set(puenteId);
+  }
+
+  protected get faltaNombre(): boolean {
+    return (this.tocadoNombre || this.intentoCrear) && !this.nombreNuevo.trim();
+  }
+
+  protected get faltaCategoria(): boolean {
+    return this.intentoCrear && this.puenteSeleccionado() === null;
+  }
+
+  protected get faltaEtiqueta(): boolean {
+    return (this.tocadoEtiqueta || this.intentoCrear) && !this.etiquetaNueva.trim();
   }
 
   /** True si el formulario de crear es válido. */
@@ -152,7 +169,7 @@ export class TableroComponent implements OnInit {
   /** Crea el subgrafo y abre su lienzo. */
   protected confirmarCrear(): void {
     const puenteId = this.puenteSeleccionado();
-    this.tocadoEtiqueta = true;
+    this.intentoCrear = true;
     if (!this.puedeCrear || this.creando() || puenteId === null) {
       return;
     }

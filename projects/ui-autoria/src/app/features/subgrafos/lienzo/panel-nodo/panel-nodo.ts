@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BotonComponent } from 'ui-compartida';
 import {
@@ -10,6 +10,8 @@ import {
   NodoRequest,
   RespuestaLienzo
 } from '../../../../models/lienzo.model';
+import { AutoriaService, mensajeDeError } from '../../../../core/http/autoria';
+import { errorDeArchivo, MAX_IMAGENES, urlImagen } from '../../../../core/media/imagenes';
 
 /**
  * Para qué se abrió el panel:
@@ -38,8 +40,9 @@ interface FilaRespuesta {
 
 /**
  * Panel lateral del lienzo: arma el nodo que va después de un "+", edita uno
- * existente o cambia a qué pregunta va una respuesta. No llama al backend:
- * emite la petición y el lienzo la envía y redibuja con lo que vuelve.
+ * existente o cambia a qué pregunta va una respuesta. Solo llama al backend
+ * para subir imágenes; lo demás lo emite como petición y el lienzo la envía y
+ * redibuja con lo que vuelve.
  */
 @Component({
   selector: 'app-panel-nodo',
@@ -49,6 +52,8 @@ interface FilaRespuesta {
   styleUrl: './panel-nodo.scss'
 })
 export class PanelNodoComponent implements OnChanges {
+  private readonly autoria = inject(AutoriaService);
+
   /** Para qué se abrió el panel. */
   @Input({ required: true }) contexto!: ContextoPanel;
   /** Preguntas del lienzo, para "Pregunta existente". */
@@ -85,6 +90,13 @@ export class PanelNodoComponent implements OnChanges {
   protected respuestas: FilaRespuesta[] = [];
   protected destinoExistente: string | null = null;
 
+  /** Imágenes de apoyo de la pregunta (nombres que dio el servidor al subirlas). */
+  protected imagenes: string[] = [];
+  protected subiendo = false;
+  protected errorImagen: string | null = null;
+  protected readonly maxImagenes = MAX_IMAGENES;
+  protected readonly urlImagen = urlImagen;
+
   /** Reinicia el formulario cada vez que cambia el contexto. */
   ngOnChanges(): void {
     this.reiniciar();
@@ -94,6 +106,9 @@ export class PanelNodoComponent implements OnChanges {
   private reiniciar(): void {
     const c = this.contexto;
     this.destinoExistente = null;
+    this.imagenes = c.tipo === 'editar' ? [...(c.nodo.imagenes ?? [])] : [];
+    this.subiendo = false;
+    this.errorImagen = null;
     if (c.tipo === 'editar') {
       this.modo = c.nodo.tipo;
       this.texto = c.nodo.texto;
@@ -174,7 +189,7 @@ export class PanelNodoComponent implements OnChanges {
 
   /** True si el formulario se puede enviar. */
   protected get puedeEnviar(): boolean {
-    if (this.ocupado || this.bloqueadoPorEnlace) return false;
+    if (this.ocupado || this.subiendo || this.bloqueadoPorEnlace) return false;
     switch (this.modo) {
       case 'EXISTENTE': return this.destinoExistente !== null;
       case 'CONCLUSION': return this.texto.trim().length > 0 && this.desenlace !== null;
@@ -204,6 +219,39 @@ export class PanelNodoComponent implements OnChanges {
   /** Fija la gravedad de una fila de respuesta. */
   protected elegirGravedad(fila: FilaRespuesta, gravedad: Gravedad): void {
     fila.gravedad = gravedad;
+  }
+
+  // --- Imágenes -----------------------------------------------------------------
+
+  /** Sube la imagen elegida; queda en la pregunta cuando el médico guarda. */
+  protected elegirImagen(evento: Event): void {
+    const entrada = evento.target as HTMLInputElement;
+    const archivo = entrada.files?.[0];
+    entrada.value = '';
+    if (!archivo) return;
+
+    const error = errorDeArchivo(archivo, this.imagenes.length);
+    if (error) {
+      this.errorImagen = error;
+      return;
+    }
+    this.errorImagen = null;
+    this.subiendo = true;
+    this.autoria.subirImagen(archivo).subscribe({
+      next: nombre => {
+        this.imagenes = [...this.imagenes, nombre];
+        this.subiendo = false;
+      },
+      error: e => {
+        this.errorImagen = mensajeDeError(e, 'No se pudo subir la imagen. Intenta de nuevo.');
+        this.subiendo = false;
+      }
+    });
+  }
+
+  protected quitarImagen(indice: number): void {
+    this.imagenes = this.imagenes.filter((_, i) => i !== indice);
+    this.errorImagen = null;
   }
 
   // --- Acciones -----------------------------------------------------------------
@@ -253,6 +301,7 @@ export class PanelNodoComponent implements OnChanges {
     return {
       texto: this.texto.trim(),
       variasRespuestas: this.variasRespuestas,
+      imagenes: [...this.imagenes],
       // Las filas vacías se ignoran: el médico puede dejar un renglón de sobra.
       respuestas: this.respuestas
         .filter(r => r.texto.trim().length > 0 || r.id !== null)
