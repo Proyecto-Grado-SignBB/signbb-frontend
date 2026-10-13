@@ -6,8 +6,10 @@
   </svg>
 
   @for (enlace of v.enlaces; track $index) {
-    <span class="gelabel gelabel--resaltada"
-      [style.left.px]="enlace.etiquetaX" [style.top.px]="enlace.etiquetaY">{{ enlace.etiqueta }}</span>
+    @for (etiqueta of enlace.etiquetas; track $index) {
+      <span class="gelabel gelabel--resaltada"
+        [style.left.px]="etiqueta.x" [style.top.px]="etiqueta.y">{{ etiqueta.texto }}</span>
+    }
   }
 
   @for (paso of v.pasos; track paso.id) {

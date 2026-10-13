@@ -8,7 +8,7 @@ export const MEDIDAS_REGLA = {
   /** Separación mínima entre el borde izquierdo de dos columnas. */
   columna: 400,
   margen: 24,
-  /** Distancia vertical entre etiquetas apiladas en la misma rama. */
+  /** Distancia vertical entre etiquetas apiladas en la misma arista. */
   separacionEtiquetas: 24
 };
 
@@ -49,13 +49,22 @@ export interface PasoRegla {
   y: number;
 }
 
-/** Una respuesta que debe estar marcada, dibujada como línea con su etiqueta. */
+/** Una respuesta que debe estar marcada, con su posición en la arista. */
+export interface EtiquetaRegla {
+  texto: string;
+  x: number;
+  y: number;
+}
+
+/**
+ * La arista de un tramo (pregunta → siguiente nodo). Es una sola línea aunque
+ * el tramo requiera varias respuestas: se muestran apiladas y centradas.
+ */
 export interface EnlaceRegla {
-  /** Atributo `d` del `<path>`: salida del origen → entrada al destino. */
+  /** Atributo `d` del `<path>`: una sola línea horizontal para todo el tramo. */
   d: string;
-  etiqueta: string;
-  etiquetaX: number;
-  etiquetaY: number;
+  /** Respuestas que deben marcarse en este tramo, de arriba a abajo. */
+  etiquetas: EtiquetaRegla[];
 }
 
 /** Vista de un caso: sus pasos, sus enlaces y el tamaño del lienzo. */
@@ -70,10 +79,11 @@ export interface CasoVista {
 
 /**
  * Ubica un caso como una cadena horizontal: las preguntas implicadas en orden
- * de aparición y, al final, la conclusión destino. Cada condición es una línea
- * con la respuesta que debe estar marcada.
+ * de aparición y, al final, la conclusión destino. Cada tramo es una sola
+ * arista con las respuestas que deben marcarse, apiladas y centradas respecto
+ * al nodo.
  *
- * <p>La separación entre columnas es dinámica: cada hueco crece lo necesario
+ * <p>La separación entre columnas es dinámica: cada tramo crece lo necesario
  * para que la etiqueta de respuesta más larga quepa sin recortarse.
  *
  * Es una función pura: no toca el DOM.
@@ -92,27 +102,33 @@ export function distribuirCaso(caso: Condicion[], catalogo: CatalogoDTO | null,
   const preguntas = distinct(condiciones.map(c => c.idNodo));
   const totalColumnas = preguntas.length + (nodoDestino ? 1 : 0);
 
-  // Destino (índice de columna) de cada condición y etiquetas que van en cada hueco.
+  // Destino (índice de columna) de cada condición y respuestas que van en cada tramo.
   const destinoDe = condiciones.map(c => {
     const origen = preguntas.indexOf(c.idNodo);
     return origen < preguntas.length - 1 ? origen + 1 : preguntas.length;
   });
-  const etiquetasPorHueco: string[][] =
+  const etiquetasPorTramo: string[][] =
     Array.from({ length: Math.max(totalColumnas - 1, 0) }, () => []);
   condiciones.forEach((cond, idx) => {
     const origen = preguntas.indexOf(cond.idNodo);
-    if (destinoDe[idx] < totalColumnas && origen < etiquetasPorHueco.length) {
-      etiquetasPorHueco[origen].push(cond.respuesta);
+    if (destinoDe[idx] < totalColumnas && origen < etiquetasPorTramo.length) {
+      etiquetasPorTramo[origen].push(cond.respuesta);
     }
   });
 
   const huecoMinimo = MEDIDAS_REGLA.columna - MEDIDAS_REGLA.anchoNodo;
-  const huecos = etiquetasPorHueco.map(ls =>
+  const huecos = etiquetasPorTramo.map(ls =>
     Math.max(huecoMinimo, ...ls.map(anchoEtiqueta), 0));
   const x: number[] = [MEDIDAS_REGLA.margen];
   for (let i = 0; i < huecos.length; i++) {
     x.push(x[i] + MEDIDAS_REGLA.anchoNodo + huecos[i]);
   }
+
+  // Alto de la fila: lo que necesita la pila de etiquetas más alta (o el nodo).
+  const maxEtiquetas = Math.max(1, ...etiquetasPorTramo.map(ls => ls.length));
+  const altoFila = Math.max(MEDIDAS_REGLA.altoNodo, maxEtiquetas * MEDIDAS_REGLA.separacionEtiquetas);
+  const centroFila = MEDIDAS_REGLA.margen + altoFila / 2;
+  const nodoY = MEDIDAS_REGLA.margen + (altoFila - MEDIDAS_REGLA.altoNodo) / 2;
 
   const pasos: PasoRegla[] = preguntas.map((id, i) => ({
     id,
@@ -120,7 +136,7 @@ export function distribuirCaso(caso: Condicion[], catalogo: CatalogoDTO | null,
     tipo: 'pregunta',
     desenlace: null,
     x: x[i],
-    y: MEDIDAS_REGLA.margen
+    y: nodoY
   }));
   if (nodoDestino) {
     pasos.push({
@@ -129,37 +145,32 @@ export function distribuirCaso(caso: Condicion[], catalogo: CatalogoDTO | null,
       tipo: 'terminal',
       desenlace: desenlaceDeNodo(catalogo, nodoDestino),
       x: x[preguntas.length],
-      y: MEDIDAS_REGLA.margen
+      y: nodoY
     });
   }
 
-  const totalDestinos = pasos.length;
-  const porOrigen = new Map<number, number>();
+  // Un enlace por tramo, con la línea al centro y las respuestas apiladas.
   const enlaces: EnlaceRegla[] = [];
-  condiciones.forEach((cond, idx) => {
-    const origen = preguntas.indexOf(cond.idNodo);
-    const destino = destinoDe[idx];
-    if (destino >= totalDestinos || origen >= x.length) {
-      return;
+  for (let i = 0; i < huecos.length; i++) {
+    const textos = etiquetasPorTramo[i];
+    if (textos.length === 0) {
+      continue;
     }
-    const ocurrencia = porOrigen.get(origen) ?? 0;
-    porOrigen.set(origen, ocurrencia + 1);
-    const x1 = x[origen] + MEDIDAS_REGLA.anchoNodo;
-    const x2 = x[destino];
-    const centroY = MEDIDAS_REGLA.margen + MEDIDAS_REGLA.altoNodo / 2;
-    const y = centroY + ocurrencia * MEDIDAS_REGLA.separacionEtiquetas;
+    const x1 = x[i] + MEDIDAS_REGLA.anchoNodo;
+    const x2 = x[i + 1];
+    const n = textos.length;
     enlaces.push({
-      d: `M ${x1} ${y} H ${x2}`,
-      etiqueta: cond.respuesta,
-      etiquetaX: (x1 + x2) / 2,
-      etiquetaY: y
+      d: `M ${x1} ${centroFila} H ${x2}`,
+      etiquetas: textos.map((texto, k) => ({
+        texto,
+        x: (x1 + x2) / 2,
+        y: centroFila + (k - (n - 1) / 2) * MEDIDAS_REGLA.separacionEtiquetas
+      }))
     });
-  });
+  }
 
-  const maxOcurrencias = Math.max(1, ...porOrigen.values());
   const anchoFinal = x[Math.max(totalColumnas - 1, 0)] + MEDIDAS_REGLA.anchoNodo + MEDIDAS_REGLA.margen;
-  const altoFinal = MEDIDAS_REGLA.altoNodo + MEDIDAS_REGLA.margen * 2
-    + (maxOcurrencias - 1) * MEDIDAS_REGLA.separacionEtiquetas;
+  const altoFinal = MEDIDAS_REGLA.margen * 2 + altoFila;
   return { pasos, enlaces, ancho: anchoFinal, alto: altoFinal, vacio: false };
 }
 
