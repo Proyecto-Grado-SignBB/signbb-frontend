@@ -30,7 +30,7 @@ import {
   limitarEscala,
   noCabeEnLaVista,
   zoomEnPunto
-} from './vista';
+} from '../../../core/grafo/vista';
 
 /**
  * El lienzo de un subgrafo (opción C del deck): un árbol que crece hacia la

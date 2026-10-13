@@ -1,3 +1,29 @@
+<ng-template #dibujo let-v>
+  <svg class="lineas" [attr.width]="v.ancho" [attr.height]="v.alto" aria-hidden="true">
+    @for (enlace of v.enlaces; track $index) {
+      <path class="linea linea--resaltada" [attr.d]="enlace.d" />
+    }
+  </svg>
+
+  @for (enlace of v.enlaces; track $index) {
+    <span class="gelabel gelabel--resaltada"
+      [style.left.px]="enlace.etiquetaX" [style.top.px]="enlace.etiquetaY">{{ enlace.etiqueta }}</span>
+  }
+
+  @for (paso of v.pasos; track paso.id) {
+    <div class="gnodo"
+      [class.gnodo--terminal]="paso.tipo === 'terminal'"
+      [class.gnodo--recomendacion]="paso.desenlace === 'RECOMENDACION'"
+      [class.gnodo--consulta]="paso.desenlace === 'CONSULTA_MEDICA'"
+      [class.gnodo--urgencia]="paso.desenlace === 'URGENCIA'"
+      [style.left.px]="paso.x" [style.top.px]="paso.y">
+      <span class="gnodo-tag">{{ paso.tipo === 'terminal' ? 'Destino' : 'dispara' }}</span>
+      <span class="gnodo-tipo">{{ paso.tipo === 'terminal' ? 'Conclusión' : 'Pregunta' }}</span>
+      <span class="gnodo-texto">{{ paso.texto }}</span>
+    </div>
+  }
+</ng-template>
+
 <div class="visor-panel">
   <div class="casos-vista">
     @for (vista of vistas(); track $index; let i = $index) {
@@ -18,29 +44,26 @@
           <div class="caso-vista-head">
             <span class="caso-num">Caso {{ i + 1 }}</span>
             <span class="caso-hint">Se activa si se marcan TODAS estas respuestas</span>
+            <button type="button" class="btn-expandir" title="Ver este caso en grande"
+              (click)="abrirExpandido(i)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3" /><path d="M16 3h3a2 2 0 0 1 2 2v3" />
+                <path d="M8 21H5a2 2 0 0 1-2-2v-3" /><path d="M16 21h3a2 2 0 0 0 2-2v-3" />
+              </svg>
+              Expandir
+            </button>
           </div>
 
           <div class="grafo-scroll">
-            <div class="grafo-lienzo" [style.width.px]="vista.ancho" [style.height.px]="vista.alto">
-              <svg class="lineas" [attr.width]="vista.ancho" [attr.height]="vista.alto" aria-hidden="true">
-                @for (enlace of vista.enlaces; track $index) {
-                  <path class="linea linea--resaltada" [attr.d]="enlace.d" />
-                }
-              </svg>
-
-              @for (enlace of vista.enlaces; track $index) {
-                <span class="gelabel gelabel--resaltada"
-                  [style.left.px]="enlace.etiquetaX" [style.top.px]="enlace.etiquetaY">{{ enlace.etiqueta }}</span>
-              }
-
-              @for (paso of vista.pasos; track paso.id) {
-                <div class="gnodo" [class.gnodo--destino]="paso.tipo === 'terminal'"
-                  [style.left.px]="paso.x" [style.top.px]="paso.y">
-                  <span class="gnodo-tag">{{ paso.tipo === 'terminal' ? 'Destino' : 'dispara' }}</span>
-                  <span class="gnodo-tipo">{{ paso.tipo === 'terminal' ? 'Conclusión' : 'Pregunta' }}</span>
-                  <span class="gnodo-texto">{{ paso.texto }}</span>
-                </div>
-              }
+            <div class="grafo-sizer"
+              [style.width.px]="vista.ancho * escalaInline(vista.ancho)"
+              [style.height.px]="vista.alto * escalaInline(vista.ancho)">
+              <div class="grafo-lienzo"
+                [style.width.px]="vista.ancho" [style.height.px]="vista.alto"
+                [style.transform]="'scale(' + escalaInline(vista.ancho) + ')'">
+                <ng-container [ngTemplateOutlet]="dibujo" [ngTemplateOutletContext]="{ $implicit: vista }" />
+              </div>
             </div>
           </div>
         </div>
@@ -54,3 +77,65 @@
     <div class="fila"><span class="muestra muestra--destino"></span> Conclusión destino</div>
   </div>
 </div>
+
+@if (expandido() && vistaExpandida(); as v) {
+  <div class="overlay-grafo" (click)="cerrarExpandido()">
+    <div class="overlay-panel" (click)="$event.stopPropagation()">
+      <div class="overlay-head">
+        <h3>Caso {{ casoExpandido() + 1 }}</h3>
+        <div class="overlay-casos">
+          @for (otro of vistas(); track $index; let j = $index) {
+            @if (!otro.vacio) {
+              <button type="button" [class.activo]="j === casoExpandido()" (click)="irCaso(j)">
+                Caso {{ j + 1 }}
+              </button>
+            }
+          }
+        </div>
+        <button type="button" class="btn-cerrar" title="Cerrar" (click)="cerrarExpandido()">✕</button>
+      </div>
+
+      <div class="overlay-body">
+        <div class="overlay-scroll" #scrollExp [class.arrastrando]="arrastrandoExp()"
+          (scroll)="alScrollExp()" (wheel)="alRuedaExp($event)"
+          (pointerdown)="alPulsarExp($event)" (pointermove)="alMoverExp($event)"
+          (pointerup)="alSoltarExp()" (pointercancel)="alSoltarExp()">
+          <div class="grafo-sizer"
+            [style.width.px]="v.ancho * escalaExp()" [style.height.px]="v.alto * escalaExp()">
+            <div class="grafo-lienzo grafo-lienzo--grande"
+              [style.width.px]="v.ancho" [style.height.px]="v.alto"
+              [style.transform]="'scale(' + escalaExp() + ')'">
+              <ng-container [ngTemplateOutlet]="dibujo" [ngTemplateOutletContext]="{ $implicit: v }" />
+            </div>
+          </div>
+        </div>
+
+        <div class="controles-zoom" role="group" aria-label="Zoom del caso">
+          <button type="button" (click)="alejarExp()" [disabled]="!puedeAlejarExp()"
+            aria-label="Alejar" title="Alejar">−</button>
+          <button type="button" class="porcentaje" (click)="restablecerExp()"
+            title="Volver al 100 %">{{ porcentajeExp() }} %</button>
+          <button type="button" (click)="acercarExp()" [disabled]="!puedeAcercarExp()"
+            aria-label="Acercar" title="Acercar">+</button>
+          <button type="button" class="ajustar" (click)="ajustarExp()"
+            title="Ver todo el caso">Ajustar</button>
+        </div>
+
+        @if (minimapaExp(); as m) {
+          <svg class="minimapa" [attr.width]="m.ancho" [attr.height]="m.alto"
+            [attr.viewBox]="'0 0 ' + m.contenidoAncho + ' ' + m.contenidoAlto"
+            role="img" aria-label="Mini-mapa del caso: toca una zona para ir a ella"
+            (pointerdown)="alPulsarMinimapaExp($event)" (pointermove)="alMoverMinimapaExp($event)"
+            (pointerup)="alSoltarMinimapaExp()" (pointercancel)="alSoltarMinimapaExp()">
+            @for (paso of v.pasos; track paso.id) {
+              <rect class="mm-nodo" [attr.x]="paso.x" [attr.y]="paso.y"
+                [attr.width]="medidas.anchoNodo" [attr.height]="medidas.altoNodo" rx="14" />
+            }
+            <rect class="mm-vista" [attr.x]="m.area.x" [attr.y]="m.area.y"
+              [attr.width]="m.area.ancho" [attr.height]="m.area.alto" />
+          </svg>
+        }
+      </div>
+    </div>
+  </div>
+}

@@ -5,9 +5,9 @@ describe('layout-regla', () => {
   const catalogo: CatalogoDTO = {
     grafoId: 'grafo_fiebre',
     nodos: [
-      { id: 'pregunta_1', texto: '¿Cuánto marca el termómetro?', tipo: 'pregunta', opciones: ['Más de 39 °C'] },
-      { id: 'pregunta_2', texto: '¿Está decaído?', tipo: 'pregunta', opciones: ['Sí', 'No'] },
-      { id: 'conclusion_5', texto: 'Lleve al bebé a urgencias.', tipo: 'terminal', opciones: [] }
+      { id: 'pregunta_1', texto: '¿Cuánto marca el termómetro?', tipo: 'pregunta', opciones: ['Más de 39 °C'], desenlace: null },
+      { id: 'pregunta_2', texto: '¿Está decaído?', tipo: 'pregunta', opciones: ['Sí', 'No'], desenlace: null },
+      { id: 'conclusion_5', texto: 'Lleve al bebé a urgencias.', tipo: 'terminal', opciones: [], desenlace: 'URGENCIA' }
     ]
   };
 
@@ -57,5 +57,26 @@ describe('layout-regla', () => {
     expect(vistas.length).toBe(2);
     expect(vistas[0].vacio).toBeFalse();
     expect(vistas[1].vacio).toBeTrue();
+  });
+
+  it('el terminal lleva el desenlace del catálogo', () => {
+    const vista = distribuirCaso(
+      [{ idNodo: 'pregunta_1', respuesta: 'Más de 39 °C' }], catalogo, 'conclusion_5');
+
+    const terminal = vista.pasos.find(p => p.tipo === 'terminal');
+    expect(terminal?.desenlace).toBe('URGENCIA');
+  });
+
+  it('la separación entre columnas crece con la etiqueta más larga', () => {
+    const corta = distribuirCaso([
+      { idNodo: 'pregunta_1', respuesta: 'Sí' },
+      { idNodo: 'pregunta_2', respuesta: 'Sí' }
+    ], catalogo, '');
+    const larga = distribuirCaso([
+      { idNodo: 'pregunta_1', respuesta: 'Respira persistentemente rápido (≥60/min)' },
+      { idNodo: 'pregunta_2', respuesta: 'Sí' }
+    ], catalogo, '');
+
+    expect(larga.ancho).toBeGreaterThan(corta.ancho);
   });
 });

@@ -39,6 +39,32 @@
     color: $color-ink-faint;
     font-weight: 600;
   }
+
+  .btn-expandir {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border: 1px solid $color-line;
+    border-radius: $radius-pill;
+    background: $color-surface;
+    color: $color-ink-soft;
+    font-family: $font-body;
+    font-size: 11.5px;
+    font-weight: 700;
+    cursor: pointer;
+
+    svg {
+      width: 13px;
+      height: 13px;
+    }
+
+    &:hover {
+      border-color: $color-brand;
+      color: $color-brand-dark;
+      background: $color-brand-tint;
+    }
+  }
 }
 
 .caso-num {
@@ -85,12 +111,20 @@
   padding: 10px;
 }
 
+// Ocupa el tamaño del lienzo ya escalado; el lienzo dentro se escala desde su
+// esquina superior izquierda y el sizer se centra cuando el lienzo es pequeño.
+.grafo-sizer {
+  position: relative;
+  margin: 0 auto;
+}
+
 .grafo-lienzo {
   position: relative;
   background: $color-surface;
   border: 1px solid $color-line;
   border-radius: 16px;
   overflow: hidden;
+  transform-origin: 0 0;
   flex: none;
 
   .lineas {
@@ -147,12 +181,42 @@
   overflow: hidden;
 }
 
-.gnodo--destino {
+.gnodo--recomendacion {
+  border-color: $color-calm;
+  background: $color-calm-tint;
+
+  .gnodo-tipo {
+    color: $color-calm-dark;
+  }
+
+  .gnodo-tag {
+    background: $color-calm-dark;
+  }
+}
+
+.gnodo--consulta {
+  border-color: $color-aviso;
+  background: $color-aviso-tint;
+
+  .gnodo-tipo {
+    color: $color-aviso-dark;
+  }
+
+  .gnodo-tag {
+    background: $color-aviso-dark;
+  }
+}
+
+.gnodo--urgencia {
   border-color: $color-alert;
   background: $color-alert-tint;
 
   .gnodo-tipo {
     color: $color-alert-dark;
+  }
+
+  .gnodo-tag {
+    background: $color-alert-dark;
   }
 }
 
@@ -170,10 +234,6 @@
   color: #fff;
   border-radius: 20px;
   padding: 4px 9px;
-}
-
-.gnodo--destino .gnodo-tag {
-  background: $color-alert-dark;
 }
 
 .gelabel {
@@ -239,4 +299,183 @@
     border-color: $color-alert-dark;
     background: $color-alert-tint;
   }
+}
+
+// --- Ventana ampliada del caso ------------------------------------------------
+
+.overlay-grafo {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px;
+  background: oklch(15% 0.01 300 / 0.5);
+}
+
+.overlay-panel {
+  width: min(1200px, 100%);
+  height: min(860px, 100%);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: $color-surface;
+  border: 1px solid $color-line;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+}
+
+.overlay-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-bottom: 1px solid $color-line;
+
+  h3 {
+    font-family: $font-heading;
+    font-size: 15px;
+    font-weight: 800;
+    color: $color-ink;
+  }
+
+  .overlay-casos {
+    display: flex;
+    gap: 6px;
+    margin-left: auto;
+
+    button {
+      padding: 5px 12px;
+      border: 1px solid $color-line;
+      border-radius: $radius-pill;
+      background: $color-surface-2;
+      font-family: $font-body;
+      font-size: 12px;
+      font-weight: 700;
+      color: $color-ink-soft;
+      cursor: pointer;
+
+      &.activo {
+        border-color: $color-brand;
+        background: $color-brand-tint;
+        color: $color-brand-dark;
+      }
+    }
+  }
+
+  .btn-cerrar {
+    width: 32px;
+    height: 32px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: $color-ink-soft;
+    font-size: 16px;
+    cursor: pointer;
+
+    &:hover {
+      background: $color-surface-2;
+    }
+  }
+}
+
+.overlay-body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  background: $color-surface-2;
+}
+
+.overlay-scroll {
+  position: absolute;
+  inset: 0;
+  overflow: auto;
+  padding: 8px;
+  cursor: grab;
+
+  &.arrastrando {
+    cursor: grabbing;
+    user-select: none;
+  }
+}
+
+.controles-zoom {
+  position: absolute;
+  left: 24px;
+  bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  background: $color-surface;
+  border: 1px solid $color-line;
+  border-radius: $radius-pill;
+  box-shadow: $shadow-card;
+
+  button {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: $radius-pill;
+    background: transparent;
+    font-family: $font-body;
+    font-size: 15px;
+    font-weight: 700;
+    color: $color-ink;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      background: $color-brand-tint;
+      color: $color-brand-dark;
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+  }
+
+  .porcentaje,
+  .ajustar {
+    font-size: 12.5px;
+  }
+
+  .porcentaje {
+    min-width: 58px;
+  }
+
+  .ajustar {
+    margin-left: 2px;
+    border-left: 1px solid $color-line-soft;
+    border-radius: 0 $radius-pill $radius-pill 0;
+  }
+}
+
+.minimapa {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  background: $color-surface;
+  border: 1px solid $color-line;
+  border-radius: 10px;
+  box-shadow: $shadow-card;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.mm-nodo {
+  fill: $color-brand-tint;
+  stroke: $color-brand;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.mm-vista {
+  fill: $color-brand;
+  fill-opacity: 0.12;
+  stroke: $color-brand;
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
 }

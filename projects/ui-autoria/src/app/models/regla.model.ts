@@ -1,5 +1,5 @@
 import type { NivelAlerta } from 'ui-compartida';
-import type { Aviso, EstadoBorrador } from './lienzo.model';
+import type { Aviso, Desenlace, EstadoBorrador } from './lienzo.model';
 
 /**
  * Tipos del contrato de reglas de `/api/autoria/bases`: una base de reglas
@@ -88,6 +88,8 @@ export interface NodoCatalogoDTO {
   tipo: 'pregunta' | 'terminal';
   /** Respuestas válidas; vacía en un terminal. */
   opciones: string[];
+  /** Desenlace del terminal; `null` en las preguntas. */
+  desenlace: Desenlace | null;
 }
 
 /** Catálogo de nodos y respuestas de un grafo. */
@@ -127,4 +129,12 @@ export function opcionesDeNodo(catalogo: CatalogoDTO | null, idNodo: string | nu
     return [];
   }
   return catalogo?.nodos.find(n => n.id === idNodo)?.opciones ?? [];
+}
+
+/** Desenlace de un nodo del catálogo por id, o `null` si no está o es una pregunta. */
+export function desenlaceDeNodo(catalogo: CatalogoDTO | null, idNodo: string | null): Desenlace | null {
+  if (!idNodo) {
+    return null;
+  }
+  return catalogo?.nodos.find(n => n.id === idNodo)?.desenlace ?? null;
 }
