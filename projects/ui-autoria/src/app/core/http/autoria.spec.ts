@@ -81,6 +81,13 @@ describe('AutoriaService', () => {
     expect(peticion.request.body).toEqual({});
   });
 
+  it('despublicar hace POST a /despublicar y devuelve el borrador', () => {
+    servicio.despublicar(7).subscribe();
+    const peticion = http.expectOne(`${base}/subgrafos/7/despublicar`);
+    expect(peticion.request.method).toBe('POST');
+    expect(peticion.request.body).toEqual({});
+  });
+
   it('publicar, avisos y categorías', () => {
     servicio.publicar(7).subscribe();
     expect(http.expectOne(`${base}/subgrafos/7/publicar`).request.method).toBe('POST');

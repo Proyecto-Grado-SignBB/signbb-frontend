@@ -109,6 +109,12 @@ export class LienzoComponent implements OnInit {
   protected readonly descartando = signal(false);
   /** Error de la última vez que se descartaron cambios. */
   protected readonly errorDescartar = signal<string | null>(null);
+  /** Diálogo de «Despublicar» abierto. */
+  protected readonly mostrarDespublicar = signal(false);
+  /** True mientras se despublica. */
+  protected readonly despublicando = signal(false);
+  /** Error de la última vez que se intentó despublicar. */
+  protected readonly errorDespublicar = signal<string | null>(null);
 
   protected readonly mostrarDatos = signal(false);
   /** True mientras se guardan los datos. */
@@ -431,6 +437,35 @@ export class LienzoComponent implements OnInit {
       error: e => {
         this.descartando.set(false);
         this.errorDescartar.set(mensajeDeError(e, 'No se pudieron descartar los cambios. Intenta de nuevo.'));
+      }
+    });
+  }
+
+  // --- Despublicar --------------------------------------------------------------
+
+  protected abrirDespublicar(): void {
+    this.errorDespublicar.set(null);
+    this.mostrarDespublicar.set(true);
+  }
+
+  protected cancelarDespublicar(): void {
+    if (!this.despublicando()) this.mostrarDespublicar.set(false);
+  }
+
+  protected confirmarDespublicar(): void {
+    this.despublicando.set(true);
+    this.errorDespublicar.set(null);
+    this.autoria.despublicar(this.id).subscribe({
+      next: s => {
+        this.subgrafo.set(s);
+        this.despublicando.set(false);
+        this.mostrarDespublicar.set(false);
+        this.cerrarPanel();
+        this.avisar('Despublicado: las cuidadoras ya no lo ven al empezar. Tu lienzo sigue aquí como borrador.');
+      },
+      error: e => {
+        this.despublicando.set(false);
+        this.errorDespublicar.set(mensajeDeError(e, 'No se pudo despublicar. Intenta de nuevo.'));
       }
     });
   }

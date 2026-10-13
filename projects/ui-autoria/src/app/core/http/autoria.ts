@@ -177,6 +177,14 @@ export class AutoriaService {
   descartar(id: number): Observable<SubgrafoDTO> {
     return this.http.post<SubgrafoDTO>(`${this.base}/subgrafos/${id}/descartar`, {});
   }
+
+  /**
+   * Despublica el subgrafo: las cuidadoras que empiecen un recorrido nuevo ya no lo ven
+   * (las que ya van por él lo terminan) y el borrador vuelve a «Borrador» con su lienzo intacto.
+   */
+  despublicar(id: number): Observable<SubgrafoDTO> {
+    return this.http.post<SubgrafoDTO>(`${this.base}/subgrafos/${id}/despublicar`, {});
+  }
 }
 
 /**
