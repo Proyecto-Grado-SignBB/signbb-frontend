@@ -77,7 +77,13 @@ export class VisorReglaComponent {
       const host = this.host.nativeElement;
       const medir = () => {
         const el = host.querySelector<HTMLElement>('.grafo-scroll');
-        this.anchoDisponible.set(el?.clientWidth ?? 0);
+        if (!el) {
+          this.anchoDisponible.set(0);
+          return;
+        }
+        const estilo = getComputedStyle(el);
+        const padding = parseFloat(estilo.paddingLeft) + parseFloat(estilo.paddingRight);
+        this.anchoDisponible.set(Math.max(0, el.clientWidth - padding));
       };
       queueMicrotask(medir);
       if (typeof ResizeObserver === 'undefined') {
