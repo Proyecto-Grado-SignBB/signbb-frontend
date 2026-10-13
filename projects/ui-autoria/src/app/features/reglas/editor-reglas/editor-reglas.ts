@@ -85,6 +85,13 @@ export class EditorReglasComponent implements OnInit {
   /** Error de la última publicación. */
   protected readonly errorPublicar = signal<string | null>(null);
 
+  /** Diálogo de «Descartar cambios» abierto. */
+  protected readonly mostrarDescartar = signal(false);
+  /** True mientras se descartan los cambios. */
+  protected readonly descartando = signal(false);
+  /** Error de la última vez que se descartaron cambios. */
+  protected readonly errorDescartar = signal<string | null>(null);
+
   /** Mensaje de confirmación breve. */
   protected readonly mensaje = signal<string | null>(null);
 
@@ -341,6 +348,39 @@ export class EditorReglasComponent implements OnInit {
       error: e => {
         this.publicando.set(false);
         this.errorPublicar.set(mensajeDeError(e, 'No se pudo publicar. Intenta de nuevo.'));
+      }
+    });
+  }
+
+  // --- Descartar cambios ------------------------------------------------------
+
+  /** Abre la confirmación de descartar los cambios sin publicar. */
+  protected abrirDescartar(): void {
+    if (!this.base()?.puedeDescartar) return;
+    this.errorDescartar.set(null);
+    this.mostrarDescartar.set(true);
+  }
+
+  /** Cancela el diálogo de descartar. */
+  protected cancelarDescartar(): void {
+    if (!this.descartando()) this.mostrarDescartar.set(false);
+  }
+
+  /** Descarta los cambios: la base vuelve a lo que ven las cuidadoras. */
+  protected confirmarDescartar(): void {
+    this.descartando.set(true);
+    this.errorDescartar.set(null);
+    this.autoria.descartarBase(this.id).subscribe({
+      next: base => {
+        this.base.set(base);
+        this.descartando.set(false);
+        this.mostrarDescartar.set(false);
+        this.seleccionarInicial(base);
+        this.avisar('Cambios descartados: la base volvió a como está publicada.');
+      },
+      error: e => {
+        this.descartando.set(false);
+        this.errorDescartar.set(mensajeDeError(e, 'No se pudieron descartar los cambios. Intenta de nuevo.'));
       }
     });
   }

@@ -150,6 +150,11 @@ export class AutoriaService {
     return this.http.post<BaseReglaDTO>(`${this.base}/bases/${id}/publicar`, {});
   }
 
+  /** Descarta los cambios sin publicar de una base: vuelve a su última publicación. */
+  descartarBase(id: number): Observable<BaseReglaDTO> {
+    return this.http.post<BaseReglaDTO>(`${this.base}/bases/${id}/descartar`, {});
+  }
+
   /** Catálogo de nodos y respuestas de un grafo, para el editor de reglas. */
   catalogo(grafoId: string): Observable<CatalogoDTO> {
     return this.http.get<CatalogoDTO>(`${this.base}/bases/catalogo`, {

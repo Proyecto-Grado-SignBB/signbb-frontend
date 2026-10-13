@@ -124,6 +124,13 @@ describe('AutoriaService', () => {
     const cat = http.expectOne(`${base}/bases/catalogo?grafoId=grafo_fiebre`);
     expect(cat.request.method).toBe('GET');
   });
+
+  it('descartar cambios de una base hace POST a /bases/{id}/descartar', () => {
+    servicio.descartarBase(3).subscribe();
+    const peticion = http.expectOne(`${base}/bases/3/descartar`);
+    expect(peticion.request.method).toBe('POST');
+    expect(peticion.request.body).toEqual({});
+  });
 });
 
 describe('errores de autoría', () => {
