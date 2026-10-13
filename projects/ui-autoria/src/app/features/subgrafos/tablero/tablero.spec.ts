@@ -75,6 +75,8 @@ describe('TableroComponent', () => {
 
     expect(confirmNativo).not.toHaveBeenCalled();
     expect(el.querySelector('app-dialogo-confirmar')?.textContent).toContain('Ictericia en la piel');
+    expect(el.querySelector('app-dialogo-confirmar')?.textContent)
+      .toContain('base de reglas asociada, también se eliminará');
 
     boton('Eliminar borrador').click();
     http.expectOne(r => r.method === 'DELETE' && r.url === `${BASE}/subgrafos/7`).flush(null);

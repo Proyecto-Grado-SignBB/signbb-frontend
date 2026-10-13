@@ -127,7 +127,7 @@
 @if (porEliminar(); as s) {
   <app-dialogo-confirmar
     titulo="Eliminar borrador"
-    [mensaje]="'Se eliminará «' + s.nombre + '» con todo su lienzo. No se puede deshacer.'"
+    [mensaje]="'Se eliminará «' + s.nombre + '» con todo su lienzo. Si tiene una base de reglas asociada, también se eliminará. No se puede deshacer.'"
     textoConfirmar="Eliminar borrador"
     [ocupado]="eliminando()"
     [error]="errorEliminar()"
