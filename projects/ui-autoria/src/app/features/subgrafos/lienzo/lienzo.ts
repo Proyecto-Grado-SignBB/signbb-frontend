@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, ElementRef, OnInit, computed, effect, signal, viewChild } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
 import { BotonComponent, EtiquetaComponent, MensajeErrorComponent } from 'ui-compartida';
 import { SidebarAutoriaComponent } from '../../../core/layout/sidebar-autoria/sidebar-autoria';
@@ -90,6 +90,12 @@ export class LienzoComponent implements OnInit {
   protected readonly errorPublicar = signal<string | null>(null);
   /** Avisos mostrados en el modal de publicar. */
   protected readonly avisosPublicar = signal<Aviso[]>([]);
+  /** Id de la base de reglas del subgrafo, o null si no tiene. */
+  protected readonly baseId = signal<number | null>(null);
+  /** Avisos que vienen de las reglas (referencias a nodos del lienzo que ya no existen). */
+  protected readonly avisosReglas = computed(
+    () => (this.subgrafo()?.avisos ?? []).filter(a => a.codigo.startsWith('REGLA_'))
+  );
   /** Texto de la pregunta puente donde aparecerá la opción. */
   protected readonly preguntaPuente = signal('');
   /** Mensaje de confirmación breve (desaparece solo). */
@@ -180,6 +186,7 @@ export class LienzoComponent implements OnInit {
   constructor(
     private autoria: AutoriaService,
     private ruta: ActivatedRoute,
+    private router: Router,
     private cambios: ChangeDetectorRef
   ) {
     // Mide la ventana del lienzo cuando aparece y cada vez que cambia de tamaño
@@ -213,6 +220,7 @@ export class LienzoComponent implements OnInit {
         this.subgrafo.set(s);
         this.cargando.set(false);
         this.cargarPreguntaPuente(s.puenteId);
+        this.resolverBase(s.grafoId);
       },
       error: e => {
         this.error.set(mensajeDeError(e, 'No se pudo abrir el subgrafo. Verifica que el backend esté disponible.'));
@@ -227,6 +235,22 @@ export class LienzoComponent implements OnInit {
       next: categorias => this.preguntaPuente.set(categorias.find(c => c.puenteId === puenteId)?.pregunta ?? ''),
       error: () => { /* el modal de publicar simplemente no nombra la pregunta */ }
     });
+  }
+
+  /** Busca la base de reglas del subgrafo, para el enlace «Ir a las reglas». */
+  private resolverBase(grafoId: string): void {
+    this.autoria.listarBases().subscribe({
+      next: bases => this.baseId.set(bases.find(b => b.grafoId === grafoId)?.id ?? null),
+      error: () => this.baseId.set(null)
+    });
+  }
+
+  /** Abre el editor de reglas del subgrafo para corregir una referencia rota. */
+  protected abrirReglas(): void {
+    const id = this.baseId();
+    if (id !== null) {
+      this.router.navigate(['/reglas', id]);
+    }
   }
 
   // --- Abrir el panel -----------------------------------------------------------

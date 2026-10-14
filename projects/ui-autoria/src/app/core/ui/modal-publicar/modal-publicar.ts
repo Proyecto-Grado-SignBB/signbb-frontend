@@ -32,15 +32,24 @@ export class ModalPublicarComponent {
   @Input() error: string | null = null;
   /** true si ya estaba publicado: se reemplaza la versión vigente. */
   @Input() republicar = false;
+  /** true si el subgrafo tiene base de reglas: se publicará junto con el grafo. */
+  @Input() publicaReglas = false;
 
   /** Emite cuando el usuario confirma publicar. */
   @Output() confirmar = new EventEmitter<void>();
   /** Emite al cancelar. */
   @Output() cancelar = new EventEmitter<void>();
+  /** Emite cuando el usuario quiere ir al editor de reglas a corregir avisos. */
+  @Output() irAReglas = new EventEmitter<void>();
 
   /** Avisos que impiden publicar. */
   protected get bloqueantes(): Aviso[] {
     return this.avisos.filter(a => a.bloqueante);
+  }
+
+  /** Avisos que vienen de las reglas del subgrafo. */
+  protected get avisosReglas(): Aviso[] {
+    return this.avisos.filter(a => a.codigo.startsWith('REGLA_'));
   }
 
   /** Cantidad de nodos sueltos (no bloquean, no se publican). */

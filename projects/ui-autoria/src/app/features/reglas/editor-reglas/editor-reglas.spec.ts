@@ -55,6 +55,7 @@ describe('EditorReglasComponent: descartar cambios', () => {
     http
       .expectOne(`${BASE}/bases/catalogo?grafoId=grafo_fiebre`)
       .flush({ grafoId: 'grafo_fiebre', nodos: [] });
+    http.expectOne(`${BASE}/subgrafos`).flush([]);
     harness.detectChanges();
 
     const el = harness.routeNativeElement as HTMLElement;

@@ -74,6 +74,7 @@ describe('LienzoComponent: despublicar', () => {
     await harness.navigateByUrl('/subgrafos/7', LienzoComponent);
     http.expectOne(`${BASE}/subgrafos/7`).flush(subgrafo);
     http.expectOne(`${BASE}/categorias`).flush([]);
+    http.expectOne(`${BASE}/bases`).flush([]);
     harness.detectChanges();
     el = harness.routeNativeElement as HTMLElement;
   }

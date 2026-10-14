@@ -1,6 +1,6 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import type { NivelAlerta } from 'ui-compartida';
 import { BotonComponent, EtiquetaComponent, MensajeErrorComponent } from 'ui-compartida';
 import { SidebarAutoriaComponent } from '../../../core/layout/sidebar-autoria/sidebar-autoria';
@@ -80,10 +80,10 @@ export class EditorReglasComponent implements OnInit {
   protected readonly eliminandoRegla = signal(false);
   protected readonly errorEliminar = signal<string | null>(null);
 
-  /** True mientras se publica la base. */
-  protected readonly publicando = signal(false);
-  /** Error de la última publicación. */
-  protected readonly errorPublicar = signal<string | null>(null);
+  /** Id del subgrafo dueño de la base, o null (p. ej. la base del grafo raíz). */
+  protected readonly subgrafoId = signal<number | null>(null);
+  /** True si la base pertenece al grafo raíz (no se publica desde un subgrafo). */
+  protected readonly esRaiz = computed(() => this.base()?.grafoId === 'grafo_raiz');
 
   /** Diálogo de «Descartar cambios» abierto. */
   protected readonly mostrarDescartar = signal(false);
@@ -99,7 +99,8 @@ export class EditorReglasComponent implements OnInit {
 
   constructor(
     private autoria: AutoriaService,
-    private ruta: ActivatedRoute
+    private ruta: ActivatedRoute,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -117,6 +118,7 @@ export class EditorReglasComponent implements OnInit {
         this.cargando.set(false);
         this.seleccionarInicial(base);
         this.cargarCatalogo(base.grafoId);
+        this.resolverSubgrafo(base.grafoId);
       },
       error: e => {
         this.error.set(mensajeDeError(e, 'No se pudo abrir la base. Verifica que el backend esté disponible.'));
@@ -131,6 +133,22 @@ export class EditorReglasComponent implements OnInit {
       next: catalogo => this.catalogo.set(catalogo),
       error: () => this.catalogo.set(null)
     });
+  }
+
+  /** Busca el subgrafo dueño de la base, para poder publicarla desde él. */
+  private resolverSubgrafo(grafoId: string): void {
+    this.autoria.listar().subscribe({
+      next: subgrafos => this.subgrafoId.set(subgrafos.find(s => s.grafoId === grafoId)?.id ?? null),
+      error: () => this.subgrafoId.set(null)
+    });
+  }
+
+  /** Abre el subgrafo: las reglas se publican publicando el subgrafo. */
+  protected irAPublicar(): void {
+    const id = this.subgrafoId();
+    if (id !== null) {
+      this.router.navigate(['/subgrafos', id]);
+    }
   }
 
   /** Selecciona la primera regla si existe; si no, abre una nueva. */
@@ -326,28 +344,6 @@ export class EditorReglasComponent implements OnInit {
       error: e => {
         this.eliminandoRegla.set(false);
         this.errorEliminar.set(mensajeDeError(e, 'No se pudo eliminar la regla. Intenta de nuevo.'));
-      }
-    });
-  }
-
-  // --- Publicar base ----------------------------------------------------------
-
-  /** Publica la base; si hay avisos bloqueantes, los muestra. */
-  protected publicar(): void {
-    if (this.publicando()) {
-      return;
-    }
-    this.publicando.set(true);
-    this.errorPublicar.set(null);
-    this.autoria.publicarBase(this.id).subscribe({
-      next: base => {
-        this.base.set(base);
-        this.publicando.set(false);
-        this.avisar('Publicada: las reglas ya están activas.');
-      },
-      error: e => {
-        this.publicando.set(false);
-        this.errorPublicar.set(mensajeDeError(e, 'No se pudo publicar. Intenta de nuevo.'));
       }
     });
   }

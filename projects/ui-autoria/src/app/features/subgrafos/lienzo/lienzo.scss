@@ -79,6 +79,31 @@
   padding: 16px 24px 0;
 }
 
+.zona-aviso-reglas {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 16px 24px 0;
+  padding: 10px 13px;
+  border-radius: $radius-sm;
+  background: $color-aviso-tint;
+  color: $color-aviso-dark;
+  font-size: 12.5px;
+  font-weight: 700;
+
+  a {
+    color: $color-aviso-dark;
+    font-weight: 800;
+    text-decoration: underline;
+    cursor: pointer;
+
+    &:hover {
+      color: $color-ink;
+    }
+  }
+}
+
 .estado-carga {
   color: $color-ink-faint;
   font-size: 14px;

@@ -45,6 +45,12 @@
         } @else if (cargando()) {
           <p class="estado-carga">Cargando el lienzo…</p>
         } @else if (subgrafo(); as s) {
+          @if (avisosReglas().length > 0) {
+            <div class="zona-aviso-reglas">
+              <span>Hay reglas que usan preguntas o conclusiones que ya no están en el lienzo.</span>
+              <a href="#" (click)="$event.preventDefault(); abrirReglas()">Ir a las reglas</a>
+            </div>
+          }
           <div class="zona-avisos">
             <app-avisos [avisos]="s.avisos" (seleccionar)="irAAviso($event)" />
           </div>
@@ -171,7 +177,9 @@
     [publicando]="publicando()"
     [error]="errorPublicar()"
     [republicar]="s.publicadoEn !== null"
+    [publicaReglas]="baseId() !== null"
     (confirmar)="publicar()"
+    (irAReglas)="abrirReglas()"
     (cancelar)="mostrarPublicar.set(false)" />
 }
 

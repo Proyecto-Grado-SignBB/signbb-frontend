@@ -12,6 +12,10 @@
         y desde ahí recorrerán <b>{{ nombre }}</b>.
       </p>
 
+      @if (publicaReglas) {
+        <p class="revisando">También se publicará la base de reglas de este subgrafo.</p>
+      }
+
       <div class="resumen-conteo">
         <div class="conteo"><b>{{ conteoNodos }}</b><span>nodo{{ conteoNodos === 1 ? '' : 's' }} en el lienzo</span></div>
       </div>
@@ -24,6 +28,11 @@
               <li>{{ aviso.mensaje }}</li>
             }
           </ul>
+          @if (avisosReglas.length > 0) {
+            <button type="button" class="enlace-reglas" (click)="irAReglas.emit()">
+              Ir a las reglas para corregirlas
+            </button>
+          }
         </div>
       } @else {
         <div class="check-strip">No hay nada que impida publicar.</div>
@@ -34,7 +43,14 @@
       }
 
       @if (error) {
-        <div class="check-strip check-strip--aviso" role="alert">{{ error }}</div>
+        <div class="check-strip check-strip--aviso" role="alert">
+          <span>{{ error }}</span>
+          @if (avisosReglas.length > 0) {
+            <button type="button" class="enlace-reglas" (click)="irAReglas.emit()">
+              Ir a las reglas para corregirlas
+            </button>
+          }
+        </div>
       }
 
       @if (republicar) {
