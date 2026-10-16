@@ -5,7 +5,7 @@ import { provideRouter } from '@angular/router';
 import { environment } from '../../../../environments/environment';
 import { Categoria, ResumenSubgrafoDTO } from '../../../models/lienzo.model';
 import { TableroComponent } from './tablero';
-import { proveerSesion } from '../../../core/sesion/sesion';
+import { CLAVE_SESION_AUTORIA, proveerSesion } from '../../../core/sesion/sesion';
 
 const BASE = `${environment.apiUrl}/autoria`;
 
@@ -162,5 +162,69 @@ describe('TableroComponent', () => {
     const dialogo = el.querySelector('app-dialogo-confirmar');
     expect(dialogo?.querySelector('[role="alert"]')?.textContent).toContain('No hay conexión');
     expect(el.querySelector('.content > app-mensaje-error')).toBeNull();
+  });
+});
+
+describe('TableroComponent: subgrafos de otros médicos', () => {
+  let fixture: ComponentFixture<TableroComponent>;
+  let el: HTMLElement;
+  let http: HttpTestingController;
+
+  const PROPIO: ResumenSubgrafoDTO = { ...BORRADOR, id: 1, nombre: 'Fiebre', autorId: 99, autor: 'Dr. Supervisor', nodos: 3 };
+  const DE_ANA: ResumenSubgrafoDTO = { ...BORRADOR, id: 2, nombre: 'Ictericia', autorId: 7, autor: 'Dra. Ana Médica', nodos: 5 };
+  const DE_BETO_EN_REVISION: ResumenSubgrafoDTO = {
+    ...BORRADOR, id: 3, nombre: 'Respiración', autorId: 8, autor: 'Dr. Beto Médico', estado: 'EN_REVISION', nodos: 4
+  };
+
+  function ingresarComo(id: number, rol: 'MEDICO' | 'MEDICO_SUPERVISOR'): void {
+    localStorage.setItem(CLAVE_SESION_AUTORIA, JSON.stringify({
+      token: 'token-de-prueba',
+      expiraEn: new Date(Date.now() + 3_600_000).toISOString(),
+      usuario: { id, nombre: 'Dr. Supervisor', correo: 's@signbb.local', rol, institucion: 'SignBB', activo: true }
+    }));
+  }
+
+  function cargar(subgrafos: ResumenSubgrafoDTO[]): void {
+    TestBed.configureTestingModule({
+      imports: [TableroComponent],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), ...proveerSesion()]
+    });
+    http = TestBed.inject(HttpTestingController);
+    fixture = TestBed.createComponent(TableroComponent);
+    el = fixture.nativeElement;
+    fixture.detectChanges();
+    http.expectOne(`${BASE}/subgrafos`).flush(subgrafos);
+    http.expectOne(`${BASE}/categorias`).flush([PIEL]);
+    fixture.detectChanges();
+  }
+
+  afterEach(() => {
+    http.verify();
+    localStorage.removeItem(CLAVE_SESION_AUTORIA);
+  });
+
+  it('el supervisor los ve aparte, con su autor, los en revisión primero y sin «Eliminar»', () => {
+    ingresarComo(99, 'MEDICO_SUPERVISOR');
+    cargar([PROPIO, DE_ANA, DE_BETO_EN_REVISION]);
+
+    const [mios, otros] = [...el.querySelectorAll('.graph-grid')];
+    expect(mios.querySelectorAll('.graph-card').length).toBe(1);
+    expect(el.querySelector('.seccion-otros')!.textContent).toContain('De otros médicos');
+
+    const tarjetas = [...otros.querySelectorAll('.graph-card')];
+    expect(tarjetas.map(t => t.querySelector('.autor')!.textContent!.trim()))
+      .toEqual(['Por Dr. Beto Médico', 'Por Dra. Ana Médica']);
+    expect(otros.textContent).toContain('Ver lienzo');
+    expect(otros.textContent).not.toContain('Eliminar');
+    expect(el.querySelector('.stat b')!.textContent).toBe('0');
+    expect(el.querySelectorAll('.stat b')[2].textContent).toBe('3');
+  });
+
+  it('un médico no ve la sección de otros', () => {
+    ingresarComo(99, 'MEDICO');
+    cargar([PROPIO]);
+
+    expect(el.querySelector('.seccion-otros')).toBeNull();
+    expect(el.querySelector('.graph-card .autor')).toBeNull();
   });
 });

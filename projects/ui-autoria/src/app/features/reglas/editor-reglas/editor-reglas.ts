@@ -1,11 +1,12 @@
-import { Component, OnInit, computed, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import type { NivelAlerta } from 'ui-compartida';
-import { BotonComponent, EtiquetaComponent, MensajeErrorComponent } from 'ui-compartida';
+import { BotonComponent, EtiquetaComponent, MensajeErrorComponent, SesionService } from 'ui-compartida';
 import { SidebarAutoriaComponent } from '../../../core/layout/sidebar-autoria/sidebar-autoria';
 import { DialogoConfirmarComponent } from '../../../core/ui/dialogo-confirmar/dialogo-confirmar';
 import { AutoriaService, mensajeDeError } from '../../../core/http/autoria';
+import { esAjeno } from '../../../core/sesion/sesion';
 import { ETIQUETA_ESTADO, EstadoBorrador } from '../../../models/lienzo.model';
 import {
   BaseReglaDTO,
@@ -86,6 +87,14 @@ export class EditorReglasComponent implements OnInit {
   protected readonly estadoSubgrafo = signal<EstadoBorrador | null>(null);
   /** True si el subgrafo está en revisión: sus reglas tampoco se editan. */
   protected readonly enRevision = computed(() => this.estadoSubgrafo() === 'EN_REVISION');
+  private readonly sesion = inject(SesionService);
+  /** True si la base es de otro médico (la abre el supervisor): solo se ve. */
+  protected readonly ajena = computed(() => {
+    const b = this.base();
+    return b !== null && esAjeno(b.autorId, this.sesion.usuario());
+  });
+  /** True si no se puede editar nada: el subgrafo está en revisión o la base es de otro médico. */
+  protected readonly soloLectura = computed(() => this.enRevision() || this.ajena());
   /** True si la base pertenece al grafo raíz (no se publica desde un subgrafo). */
   protected readonly esRaiz = computed(() => this.base()?.grafoId === 'grafo_raiz');
 

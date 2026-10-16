@@ -19,7 +19,7 @@
         @if (base(); as b) {
           @if (b.estado === 'CAMBIOS_SIN_PUBLICAR') {
             <app-boton tono="neutro" variante="contorno" alto="compacto" ancho="auto"
-              [disabled]="!b.puedeDescartar || enRevision()"
+              [disabled]="!b.puedeDescartar || soloLectura()"
               [title]="b.puedeDescartar
                 ? 'Vuelve la base a como está publicada'
                 : 'Se publicó antes de que se guardara una copia: podrás descartar cambios después de su próxima publicación'"
@@ -56,18 +56,23 @@
           </div>
         }
 
-        @if (enRevision()) {
+        @if (ajena()) {
+          <div class="avisos-panel" role="status" data-ref="aviso-ajena">
+            <span class="avisos-titulo">Solo lectura</span>
+            <ul><li>Base de {{ base()?.autor ?? 'otro médico' }}: solo su autor puede editarla.</li></ul>
+          </div>
+        } @else if (enRevision()) {
           <div class="avisos-panel" role="status">
             <span class="avisos-titulo">En revisión</span>
             <ul><li>El subgrafo de estas reglas está en revisión. Para editarlas, retíralo de revisión desde el subgrafo.</li></ul>
           </div>
         }
 
-        <fieldset class="editor-shell" style="border: 0; padding: 0; margin: 0; min-width: 0;" [disabled]="enRevision()">
+        <div class="editor-shell">
           <aside class="reglas-menu">
             <div class="menu-head">
               <h4>Reglas de la base</h4>
-              <span>Selecciona una para editarla</span>
+              <span>{{ soloLectura() ? 'Selecciona una para verla' : 'Selecciona una para editarla' }}</span>
             </div>
 
             @for (regla of b.reglas; track regla.id) {
@@ -82,10 +87,13 @@
               </button>
             }
 
-            <button type="button" class="btn-agregar" (click)="nuevaRegla()">+ Nueva regla</button>
+            @if (!soloLectura()) {
+              <button type="button" class="btn-agregar" (click)="nuevaRegla()">+ Nueva regla</button>
+            }
           </aside>
 
-          <div class="editor-regla">
+          <!-- En solo lectura se puede elegir cualquier regla de la lista, pero el formulario no se toca. -->
+          <fieldset class="editor-regla" style="margin: 0; padding: 0;" [disabled]="soloLectura()">
             <div class="editor-head">
               <div class="titulo">
                 <h4>{{ reglaId() ? 'Editar regla' : 'Nueva regla' }}</h4>
@@ -225,8 +233,8 @@
                 {{ guardando() ? 'Guardando…' : (reglaId() ? 'Guardar regla' : 'Crear regla') }}
               </app-boton>
             </div>
-          </div>
-        </fieldset>
+          </fieldset>
+        </div>
 
         <section class="visor-seccion">
           <div class="seccion-head">

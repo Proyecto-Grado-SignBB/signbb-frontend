@@ -98,7 +98,7 @@
         </div>
 
         <div class="graph-grid">
-          @for (s of subgrafos(); track s.id) {
+          @for (s of propios(); track s.id) {
             <div class="graph-card">
               <div class="top-row">
                 <h4>{{ s.nombre }}</h4>
@@ -123,8 +123,28 @@
           </div>
         </div>
 
-        @if (subgrafos().length === 0) {
+        @if (propios().length === 0) {
           <p class="estado-vacio">Todavía no hay subgrafos. Crea el primero con el botón de arriba.</p>
+        }
+
+        @if (deOtros().length > 0) {
+          <h4 class="seccion-otros">De otros médicos</h4>
+          <div class="graph-grid">
+            @for (s of deOtros(); track s.id) {
+              <div class="graph-card">
+                <div class="top-row">
+                  <h4>{{ s.nombre }}</h4>
+                  <app-etiqueta [tono]="tonoEstado(s.estado)">{{ etiquetaEstado[s.estado] }}</app-etiqueta>
+                </div>
+                <span class="autor">Por {{ s.autor ?? 'autor desconocido' }}</span>
+                <span class="meta">{{ legible(s.categoria) }} · la familia lo ve como «{{ s.etiquetaOpcion }}»</span>
+                <p>{{ resumen(s) }}</p>
+                <div class="foot">
+                  <app-boton tono="marca" alto="compacto" ancho="auto" (click)="abrirSubgrafo(s.id)">Ver lienzo</app-boton>
+                </div>
+              </div>
+            }
+          </div>
         }
       }
     </div>

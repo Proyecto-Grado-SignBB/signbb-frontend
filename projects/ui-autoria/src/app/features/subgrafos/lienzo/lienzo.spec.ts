@@ -6,7 +6,7 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { environment } from '../../../../environments/environment';
 import { SubgrafoDTO } from '../../../models/lienzo.model';
 import { LienzoComponent } from './lienzo';
-import { proveerSesion } from '../../../core/sesion/sesion';
+import { CLAVE_SESION_AUTORIA, proveerSesion } from '../../../core/sesion/sesion';
 
 const BASE = `${environment.apiUrl}/autoria`;
 
@@ -184,5 +184,98 @@ describe('LienzoComponent: revisión', () => {
 
     expect(boton('Enviar a revisión')!.disabled).toBeFalse();
     expect(boton('Despublicar')).toBeUndefined();
+  });
+});
+
+describe('LienzoComponent: subgrafo de otro médico', () => {
+  let http: HttpTestingController;
+  let harness: RouterTestingHarness;
+  let el: HTMLElement;
+
+  const PREGUNTA = {
+    id: 'p1', tipo: 'PREGUNTA' as const, texto: '¿Desde cuándo?', variasRespuestas: false, desenlace: null,
+    imagenes: [], respuestas: [{ id: 'r1', texto: 'Hoy', gravedad: 'LEVE' as const, destino: null }]
+  };
+
+  /** Subgrafo de la Dra. Ana Médica (cuenta 7). */
+  const DE_ANA: SubgrafoDTO = {
+    id: 7, grafoId: 'grafo_ictericia', nombre: 'Ictericia en la piel', puenteId: 'puente_piel',
+    categoria: 'piel', etiquetaOpcion: 'Piel u ojos amarillos', autor: 'Dra. Ana Médica',
+    institucion: 'Fundación Canguro', autorId: 7, estado: 'BORRADOR', inicio: 'p1', nodos: [PREGUNTA],
+    avisos: [], creadoEn: '2026-10-10T10:00:00Z', actualizadoEn: '2026-10-10T10:00:00Z', publicadoEn: null,
+    puedeDescartar: false, comentarioRevision: null, revisadoEn: null
+  };
+
+  function ingresarComo(id: number, rol: 'MEDICO' | 'MEDICO_SUPERVISOR'): void {
+    localStorage.setItem(CLAVE_SESION_AUTORIA, JSON.stringify({
+      token: 'token-de-prueba',
+      expiraEn: new Date(Date.now() + 3_600_000).toISOString(),
+      usuario: { id, nombre: 'Dr. Supervisor', correo: 's@signbb.local', rol, institucion: 'SignBB', activo: true }
+    }));
+  }
+
+  function boton(texto: string): HTMLButtonElement | undefined {
+    return [...el.querySelectorAll<HTMLButtonElement>('button')].find(x => x.textContent?.trim() === texto);
+  }
+
+  async function abrir(subgrafo: SubgrafoDTO): Promise<void> {
+    harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/subgrafos/7', LienzoComponent);
+    http.expectOne(`${BASE}/subgrafos/7`).flush(subgrafo);
+    http.expectOne(`${BASE}/categorias`).flush([]);
+    http.expectOne(`${BASE}/bases`).flush([]);
+    harness.detectChanges();
+    el = harness.routeNativeElement as HTMLElement;
+  }
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      imports: [LienzoComponent],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([{ path: 'subgrafos/:id', component: LienzoComponent }]),
+        ...proveerSesion()
+      ]
+    });
+    http = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => {
+    http.verify();
+    localStorage.removeItem(CLAVE_SESION_AUTORIA);
+  });
+
+  it('el supervisor lo ve con su autor, en solo lectura', async () => {
+    ingresarComo(99, 'MEDICO_SUPERVISOR');
+    await abrir(DE_ANA);
+
+    expect(el.querySelector('[data-ref="autor"]')!.textContent).toContain('Creado por Dra. Ana Médica · Fundación Canguro');
+    expect(el.querySelector('[data-ref="aviso-ajeno"]')!.textContent).toContain('Solo su autor puede editarlo');
+    expect(boton('Editar datos')).toBeUndefined();
+    expect(boton('Enviar a revisión')).toBeUndefined();
+    expect(el.querySelector('button.mas')).toBeNull();
+
+    el.querySelector<HTMLButtonElement>('button.nodo')!.click();
+    harness.detectChanges();
+    expect(el.querySelector('app-panel-nodo')).toBeNull();
+  });
+
+  it('en revisión, el supervisor no ve «Retirar de revisión» y se le indica cómo decidir', async () => {
+    ingresarComo(99, 'MEDICO_SUPERVISOR');
+    await abrir({ ...DE_ANA, estado: 'EN_REVISION' });
+
+    expect(el.querySelector('[data-ref="aviso-ajeno"]')!.textContent).toContain('apruébalo o recházalo');
+    expect(boton('Retirar de revisión')).toBeUndefined();
+  });
+
+  it('su autora ve «Creado por» y puede editar', async () => {
+    ingresarComo(7, 'MEDICO');
+    await abrir(DE_ANA);
+
+    expect(el.querySelector('[data-ref="autor"]')!.textContent).toContain('Creado por Dra. Ana Médica');
+    expect(el.querySelector('[data-ref="aviso-ajeno"]')).toBeNull();
+    expect(boton('Editar datos')!.disabled).toBeFalse();
+    expect(el.querySelector('button.mas')).toBeTruthy();
   });
 });

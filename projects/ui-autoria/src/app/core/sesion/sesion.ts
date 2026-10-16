@@ -1,5 +1,5 @@
 import { Provider } from '@angular/core';
-import { API_URL, CLAVE_SESION, Rol } from 'ui-compartida';
+import { API_URL, CLAVE_SESION, Rol, UsuarioSesion } from 'ui-compartida';
 import { environment } from '../../../environments/environment';
 
 /** Clave de `localStorage` de la sesión de esta app (distinta de la de consulta). */
@@ -32,4 +32,13 @@ export function iniciales(nombre: string): string {
     .map(parte => parte[0])
     .join('')
     .toUpperCase();
+}
+
+/**
+ * True si el borrador es de otro médico: solo lo ve el supervisor, y en solo
+ * lectura. Un borrador viejo sin autor también cuenta como ajeno. Sin sesión
+ * (las specs que no la siembran) nada es ajeno.
+ */
+export function esAjeno(autorId: number | null, usuario: UsuarioSesion | null): boolean {
+  return usuario !== null && autorId !== usuario.id;
 }

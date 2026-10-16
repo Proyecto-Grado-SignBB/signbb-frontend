@@ -69,11 +69,12 @@
 
       @if (cargando()) {
         <p class="estado-carga">Cargando bases de reglas…</p>
-      } @else if (bases().length === 0) {
-        <p class="estado-vacio">Todavía no hay bases de reglas. Crea una para empezar.</p>
       } @else {
+        @if (propias().length === 0) {
+          <p class="estado-vacio">Todavía no hay bases de reglas. Crea una para empezar.</p>
+        }
         <div class="base-grid">
-          @for (base of bases(); track base.id) {
+          @for (base of propias(); track base.id) {
             <div class="base-card">
               <div class="top-row">
                 <h4>{{ base.nombre }}</h4>
@@ -102,6 +103,31 @@
             Crear una base de reglas nueva
           </button>
         </div>
+
+        @if (deOtros().length > 0) {
+          <h4 class="seccion-otros">De otros médicos</h4>
+          <div class="base-grid">
+            @for (base of deOtros(); track base.id) {
+              <div class="base-card">
+                <div class="top-row">
+                  <h4>{{ base.nombre }}</h4>
+                  <app-etiqueta [tono]="tonoEstado(base.estado)">{{ etiquetaEstado[base.estado] }}</app-etiqueta>
+                </div>
+                <span class="autor">Por {{ base.autor ?? 'autor desconocido' }}</span>
+                <span class="grafo-id">{{ base.grafoId }}</span>
+                @if (base.descripcion) {
+                  <p>{{ base.descripcion }}</p>
+                }
+                <div class="foot">
+                  <span class="n-reglas">{{ base.reglas }} <small>regla{{ base.reglas === 1 ? '' : 's' }}</small></span>
+                  <app-boton tono="marca" variante="contorno" alto="compacto" ancho="auto" (click)="abrirBase(base.id)">
+                    Ver base →
+                  </app-boton>
+                </div>
+              </div>
+            }
+          </div>
+        }
       }
     </div>
   </div>

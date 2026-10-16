@@ -1,12 +1,13 @@
-import { ChangeDetectorRef, Component, ElementRef, OnInit, computed, effect, signal, viewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
-import { BotonComponent, EtiquetaComponent, MensajeErrorComponent } from 'ui-compartida';
+import { BotonComponent, EtiquetaComponent, MensajeErrorComponent, SesionService } from 'ui-compartida';
 import { SidebarAutoriaComponent } from '../../../core/layout/sidebar-autoria/sidebar-autoria';
 import { ModalPublicarComponent } from '../../../core/ui/modal-publicar/modal-publicar';
 import { DialogoConfirmarComponent } from '../../../core/ui/dialogo-confirmar/dialogo-confirmar';
 import { DatosSubgrafo, ModalDatosComponent } from '../../../core/ui/modal-datos/modal-datos';
 import { AutoriaService, avisosDeError, mensajeDeError } from '../../../core/http/autoria';
+import { esAjeno } from '../../../core/sesion/sesion';
 import {
   Aviso,
   ETIQUETA_DESENLACE,
@@ -103,6 +104,14 @@ export class LienzoComponent implements OnInit {
   protected readonly estadoBase = signal<EstadoBorrador | null>(null);
   /** True si el subgrafo espera la respuesta de un supervisor: no se edita. */
   protected readonly enRevision = computed(() => this.subgrafo()?.estado === 'EN_REVISION');
+  private readonly sesion = inject(SesionService);
+  /** True si el subgrafo es de otro médico (lo abre el supervisor): solo se ve. */
+  protected readonly ajeno = computed(() => {
+    const s = this.subgrafo();
+    return s !== null && esAjeno(s.autorId, this.sesion.usuario());
+  });
+  /** True si no se puede editar nada: está en revisión o es de otro médico. */
+  protected readonly soloLectura = computed(() => this.enRevision() || this.ajeno());
   /**
    * True si hay algo que revisar: el subgrafo no está publicado tal cual, o
    * lo está pero su base de reglas tiene cambios sin publicar.
@@ -326,9 +335,9 @@ export class LienzoComponent implements OnInit {
     this.errorPanel.set(null);
   }
 
-  /** Abre el panel con un contexto y resalta una referencia. En revisión no se abre: nada se edita. */
+  /** Abre el panel con un contexto y resalta una referencia. En solo lectura no se abre: nada se edita. */
   private abrir(contexto: ContextoPanel, resaltado: string | null): void {
-    if (this.enRevision()) return;
+    if (this.soloLectura()) return;
     this.errorPanel.set(null);
     this.contexto.set(contexto);
     this.resaltado.set(resaltado);

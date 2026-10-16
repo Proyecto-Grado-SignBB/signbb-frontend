@@ -31,6 +31,14 @@ cuidadora los puede recorrer.
   supervisor lo rechazó, arriba sale su comentario. El médico ya no publica ni
   despublica: aprobar, rechazar y despublicar son del supervisor y por ahora no
   tienen pantallas (se hacen por la API).
+- **Vista del supervisor**: el back le lista al supervisor los subgrafos y las
+  bases de todos. Los tableros los separan con `esAjeno` (`core/sesion/`): los
+  propios arriba y, aparte, «De otros médicos» con «Por {autor}» (los que están
+  en revisión primero) y sin «Eliminar». El lienzo muestra siempre «Creado por
+  {autor} · {institución}»; si es de otro, `soloLectura` oculta los botones de
+  edición y los "+", y el editor de reglas deja recorrer las reglas pero no
+  tocarlas. Solo el autor edita, igual que en el back
+  (`PoliticaAccesoBorradores`).
 - **API base** en `src/environments/environment*.ts`.
 
 ## Cómo se documenta

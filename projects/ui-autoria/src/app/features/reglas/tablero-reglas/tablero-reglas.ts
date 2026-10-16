@@ -1,10 +1,11 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { BotonComponent, EtiquetaComponent, MensajeErrorComponent } from 'ui-compartida';
+import { BotonComponent, EtiquetaComponent, MensajeErrorComponent, SesionService } from 'ui-compartida';
 import { SidebarAutoriaComponent } from '../../../core/layout/sidebar-autoria/sidebar-autoria';
 import { DialogoConfirmarComponent } from '../../../core/ui/dialogo-confirmar/dialogo-confirmar';
 import { AutoriaService, mensajeDeError } from '../../../core/http/autoria';
+import { esAjeno } from '../../../core/sesion/sesion';
 import { ETIQUETA_ESTADO, EstadoBorrador, ResumenSubgrafoDTO } from '../../../models/lienzo.model';
 import { ResumenBaseReglaDTO } from '../../../models/regla.model';
 
@@ -12,6 +13,9 @@ import { ResumenBaseReglaDTO } from '../../../models/regla.model';
  * Tablero de bases de reglas: lista cada base con su estado y su grafo, y
  * permite crear una nueva eligiendo el subgrafo con el que trabaja. Eliminar
  * una base se confirma en un diálogo propio (solo si nunca se publicó).
+ *
+ * Al supervisor le llegan también las bases de otros médicos: van aparte, en
+ * «De otros médicos», con su autor y solo para verlas.
  */
 @Component({
   selector: 'app-tablero-reglas',
@@ -38,7 +42,18 @@ export class TableroReglasComponent implements OnInit {
   /** Error de carga de la lista de bases. */
   protected readonly error = signal<string | null>(null);
 
-  /** Subgrafos disponibles para asociar una base nueva. */
+  private readonly sesion = inject(SesionService);
+
+  /** Bases del médico que ingresó. */
+  protected readonly propias = computed(
+    () => this.bases().filter(b => !esAjeno(b.autorId, this.sesion.usuario()))
+  );
+  /** Bases de otros médicos (solo le llegan al supervisor). */
+  protected readonly deOtros = computed(
+    () => this.bases().filter(b => esAjeno(b.autorId, this.sesion.usuario()))
+  );
+
+  /** Subgrafos del médico, los únicos a los que puede asociar una base nueva. */
   protected readonly subgrafos = signal<ResumenSubgrafoDTO[]>([]);
   /** Error al cargar los subgrafos. */
   protected readonly errorSubgrafos = signal<string | null>(null);
@@ -89,7 +104,8 @@ export class TableroReglasComponent implements OnInit {
   protected cargarSubgrafos(): void {
     this.errorSubgrafos.set(null);
     this.autoria.listar().subscribe({
-      next: subgrafos => this.subgrafos.set(subgrafos),
+      next: subgrafos => this.subgrafos.set(
+        subgrafos.filter(s => !esAjeno(s.autorId, this.sesion.usuario()))),
       error: e => this.errorSubgrafos.set(
         mensajeDeError(e, 'No se pudieron cargar los subgrafos. Intenta de nuevo.'))
     });

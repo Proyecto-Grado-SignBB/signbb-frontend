@@ -1,10 +1,11 @@
-import { Component, OnInit, computed, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { BotonComponent, EtiquetaComponent, MensajeErrorComponent } from 'ui-compartida';
+import { BotonComponent, EtiquetaComponent, MensajeErrorComponent, SesionService } from 'ui-compartida';
 import { SidebarAutoriaComponent } from '../../../core/layout/sidebar-autoria/sidebar-autoria';
 import { DialogoConfirmarComponent } from '../../../core/ui/dialogo-confirmar/dialogo-confirmar';
 import { AutoriaService, mensajeDeError } from '../../../core/http/autoria';
+import { esAjeno } from '../../../core/sesion/sesion';
 import {
   AYUDA_NOMBRE_FAMILIA,
   Categoria,
@@ -19,6 +20,9 @@ import {
  * con su nombre técnico, la categoría (la pregunta puente del grafo raíz
  * donde se ofrecerá) y el nombre para la familia, que es la opción que verá
  * la cuidadora. Eliminar un borrador se confirma en un diálogo propio.
+ *
+ * El supervisor recibe también los subgrafos de otros médicos: van aparte, en
+ * «De otros médicos», con su autor y solo para verlos.
  */
 @Component({
   selector: 'app-tablero',
@@ -76,17 +80,28 @@ export class TableroComponent implements OnInit {
   /** Confirmación breve de la última acción ("Se eliminó…"). */
   protected readonly mensaje = signal<string | null>(null);
 
-  /** Subgrafos que las cuidadoras ya ven (aunque tengan cambios o estén en revisión). */
+  private readonly sesion = inject(SesionService);
+
+  /** Subgrafos del médico que ingresó. */
+  protected readonly propios = computed(
+    () => this.subgrafos().filter(s => !esAjeno(s.autorId, this.sesion.usuario()))
+  );
+  /** Subgrafos de otros médicos (solo le llegan al supervisor), con los que esperan revisión primero. */
+  protected readonly deOtros = computed(() => this.subgrafos()
+    .filter(s => esAjeno(s.autorId, this.sesion.usuario()))
+    .sort((a, b) => Number(b.estado === 'EN_REVISION') - Number(a.estado === 'EN_REVISION')));
+
+  /** Subgrafos propios que las cuidadoras ya ven (aunque tengan cambios o estén en revisión). */
   protected readonly totalPublicados = computed(
-    () => this.subgrafos().filter(s => s.publicadoEn !== null).length
+    () => this.propios().filter(s => s.publicadoEn !== null).length
   );
-  /** Subgrafos con algo sin publicar (borradores, cambios o en revisión). */
+  /** Subgrafos propios con algo sin publicar (borradores, cambios o en revisión). */
   protected readonly totalBorradores = computed(
-    () => this.subgrafos().filter(s => s.estado !== 'PUBLICADO').length
+    () => this.propios().filter(s => s.estado !== 'PUBLICADO').length
   );
-  /** Suma de nodos de todos los subgrafos. */
+  /** Suma de nodos de los subgrafos propios. */
   protected readonly totalNodos = computed(
-    () => this.subgrafos().reduce((acc, s) => acc + s.nodos, 0)
+    () => this.propios().reduce((acc, s) => acc + s.nodos, 0)
   );
 
   constructor(private autoria: AutoriaService, private router: Router) {}
