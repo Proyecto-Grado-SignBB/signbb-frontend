@@ -110,8 +110,20 @@ describe('Resultado', () => {
       const el = mostrar({ nivel: 'NORMAL' });
 
       expect(el.querySelector('app-ilustracion-resultado .ilu--feliz')).not.toBeNull();
-      const hijos = Array.from(el.querySelector('.resultado__hero > div')!.children).map(h => h.tagName.toLowerCase());
+      const hijos = Array.from(el.querySelector('.resultado__textos')!.children).map(h => h.tagName.toLowerCase());
       expect(hijos).toEqual(['h1', 'app-ilustracion-resultado', 'p']);
+    });
+
+    it('queda centrada en el bloque del título, en los tres niveles', () => {
+      for (const nivel of ['NORMAL', 'CONSULTAR_MEDICO', 'URGENCIA'] as const) {
+        const el = mostrar({ nivel, razones: nivel === 'URGENCIA' ? ['Quejido al respirar'] : [] });
+        const centro = (r: DOMRect) => r.left + r.width / 2;
+        const hero = el.querySelector('.resultado__hero')!.getBoundingClientRect();
+        const ilustracion = el.querySelector('app-ilustracion-resultado')!.getBoundingClientRect();
+
+        expect(el.querySelector('.resultado__textos')!.getBoundingClientRect().width).toBeGreaterThan(ilustracion.width);
+        expect(Math.abs(centro(ilustracion) - centro(hero))).withContext(nivel).toBeLessThan(1);
+      }
     });
 
     it('muestra el médico en CONSULTAR_MEDICO', () => {

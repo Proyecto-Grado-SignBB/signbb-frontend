@@ -167,6 +167,13 @@
   }
 }
 
+.resultado__textos {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .resultado__ilustracion {
   margin: 12px auto 0;
 }
@@ -206,9 +213,9 @@
     background: rgba(255, 255, 255, 0.6);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.5);
-    font-size: 14px;
-    line-height: 1.5;
-    color: $color-text-secondary;
+    font-size: 17px;
+    line-height: 1.55;
+    color: $color-text-primary;
     text-align: left;
   }
 }
@@ -229,14 +236,14 @@
   background: rgba(255, 255, 255, 0.6);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.5);
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.5;
-  color: $color-text-secondary;
+  color: $color-text-primary;
   text-align: left;
 }
 
 .resultado__etiqueta-recomendaciones {
-  font-size: 12.5px;
+  font-size: 14px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.4px;
@@ -261,14 +268,14 @@
   align-items: flex-start;
   gap: 12px;
   padding: 12px 2px;
-  font-size: 14px;
-  line-height: 1.5;
-  color: $color-text-secondary;
+  font-size: 17px;
+  line-height: 1.55;
+  color: $color-text-primary;
   text-align: left;
 
   svg {
     flex-shrink: 0;
-    margin-top: 2px;
+    margin-top: 4px;
   }
 
   &+& {
@@ -281,7 +288,7 @@
 }
 
 .resultado__etiqueta-razones {
-  font-size: 12.5px;
+  font-size: 14px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.4px;
@@ -308,7 +315,7 @@
   padding: 12px 2px;
   font-family: $font-heading;
   font-weight: 700;
-  font-size: 14.5px;
+  font-size: 16px;
   color: oklch(28% 0.06 30);
 
   svg {
