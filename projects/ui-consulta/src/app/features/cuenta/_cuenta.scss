@@ -1,0 +1,88 @@
+// Estilos compartidos de las pantallas de ingreso y registro de las familias.
+@use 'tokens' as *;
+
+.cuenta {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  padding: 32px 26px;
+  background: linear-gradient(165deg, oklch(92% 0.04 340) 0%, oklch(94% 0.03 300) 60%, oklch(94% 0.04 200) 100%);
+}
+
+.cuenta__marca {
+  font-family: $font-heading;
+  font-weight: 700;
+  font-size: 17px;
+  color: oklch(34% 0.06 320);
+  text-align: center;
+}
+
+.cuenta__tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px 20px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 10px 24px rgba(120, 60, 100, 0.1);
+
+  h1 {
+    font-family: $font-heading;
+    font-size: 22px;
+    margin: 0;
+    color: oklch(26% 0.04 320);
+  }
+}
+
+.cuenta__ayuda {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: $color-text-secondary;
+}
+
+.cuenta__campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 700;
+
+  input {
+    height: $button-height-md;
+    padding: 0 14px;
+    border: 1.5px solid $color-border;
+    border-radius: 12px;
+    font: inherit;
+    font-weight: 400;
+    background: white;
+
+    &:focus {
+      outline: none;
+      border-color: $color-brand;
+    }
+  }
+}
+
+.cuenta__error {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: $color-alert-dark;
+  background: $color-alert-tint;
+}
+
+.cuenta__pie {
+  margin: 0;
+  font-size: 14px;
+  text-align: center;
+  color: $color-text-secondary;
+
+  a {
+    color: $color-brand-dark;
+    font-weight: 700;
+  }
+}

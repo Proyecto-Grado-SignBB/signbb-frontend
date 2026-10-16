@@ -1,0 +1,30 @@
+<main class="cuenta pantalla">
+  <span class="cuenta__marca">SignBB</span>
+
+  <form class="cuenta__tarjeta" (ngSubmit)="ingresar()" novalidate>
+    <h1>Ingresa a tu cuenta</h1>
+    <p class="cuenta__ayuda">Así tus consultas quedan guardadas y puedes volver a verlas.</p>
+
+    <label class="cuenta__campo">
+      Correo
+      <input type="email" name="correo" autocomplete="username" placeholder="tu@correo.com"
+             [(ngModel)]="correo" [disabled]="ingresando()" />
+    </label>
+    <label class="cuenta__campo">
+      Contraseña
+      <input type="password" name="contrasena" autocomplete="current-password" placeholder="Tu contraseña"
+             [(ngModel)]="contrasena" [disabled]="ingresando()" />
+    </label>
+
+    @if (error()) {
+      <p class="cuenta__error" role="alert">{{ error() }}</p>
+    }
+
+    <app-boton [disabled]="ingresando()">{{ ingresando() ? 'Un momento…' : 'Ingresar' }}</app-boton>
+  </form>
+
+  <p class="cuenta__pie">
+    ¿No tienes cuenta?
+    <a routerLink="/registro" [queryParams]="volver ? { volver } : {}">Crear cuenta</a>
+  </p>
+</main>

@@ -5,6 +5,7 @@ import { RecorridoService } from '../../../core/http/recorrido';
 import { RecorridoResponse, ResponderRequest } from '../../../models/recorrido.model';
 import { BotonComponent, EtiquetaComponent, AvisoLegalComponent, MensajeErrorComponent } from 'ui-compartida';
 import { CarruselImagenesComponent } from '../carrusel-imagenes/carrusel-imagenes';
+import { AVISO_RECORRIDO_NO_DISPONIBLE, recorridoNoDisponible } from '../../../core/sesion/sesion';
 
 const ETIQUETAS_OPCION: Record<string, string> = {
   SI: 'Sí',
@@ -105,7 +106,13 @@ export class PreguntaComponent implements OnInit {
         this.respuesta.set(r);
         this.opcionesSeleccionadas.set(new Set());
       },
-      error: () => this.error.set('No pudimos cargar la pregunta. Intenta de nuevo.')
+      error: e => {
+        if (recorridoNoDisponible(e)) {
+          this.router.navigate(['/'], { queryParams: AVISO_RECORRIDO_NO_DISPONIBLE });
+          return;
+        }
+        this.error.set('No pudimos cargar la pregunta. Intenta de nuevo.');
+      }
     });
   }
 
@@ -131,6 +138,8 @@ export class PreguntaComponent implements OnInit {
         this.volviendo.set(false);
         if (e.status === 400) {
           this.router.navigate(['/']);
+        } else if (recorridoNoDisponible(e)) {
+          this.router.navigate(['/'], { queryParams: AVISO_RECORRIDO_NO_DISPONIBLE });
         } else {
           this.error.set('No pudimos volver a la pregunta anterior. Intenta de nuevo.');
         }
@@ -222,8 +231,12 @@ export class PreguntaComponent implements OnInit {
           this.respuesta.set(r);
         }
       },
-      error: () => {
+      error: e => {
         this.enviando.set(false);
+        if (recorridoNoDisponible(e)) {
+          this.router.navigate(['/'], { queryParams: AVISO_RECORRIDO_NO_DISPONIBLE });
+          return;
+        }
         this.error.set('No pudimos registrar tu respuesta. Intenta de nuevo.');
       }
     });

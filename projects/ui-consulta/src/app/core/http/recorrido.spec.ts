@@ -185,4 +185,14 @@ describe('RecorridoService', () => {
 
     expect(error).toBeTruthy();
   });
+
+  it('misRecorridos() hace GET /recorridos', () => {
+    servicio.misRecorridos().subscribe(lista => expect(lista.length).toBe(1));
+    const peticion = httpMock.expectOne(`${environment.apiUrl}/recorridos`);
+    expect(peticion.request.method).toBe('GET');
+    peticion.flush([{
+      recorridoId: 'abc-123', estado: 'FINALIZADO', nivel: 'URGENCIA', mensaje: 'Lleve al bebé a urgencias.',
+      iniciadoEn: '2026-10-16T10:00:00Z', finalizadoEn: '2026-10-16T10:05:00Z'
+    }]);
+  });
 });

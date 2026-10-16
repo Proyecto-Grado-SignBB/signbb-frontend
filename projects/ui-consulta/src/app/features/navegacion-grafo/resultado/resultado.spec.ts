@@ -168,4 +168,31 @@ describe('Resultado', () => {
       expect(navegar).not.toHaveBeenCalled();
     });
   });
+
+  describe('recorrido no disponible', () => {
+    it('al cargar, un 404 vuelve al inicio con el aviso', () => {
+      const router = TestBed.inject(Router);
+      const httpMock = TestBed.inject(HttpTestingController);
+      const navegar = spyOn(router, 'navigate').and.resolveTo(true);
+
+      component.cargar();
+      httpMock.match(r => r.method === 'GET')
+        .forEach(req => req.flush(null, { status: 404, statusText: 'Not Found' }));
+
+      expect(navegar).toHaveBeenCalledWith(['/'], { queryParams: { aviso: 'recorrido' } });
+      expect(component.error()).toBeNull();
+    });
+
+    it('al corregir, un 404 vuelve al inicio con el aviso', () => {
+      const router = TestBed.inject(Router);
+      const httpMock = TestBed.inject(HttpTestingController);
+      const navegar = spyOn(router, 'navigate').and.resolveTo(true);
+
+      component.corregirUltimaRespuesta();
+      httpMock.expectOne(r => r.url.endsWith('/retroceder'))
+        .flush(null, { status: 404, statusText: 'Not Found' });
+
+      expect(navegar).toHaveBeenCalledWith(['/'], { queryParams: { aviso: 'recorrido' } });
+    });
+  });
 });

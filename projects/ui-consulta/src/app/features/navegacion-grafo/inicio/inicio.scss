@@ -247,6 +247,16 @@
   flex-shrink: 0;
 }
 
+.inicio__aviso {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 700;
+  color: $color-aviso-dark;
+  background: $color-aviso-tint;
+}
+
 app-mensaje-error,
 app-aviso-legal {
   position: relative;

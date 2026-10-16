@@ -80,6 +80,15 @@ describe('PreguntaComponent', () => {
       expect(navegar).toHaveBeenCalledWith(['/']);
     });
 
+    it('si el recorrido no es de esta cuenta (404) vuelve al inicio con el aviso', () => {
+      const navegar = spyOn(router, 'navigate').and.resolveTo(true);
+
+      component.volver();
+      peticionRetroceder().flush(null, { status: 404, statusText: 'Not Found' });
+
+      expect(navegar).toHaveBeenCalledWith(['/'], { queryParams: { aviso: 'recorrido' } });
+    });
+
     it('ante otro error muestra un mensaje y no sale de la pantalla', () => {
       const navegar = spyOn(router, 'navigate').and.resolveTo(true);
 
@@ -160,6 +169,19 @@ describe('PreguntaComponent', () => {
       const el = mostrar('SELECCION_MULTIPLE', ['COME_MENOS', 'SOMNOLENCIA'], []);
 
       expect(el.querySelector('app-carrusel-imagenes')).toBeNull();
+    });
+  });
+
+  describe('recorrido no disponible', () => {
+    it('al cargar, un 404 vuelve al inicio con el aviso en vez de mostrar un error', () => {
+      const navegar = spyOn(router, 'navigate').and.resolveTo(true);
+
+      component.cargar();
+      httpMock.match(r => r.method === 'GET')
+        .forEach(req => req.flush(null, { status: 404, statusText: 'Not Found' }));
+
+      expect(navegar).toHaveBeenCalledWith(['/'], { queryParams: { aviso: 'recorrido' } });
+      expect(component.error()).toBeNull();
     });
   });
 });

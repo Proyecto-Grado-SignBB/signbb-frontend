@@ -79,3 +79,19 @@ export interface ResponderRequest {
   /** Pista del tipo de interacción para la auditoría. */
   tipo?: TipoInteraccion;
 }
+
+/** Fila de «Mis recorridos»: un recorrido de esta cuenta, en curso o terminado. */
+export interface ResumenRecorridoDTO {
+  /** Id del recorrido. */
+  recorridoId: string;
+  /** En curso o terminado. */
+  estado: EstadoRecorrido;
+  /** Nivel de alerta del resultado; nulo si sigue en curso. */
+  nivel: NivelAlerta | null;
+  /** Mensaje de la conclusión; nulo si sigue en curso. */
+  mensaje: string | null;
+  /** Cuándo empezó. */
+  iniciadoEn: string;
+  /** Cuándo terminó; nulo si sigue en curso. */
+  finalizadoEn: string | null;
+}

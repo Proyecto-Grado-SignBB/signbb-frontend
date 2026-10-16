@@ -34,9 +34,13 @@
     </div>
 
     <div class="inicio__texto">
-      <h1>Hola, cuidador</h1>
+      <h1>Hola, {{ nombre() ?? 'cuidador' }}</h1>
       <p>Tu acompañante en el cuidado de tu bebé prematuro con el método madre canguro.</p>
     </div>
+
+    @if (aviso) {
+      <p class="inicio__aviso" role="status">{{ aviso }}</p>
+    }
 
     <div class="inicio__acciones">
       <button type="button" class="inicio__cta" [disabled]="cargando" (click)="comenzarConsulta()">
@@ -53,6 +57,22 @@
       </button>
 
       <div class="inicio__lista">
+        @if (nombre()) {
+          <a class="inicio__fila" routerLink="/mis-recorridos">
+            <span class="inicio__fila-icono inicio__fila-icono--calma">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9"></circle>
+                <path d="M12 7v5l3 2"></path>
+              </svg>
+            </span>
+            <span class="inicio__fila-texto">Mis recorridos</span>
+            <svg class="inicio__fila-flecha" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 18l6-6-6-6"></path>
+            </svg>
+          </a>
+        }
         <button type="button" class="inicio__fila" (click)="abrirManualUsuario()">
           <span class="inicio__fila-icono inicio__fila-icono--calma">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
@@ -85,6 +105,19 @@
             <path d="M9 18l6-6-6-6"></path>
           </svg>
         </a>
+        @if (nombre()) {
+          <button type="button" class="inicio__fila" (click)="cerrarSesion()">
+            <span class="inicio__fila-icono inicio__fila-icono--marca">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <path d="M16 17l5-5-5-5"></path>
+                <path d="M21 12H9"></path>
+              </svg>
+            </span>
+            <span class="inicio__fila-texto">Cerrar sesión</span>
+          </button>
+        }
       </div>
     </div>
   </div>

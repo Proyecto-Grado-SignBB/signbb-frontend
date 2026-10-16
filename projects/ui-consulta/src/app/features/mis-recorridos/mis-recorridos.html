@@ -1,0 +1,30 @@
+<main class="mis pantalla">
+  <div class="mis__header">
+    <a routerLink="/" class="mis__volver" aria-label="Volver al inicio">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+    </a>
+    <h1>Mis recorridos</h1>
+  </div>
+
+  @if (error()) {
+    <app-mensaje-error [texto]="error()!" (reintentar)="cargar()"></app-mensaje-error>
+  } @else if (cargando()) {
+    <p class="mis__vacio">Cargando…</p>
+  } @else if (lista().length === 0) {
+    <p class="mis__vacio">Todavía no has hecho ninguna consulta. Cuando hagas una, aparecerá aquí.</p>
+  } @else {
+    <ul class="mis__lista">
+      @for (r of lista(); track r.recorridoId) {
+        <li class="mis__fila">
+          <div class="mis__texto">
+            <b>{{ r.estado === 'FINALIZADO' ? (r.nivel ? etiquetaNivel[r.nivel] : 'Terminado') : 'En curso' }}</b>
+            <span>{{ fecha(r.iniciadoEn) }}@if (r.mensaje) { · {{ r.mensaje }} }</span>
+          </div>
+          <button type="button" class="mis__accion" [class.mis__accion--curso]="r.estado !== 'FINALIZADO'"
+            (click)="abrir(r)">{{ r.estado === 'FINALIZADO' ? 'Ver resultado' : 'Continuar' }}</button>
+        </li>
+      }
+    </ul>
+  }
+</main>

@@ -5,12 +5,18 @@ preguntas y muestra el desenlace del triaje.
 
 ## Arquitectura
 
-- **Sin estado persistido en el cliente.** La identidad del recorrido es el
-  parámetro de ruta `:recorridoId`; todo el estado se vuelve a pedir al backend
-  a través de `core/http/recorrido.ts`. No hay librería de estado ni
-  `localStorage`; los componentes usan *signals*.
-- **Rutas** en `app.routes.ts`: inicio → pregunta → resultado. No hay ruta
-  comodín ni 404.
+- **Cuenta obligatoria.** La familia se registra o ingresa (`features/cuenta`)
+  y el recorrido queda a su nombre. La sesión (`SesionService` de
+  `ui-compartida`) se guarda en `localStorage` con la clave
+  `signbb.consulta.sesion`, distinta de la de autoría, y el interceptor pone el
+  token en cada petición al back. Una cuenta de médico se rechaza con un aviso.
+- **Sin más estado en el cliente.** La identidad del recorrido es el parámetro
+  de ruta `:recorridoId`; todo el estado se vuelve a pedir al backend a través
+  de `core/http/recorrido.ts`. Los componentes usan *signals*.
+- **Rutas** en `app.routes.ts`: inicio, `ingresar` y `registro` son públicas;
+  pregunta, resultado y `mis-recorridos` piden una cuenta `PADRE`. Si el back
+  responde 404 a un recorrido (es de otra cuenta o venció), se vuelve al inicio
+  con «Ese recorrido no está disponible.». No hay ruta comodín ni 404.
 - **Modelos** en `app/models/` (`recorrido.model.ts`, `nodo.model.ts`).
 - **API base** en `src/environments/environment*.ts`.
 

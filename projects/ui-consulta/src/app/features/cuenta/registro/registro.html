@@ -1,0 +1,41 @@
+<main class="cuenta pantalla">
+  <span class="cuenta__marca">SignBB</span>
+
+  <form class="cuenta__tarjeta" (ngSubmit)="registrar()" novalidate>
+    <h1>Crea tu cuenta</h1>
+    <p class="cuenta__ayuda">Con tu cuenta, tus consultas quedan guardadas solo para ti.</p>
+
+    <label class="cuenta__campo">
+      Tu nombre
+      <input type="text" name="nombre" autocomplete="name" placeholder="Cómo te llamas"
+             [(ngModel)]="nombre" [disabled]="registrando()" />
+    </label>
+    <label class="cuenta__campo">
+      Correo
+      <input type="email" name="correo" autocomplete="email" placeholder="tu@correo.com"
+             [(ngModel)]="correo" [disabled]="registrando()" />
+    </label>
+    <label class="cuenta__campo">
+      Contraseña
+      <input type="password" name="contrasena" autocomplete="new-password"
+             [placeholder]="'Al menos ' + minimo + ' caracteres'"
+             [(ngModel)]="contrasena" [disabled]="registrando()" />
+    </label>
+    <label class="cuenta__campo">
+      Repite la contraseña
+      <input type="password" name="confirmacion" autocomplete="new-password" placeholder="La misma de arriba"
+             [(ngModel)]="confirmacion" [disabled]="registrando()" />
+    </label>
+
+    @if (error()) {
+      <p class="cuenta__error" role="alert">{{ error() }}</p>
+    }
+
+    <app-boton [disabled]="registrando()">{{ registrando() ? 'Un momento…' : 'Crear cuenta' }}</app-boton>
+  </form>
+
+  <p class="cuenta__pie">
+    ¿Ya tienes cuenta?
+    <a routerLink="/ingresar" [queryParams]="volver ? { volver } : {}">Ingresar</a>
+  </p>
+</main>

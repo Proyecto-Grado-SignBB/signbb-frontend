@@ -1,17 +1,22 @@
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnInit, computed } from '@angular/core';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { RecorridoService } from '../../../core/http/recorrido';
-import { AvisoLegalComponent, MensajeErrorComponent } from 'ui-compartida';
+import { AvisoLegalComponent, MensajeErrorComponent, SesionService } from 'ui-compartida';
+import { MENSAJE_RECORRIDO_NO_DISPONIBLE } from '../../../core/sesion/sesion';
 
 @Component({
   selector: 'app-inicio',
   standalone: true,
-  imports: [AvisoLegalComponent, MensajeErrorComponent],
+  imports: [RouterLink, AvisoLegalComponent, MensajeErrorComponent],
   templateUrl: './inicio.html',
   styleUrl: './inicio.scss'
 })
-/** Pantalla inicial: explica la app y arranca el recorrido. */
-export class Inicio {
+/**
+ * Pantalla inicial: explica la app y arranca el recorrido. Es pública, pero
+ * consultar pide cuenta: sin sesión, «Comenzar consulta» lleva al ingreso. Con
+ * sesión saluda por el nombre y ofrece «Mis recorridos» y «Cerrar sesión».
+ */
+export class Inicio implements OnInit {
   /** TODO: confirma con tu asesora si hay una sección específica del portal (recomendaciones/padres) en vez de la home. */
   urlFundacionCanguro = 'https://fundacioncanguro.co/';
 
@@ -19,15 +24,33 @@ export class Inicio {
   cargando = false;
   /** Mensaje de error si no se pudo iniciar la consulta. */
   error: string | null = null;
+  /** Aviso al llegar desde un recorrido que no es de esta cuenta o ya venció. */
+  aviso: string | null = null;
+
+  /** Nombre de la familia con sesión, o null si no ha ingresado. */
+  readonly nombre = computed(() => this.sesion.usuario()?.nombre ?? null);
 
   constructor(
     private recorridoService: RecorridoService,
-    private router: Router
+    private router: Router,
+    private ruta: ActivatedRoute,
+    private sesion: SesionService
   ) { }
 
-  /** Inicia un recorrido y navega a la primera pregunta. */
+  ngOnInit(): void {
+    if (this.ruta.snapshot.queryParamMap.get('aviso') === 'recorrido') {
+      this.aviso = MENSAJE_RECORRIDO_NO_DISPONIBLE;
+    }
+  }
+
+  /** Inicia un recorrido y navega a la primera pregunta; sin sesión, lleva al ingreso. */
   comenzarConsulta(): void {
+    if (!this.sesion.vigente()) {
+      this.router.navigate(['/ingresar']);
+      return;
+    }
     this.error = null;
+    this.aviso = null;
     this.cargando = true;
     this.recorridoService.iniciar().subscribe({
       next: respuesta => {
@@ -39,6 +62,12 @@ export class Inicio {
         this.error = 'No pudimos iniciar la consulta. Intenta de nuevo.';
       }
     });
+  }
+
+  /** Cierra la sesión y se queda en el inicio. */
+  cerrarSesion(): void {
+    this.sesion.salir();
+    this.aviso = null;
   }
 
   abrirManualUsuario(): void {

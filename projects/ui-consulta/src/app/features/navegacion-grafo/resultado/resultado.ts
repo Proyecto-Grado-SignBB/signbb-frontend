@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { RecorridoService } from '../../../core/http/recorrido';
 import { RecorridoResponse } from '../../../models/recorrido.model';
 import { IlustracionResultadoComponent } from '../ilustracion-resultado/ilustracion-resultado';
+import { AVISO_RECORRIDO_NO_DISPONIBLE, recorridoNoDisponible } from '../../../core/sesion/sesion';
 import { BotonComponent, InsigniaIconoComponent, TonoInsignia, AvisoLegalComponent, MensajeErrorComponent } from 'ui-compartida';
 
 /** Id del desenlace de sistema que el backend usa al cerrar por el máximo de preguntas. */
@@ -70,7 +71,13 @@ export class ResultadoComponent implements OnInit {
     this.error.set(null);
     this.recorridoService.consultar(this.recorridoId).subscribe({
       next: r => this.respuesta.set(r),
-      error: () => this.error.set('No pudimos cargar el resultado. Intenta de nuevo.')
+      error: e => {
+        if (recorridoNoDisponible(e)) {
+          this.router.navigate(['/'], { queryParams: AVISO_RECORRIDO_NO_DISPONIBLE });
+          return;
+        }
+        this.error.set('No pudimos cargar el resultado. Intenta de nuevo.');
+      }
     });
   }
 
@@ -84,7 +91,13 @@ export class ResultadoComponent implements OnInit {
     this.error.set(null);
     this.recorridoService.retroceder(this.recorridoId).subscribe({
       next: r => this.router.navigate(['/pregunta', r.recorridoId]),
-      error: () => this.error.set('No pudimos volver a la pregunta anterior. Intenta de nuevo.')
+      error: e => {
+        if (recorridoNoDisponible(e)) {
+          this.router.navigate(['/'], { queryParams: AVISO_RECORRIDO_NO_DISPONIBLE });
+          return;
+        }
+        this.error.set('No pudimos volver a la pregunta anterior. Intenta de nuevo.');
+      }
     });
   }
 
