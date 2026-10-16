@@ -13,8 +13,11 @@ preguntas y muestra el desenlace del triaje.
 - **Sin más estado en el cliente.** La identidad del recorrido es el parámetro
   de ruta `:recorridoId`; todo el estado se vuelve a pedir al backend a través
   de `core/http/recorrido.ts`. Los componentes usan *signals*.
-- **Rutas** en `app.routes.ts`: inicio, `ingresar` y `registro` son públicas;
-  pregunta, resultado y `mis-recorridos` piden una cuenta `PADRE`. Si el back
+- **Rutas** en `app.routes.ts`: `bienvenida` (explica la herramienta y lleva a
+  crear la cuenta o ingresar), `ingresar` y `registro` son públicas. El inicio
+  (`guardFamilia`) sin sesión lleva a la bienvenida; pregunta, resultado,
+  `mis-recorridos` y `perfil` (donde se cierra la sesión) piden una cuenta
+  `PADRE`. Si el back
   responde 404 a un recorrido (es de otra cuenta o venció), se vuelve al inicio
   con «Ese recorrido no está disponible.». No hay ruta comodín ni 404.
 - **Modelos** en `app/models/` (`recorrido.model.ts`, `nodo.model.ts`).

@@ -1,0 +1,37 @@
+<main class="perfil pantalla">
+  <div class="perfil__header">
+    <a routerLink="/" class="perfil__volver" aria-label="Volver al inicio">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+    </a>
+    <h1>Mi perfil</h1>
+  </div>
+
+  @if (usuario(); as u) {
+    <section class="perfil__tarjeta">
+      <span class="perfil__avatar" aria-hidden="true">{{ iniciales() }}</span>
+      <div class="perfil__datos">
+        <b>{{ u.nombre }}</b>
+        <span>{{ u.correo }}</span>
+        <span class="perfil__rol">Cuenta de familia</span>
+      </div>
+    </section>
+  }
+
+  <div class="perfil__lista">
+    <a class="perfil__fila" routerLink="/mis-recorridos">
+      Mis recorridos
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>
+    </a>
+    <button type="button" class="perfil__fila perfil__fila--salir" (click)="cerrarSesion()">
+      Cerrar sesión
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+        <path d="M16 17l5-5-5-5"></path>
+        <path d="M21 12H9"></path>
+      </svg>
+    </button>
+  </div>
+</main>

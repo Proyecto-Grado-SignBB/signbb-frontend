@@ -1,0 +1,105 @@
+@use 'tokens' as *;
+
+.perfil {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 20px 22px 32px;
+}
+
+.perfil__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  h1 {
+    font-family: $font-heading;
+    font-size: 21px;
+    margin: 0;
+  }
+}
+
+.perfil__volver {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  color: $color-text-secondary;
+  box-shadow: 0 2px 10px rgba(20, 20, 19, 0.06);
+}
+
+.perfil__tarjeta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 20px;
+  background: white;
+  box-shadow: 0 6px 18px rgba(20, 20, 19, 0.06);
+}
+
+.perfil__avatar {
+  flex-shrink: 0;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: $font-heading;
+  font-size: 20px;
+  font-weight: 700;
+  color: white;
+  background: linear-gradient(145deg, oklch(70% 0.14 340), oklch(62% 0.15 320));
+}
+
+.perfil__datos {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  font-size: 14.5px;
+  color: $color-text-secondary;
+  overflow-wrap: anywhere;
+
+  b {
+    font-size: 17px;
+    color: $color-text-primary;
+  }
+}
+
+.perfil__rol {
+  font-size: 13px;
+  font-weight: 700;
+  color: $color-brand-dark;
+}
+
+.perfil__lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.perfil__fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  border: none;
+  border-radius: 16px;
+  background: white;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  color: $color-text-primary;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(20, 20, 19, 0.05);
+}
+
+.perfil__fila--salir {
+  color: $color-alert-dark;
+}

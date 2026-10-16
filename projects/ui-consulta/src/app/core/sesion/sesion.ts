@@ -1,6 +1,7 @@
-import { Provider } from '@angular/core';
+import { Provider, inject } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { API_URL, CLAVE_SESION } from 'ui-compartida';
+import { CanActivateFn, Router } from '@angular/router';
+import { API_URL, CLAVE_SESION, SesionService } from 'ui-compartida';
 import { environment } from '../../../environments/environment';
 
 /** Clave de `localStorage` de la sesión de esta app (distinta de la de autoría). */
@@ -56,3 +57,14 @@ export function recorridoNoDisponible(error: unknown): boolean {
 
 /** Parámetros del inicio para que muestre {@link MENSAJE_RECORRIDO_NO_DISPONIBLE}. */
 export const AVISO_RECORRIDO_NO_DISPONIBLE = { aviso: 'recorrido' };
+
+/**
+ * Guard del inicio: con sesión de familia deja pasar; sin ella lleva a la
+ * bienvenida, conservando los parámetros (por ejemplo `?aviso=recorrido`).
+ */
+export const guardFamilia: CanActivateFn = ruta => {
+  const sesion = inject(SesionService);
+  return sesion.vigente() && sesion.tieneRol('PADRE')
+    ? true
+    : inject(Router).createUrlTree(['/bienvenida'], { queryParams: ruta.queryParams });
+};

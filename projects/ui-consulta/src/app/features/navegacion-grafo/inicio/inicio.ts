@@ -12,9 +12,9 @@ import { MENSAJE_RECORRIDO_NO_DISPONIBLE } from '../../../core/sesion/sesion';
   styleUrl: './inicio.scss'
 })
 /**
- * Pantalla inicial: explica la app y arranca el recorrido. Es pública, pero
- * consultar pide cuenta: sin sesión, «Comenzar consulta» lleva al ingreso. Con
- * sesión saluda por el nombre y ofrece «Mis recorridos» y «Cerrar sesión».
+ * Pantalla inicial de la familia con sesión (sin ella, el guard lleva a la
+ * bienvenida): saluda por el nombre, arranca el recorrido y lleva a «Mis
+ * recorridos» y al perfil, donde se cierra la sesión.
  */
 export class Inicio implements OnInit {
   /** TODO: confirma con tu asesora si hay una sección específica del portal (recomendaciones/padres) en vez de la home. */
@@ -27,7 +27,7 @@ export class Inicio implements OnInit {
   /** Aviso al llegar desde un recorrido que no es de esta cuenta o ya venció. */
   aviso: string | null = null;
 
-  /** Nombre de la familia con sesión, o null si no ha ingresado. */
+  /** Nombre de la familia con sesión. */
   readonly nombre = computed(() => this.sesion.usuario()?.nombre ?? null);
 
   constructor(
@@ -43,12 +43,8 @@ export class Inicio implements OnInit {
     }
   }
 
-  /** Inicia un recorrido y navega a la primera pregunta; sin sesión, lleva al ingreso. */
+  /** Inicia un recorrido y navega a la primera pregunta. */
   comenzarConsulta(): void {
-    if (!this.sesion.vigente()) {
-      this.router.navigate(['/ingresar']);
-      return;
-    }
     this.error = null;
     this.aviso = null;
     this.cargando = true;
@@ -62,12 +58,6 @@ export class Inicio implements OnInit {
         this.error = 'No pudimos iniciar la consulta. Intenta de nuevo.';
       }
     });
-  }
-
-  /** Cierra la sesión y se queda en el inicio. */
-  cerrarSesion(): void {
-    this.sesion.salir();
-    this.aviso = null;
   }
 
   abrirManualUsuario(): void {

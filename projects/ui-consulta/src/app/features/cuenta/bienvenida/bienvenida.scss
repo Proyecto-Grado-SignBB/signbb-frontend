@@ -1,0 +1,110 @@
+@use 'tokens' as *;
+
+.bienvenida {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: 24px 24px 20px;
+  background: linear-gradient(165deg, oklch(88% 0.06 340) 0%, oklch(90% 0.05 300) 50%, oklch(90% 0.06 200) 100%);
+}
+
+.bienvenida__marca {
+  font-family: $font-heading;
+  font-weight: 700;
+  font-size: 17px;
+  color: oklch(34% 0.06 320);
+  text-align: center;
+}
+
+.bienvenida__hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+
+  h1 {
+    font-family: $font-heading;
+    font-size: 24px;
+    line-height: 1.25;
+    margin: 0;
+    color: oklch(26% 0.04 320);
+  }
+
+  p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.5;
+    color: $color-text-secondary;
+  }
+}
+
+.bienvenida__insignia {
+  width: 76px;
+  height: 76px;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  background: linear-gradient(145deg, oklch(70% 0.14 340), oklch(62% 0.15 320));
+  box-shadow: 0 10px 24px rgba(160, 60, 120, 0.25);
+}
+
+.bienvenida__pasos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bienvenida__paso {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.8);
+  font-size: 14.5px;
+  line-height: 1.45;
+  color: $color-text-secondary;
+
+  b {
+    display: block;
+    font-size: 15.5px;
+    color: oklch(26% 0.04 320);
+  }
+}
+
+.bienvenida__numero {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: white;
+  background: $color-brand;
+}
+
+.bienvenida__acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bienvenida__ingresar {
+  margin: 0;
+  font-size: 14.5px;
+  text-align: center;
+  color: $color-text-secondary;
+
+  a {
+    color: $color-brand-dark;
+    font-weight: 700;
+  }
+}

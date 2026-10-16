@@ -4,11 +4,11 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { Component } from '@angular/core';
 import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
-import { SesionService } from 'ui-compartida';
 import { environment } from '../../../../environments/environment';
 import {
   CLAVE_SESION_CONSULTA,
   MENSAJE_RECORRIDO_NO_DISPONIBLE,
+  guardFamilia,
   proveerSesion
 } from '../../../core/sesion/sesion';
 import { Inicio } from './inicio';
@@ -41,7 +41,7 @@ describe('Inicio', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([
-          { path: '', component: Inicio },
+          { path: '', component: Inicio, canActivate: [guardFamilia] },
           { path: '**', component: DestinoComponent }
         ]),
         ...proveerSesion()
@@ -55,15 +55,10 @@ describe('Inicio', () => {
     localStorage.removeItem(CLAVE_SESION_CONSULTA);
   });
 
-  it('sin sesión, «Comenzar consulta» lleva al ingreso sin llamar al back', async () => {
+  it('sin sesión lleva a la bienvenida', async () => {
     await abrir();
-    expect(el.textContent).toContain('Hola, cuidador');
-    expect(el.textContent).not.toContain('Mis recorridos');
 
-    cta().click();
-    await harness.fixture.whenStable();
-
-    expect(TestBed.inject(Router).url).toBe('/ingresar');
+    expect(TestBed.inject(Router).url).toBe('/bienvenida');
   });
 
   it('con sesión saluda por el nombre e inicia el recorrido', async () => {
@@ -80,23 +75,24 @@ describe('Inicio', () => {
     expect(TestBed.inject(Router).url).toBe('/pregunta/r9');
   });
 
-  it('«Cerrar sesión» cierra la sesión y oculta «Mis recorridos»', async () => {
+  it('el perfil se abre desde el encabezado y «Cerrar sesión» ya no está en el inicio', async () => {
     localStorage.setItem(CLAVE_SESION_CONSULTA, JSON.stringify(SESION_PADRE));
     await abrir();
-    const salir = Array.from(el.querySelectorAll<HTMLButtonElement>('button'))
-      .find(b => b.textContent?.includes('Cerrar sesión'))!;
 
-    salir.click();
-    harness.detectChanges();
-
-    expect(TestBed.inject(SesionService).autenticado()).toBeFalse();
-    expect(el.textContent).not.toContain('Mis recorridos');
-    expect(el.textContent).toContain('Hola, cuidador');
+    expect(el.querySelector('a[href="/perfil"]')).not.toBeNull();
+    expect(el.textContent).not.toContain('Cerrar sesión');
   });
 
   it('con ?aviso=recorrido explica que ese recorrido no está disponible', async () => {
+    localStorage.setItem(CLAVE_SESION_CONSULTA, JSON.stringify(SESION_PADRE));
     await abrir('/?aviso=recorrido');
 
     expect(el.querySelector('.inicio__aviso')?.textContent).toContain(MENSAJE_RECORRIDO_NO_DISPONIBLE);
+  });
+
+  it('sin sesión, el aviso llega a la bienvenida en la URL', async () => {
+    await abrir('/?aviso=recorrido');
+
+    expect(TestBed.inject(Router).url).toBe('/bienvenida?aviso=recorrido');
   });
 });
