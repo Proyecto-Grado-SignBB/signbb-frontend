@@ -1,7 +1,8 @@
 # Guía de `ui-autoria`
 
 Aplicación del **médico**: arma subgrafos clínicos en un lienzo, ve los avisos y
-los publica para que la cuidadora los pueda recorrer.
+los envía a revisión. Cuando un supervisor los aprueba, se publican y la
+cuidadora los puede recorrer.
 
 ## Arquitectura
 
@@ -22,6 +23,14 @@ los publica para que la cuidadora los pueda recorrer.
 - **Autor**: el back lo toma de la sesión. El tablero, el perfil y la barra
   lateral muestran los datos de la cuenta; el front ya no manda `autor` ni
   `institucion`.
+- **Revisión**: en el lienzo, «Enviar a revisión» (`modal-publicar`, con los
+  mismos avisos bloqueantes) manda el subgrafo y su base de reglas al
+  supervisor. Se puede enviar si no está publicado, o si lo está pero sus
+  reglas tienen cambios sin publicar. En `EN_REVISION` el lienzo y el editor de
+  reglas quedan en solo lectura y aparece «Retirar de revisión». Si el
+  supervisor lo rechazó, arriba sale su comentario. El médico ya no publica ni
+  despublica: aprobar, rechazar y despublicar son del supervisor y por ahora no
+  tienen pantallas (se hacen por la API).
 - **API base** en `src/environments/environment*.ts`.
 
 ## Cómo se documenta

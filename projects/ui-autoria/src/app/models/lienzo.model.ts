@@ -13,8 +13,12 @@ export type TipoNodo = 'PREGUNTA' | 'CONCLUSION';
 /** Desenlace de una conclusión. */
 export type Desenlace = 'RECOMENDACION' | 'CONSULTA_MEDICA' | 'URGENCIA';
 
-/** Estado de un borrador respecto a lo que ve la cuidadora. */
-export type EstadoBorrador = 'BORRADOR' | 'PUBLICADO' | 'CAMBIOS_SIN_PUBLICAR';
+/**
+ * Estado de un borrador respecto a lo que ve la cuidadora. `EN_REVISION`: el
+ * médico lo envió y espera que un supervisor lo apruebe (y así se publica) o
+ * lo rechace con un comentario; mientras tanto no se edita.
+ */
+export type EstadoBorrador = 'BORRADOR' | 'PUBLICADO' | 'CAMBIOS_SIN_PUBLICAR' | 'EN_REVISION';
 
 /** Clases de aviso del lienzo (todas bloquean la publicación salvo `NODO_SUELTO`). */
 export type CodigoAviso =
@@ -87,6 +91,10 @@ export interface ResumenSubgrafoDTO {
   nodos: number;
   actualizadoEn: string;
   publicadoEn: string | null;
+  /** Comentario del supervisor si rechazó la última revisión. */
+  comentarioRevision: string | null;
+  /** Cuándo se envió a revisión por última vez. */
+  enviadoRevisionEn: string | null;
 }
 
 /** Borrador completo; lo devuelven todas las operaciones que editan. */
@@ -110,6 +118,10 @@ export interface SubgrafoDTO {
   publicadoEn: string | null;
   /** Hay una copia de lo publicado a la que se puede volver con «Descartar cambios». */
   puedeDescartar: boolean;
+  /** Comentario del supervisor si rechazó la última revisión; se borra al volver a enviar. */
+  comentarioRevision: string | null;
+  /** Cuándo se aprobó o rechazó la última revisión. */
+  revisadoEn: string | null;
 }
 
 /** Cuerpo de los 422 de autoría. */
@@ -165,7 +177,8 @@ export const ETIQUETA_DESENLACE: Record<Desenlace, string> = {
 export const ETIQUETA_ESTADO: Record<EstadoBorrador, string> = {
   BORRADOR: 'Borrador',
   PUBLICADO: 'Publicado',
-  CAMBIOS_SIN_PUBLICAR: 'Cambios sin publicar'
+  CAMBIOS_SIN_PUBLICAR: 'Cambios sin publicar',
+  EN_REVISION: 'En revisión'
 };
 
 /** Nombre legible de una categoría ("neurologico" → "Neurológico"). */

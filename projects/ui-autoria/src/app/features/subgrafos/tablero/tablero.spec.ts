@@ -14,7 +14,7 @@ const PIEL: Categoria = { puenteId: 'puente_piel', nombre: 'piel', pregunta: '¿
 const BORRADOR: ResumenSubgrafoDTO = {
   id: 7, grafoId: 'grafo_ictericia_en_la_piel', nombre: 'Ictericia en la piel', categoria: 'piel',
   etiquetaOpcion: 'Piel u ojos amarillos', autor: null, autorId: 7, estado: 'BORRADOR', nodos: 0,
-  actualizadoEn: '2026-10-10T10:00:00Z', publicadoEn: null
+  actualizadoEn: '2026-10-10T10:00:00Z', publicadoEn: null, comentarioRevision: null, enviadoRevisionEn: null
 };
 
 describe('TableroComponent', () => {

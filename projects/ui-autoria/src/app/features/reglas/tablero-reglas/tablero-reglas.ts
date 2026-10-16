@@ -186,7 +186,7 @@ export class TableroReglasComponent implements OnInit {
 
   /** Tono de la etiqueta según el estado del borrador. */
   protected tonoEstado(estado: EstadoBorrador): 'calma' | 'aviso' | 'marca' {
-    return estado === 'PUBLICADO' ? 'calma' : estado === 'CAMBIOS_SIN_PUBLICAR' ? 'aviso' : 'marca';
+    return estado === 'PUBLICADO' ? 'calma' : estado === 'BORRADOR' ? 'marca' : 'aviso';
   }
 
   /** Resumen de una fila del tablero (reglas y última edición). */

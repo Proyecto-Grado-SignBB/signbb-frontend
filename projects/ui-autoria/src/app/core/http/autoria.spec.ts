@@ -86,16 +86,19 @@ describe('AutoriaService', () => {
     expect(peticion.request.body).toEqual({});
   });
 
-  it('despublicar hace POST a /despublicar y devuelve el borrador', () => {
-    servicio.despublicar(7).subscribe();
-    const peticion = http.expectOne(`${base}/subgrafos/7/despublicar`);
-    expect(peticion.request.method).toBe('POST');
-    expect(peticion.request.body).toEqual({});
+  it('enviar y retirar de revisión hacen POST a sus rutas', () => {
+    servicio.enviarRevision(7).subscribe();
+    const enviar = http.expectOne(`${base}/subgrafos/7/enviar-revision`);
+    expect(enviar.request.method).toBe('POST');
+    expect(enviar.request.body).toEqual({});
+
+    servicio.retirarRevision(7).subscribe();
+    const retirar = http.expectOne(`${base}/subgrafos/7/retirar-revision`);
+    expect(retirar.request.method).toBe('POST');
+    expect(retirar.request.body).toEqual({});
   });
 
-  it('publicar, avisos y categorías', () => {
-    servicio.publicar(7).subscribe();
-    expect(http.expectOne(`${base}/subgrafos/7/publicar`).request.method).toBe('POST');
+  it('avisos y categorías', () => {
     servicio.avisos(7).subscribe();
     expect(http.expectOne(`${base}/subgrafos/7/avisos`).request.method).toBe('GET');
     servicio.categorias().subscribe();
@@ -127,9 +130,7 @@ describe('AutoriaService', () => {
     expect(http.expectOne(`${base}/bases/3/reglas/R_1`).request.method).toBe('DELETE');
   });
 
-  it('publicar base, avisos y catálogo', () => {
-    servicio.publicarBase(3).subscribe();
-    expect(http.expectOne(`${base}/bases/3/publicar`).request.method).toBe('POST');
+  it('avisos y catálogo de una base', () => {
     servicio.avisosBase(3).subscribe();
     expect(http.expectOne(`${base}/bases/3/avisos`).request.method).toBe('GET');
     servicio.catalogo('grafo_fiebre').subscribe();

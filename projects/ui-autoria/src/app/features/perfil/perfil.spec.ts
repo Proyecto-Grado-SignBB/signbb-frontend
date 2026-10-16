@@ -14,7 +14,7 @@ const ANA = { id: 7, nombre: 'Dra. Ana Médica', correo: 'a@signbb.local', rol: 
 function subgrafo(id: number, autorId: number | null, publicadoEn: string | null): ResumenSubgrafoDTO {
   return {
     id, grafoId: `grafo_${id}`, nombre: `S${id}`, categoria: 'piel', etiquetaOpcion: 'x', autor: null, autorId,
-    estado: publicadoEn ? 'PUBLICADO' : 'BORRADOR', nodos: 1, actualizadoEn: '2026-10-10T10:00:00Z', publicadoEn
+    estado: publicadoEn ? 'PUBLICADO' : 'BORRADOR', nodos: 1, actualizadoEn: '2026-10-10T10:00:00Z', publicadoEn, comentarioRevision: null, enviadoRevisionEn: null
   };
 }
 

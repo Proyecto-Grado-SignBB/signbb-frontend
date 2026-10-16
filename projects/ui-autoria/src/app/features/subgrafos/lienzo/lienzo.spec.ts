@@ -55,28 +55,36 @@ describe('LienzoComponent: dirección con un subgrafo que no existe', () => {
   });
 });
 
-describe('LienzoComponent: despublicar', () => {
+describe('LienzoComponent: revisión', () => {
   let http: HttpTestingController;
   let harness: RouterTestingHarness;
   let el: HTMLElement;
 
-  const PUBLICADO: SubgrafoDTO = {
+  const PREGUNTA = {
+    id: 'p1', tipo: 'PREGUNTA' as const, texto: '¿Desde cuándo?', variasRespuestas: false, desenlace: null,
+    imagenes: [], respuestas: [{ id: 'r1', texto: 'Hoy', gravedad: 'LEVE' as const, destino: null }]
+  };
+
+  const BORRADOR: SubgrafoDTO = {
     id: 7, grafoId: 'grafo_ictericia', nombre: 'Ictericia en la piel', puenteId: 'puente_piel',
     categoria: 'piel', etiquetaOpcion: 'Piel u ojos amarillos', autor: null, institucion: null, autorId: 7,
-    estado: 'PUBLICADO', inicio: null, nodos: [], avisos: [], creadoEn: '2026-10-10T10:00:00Z',
-    actualizadoEn: '2026-10-10T10:00:00Z', publicadoEn: '2026-10-10T10:00:00Z', puedeDescartar: true
+    estado: 'BORRADOR', inicio: 'p1', nodos: [PREGUNTA], avisos: [], creadoEn: '2026-10-10T10:00:00Z',
+    actualizadoEn: '2026-10-10T10:00:00Z', publicadoEn: null, puedeDescartar: false,
+    comentarioRevision: null, revisadoEn: null
   };
+  const EN_REVISION: SubgrafoDTO = { ...BORRADOR, estado: 'EN_REVISION' };
+  const PUBLICADO: SubgrafoDTO = { ...BORRADOR, estado: 'PUBLICADO', publicadoEn: '2026-10-11T10:00:00Z' };
 
   function boton(texto: string): HTMLButtonElement | undefined {
     return [...el.querySelectorAll<HTMLButtonElement>('button')].find(x => x.textContent?.trim() === texto);
   }
 
-  async function abrir(subgrafo: SubgrafoDTO): Promise<void> {
+  async function abrir(subgrafo: SubgrafoDTO, bases: unknown[] = []): Promise<void> {
     harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/subgrafos/7', LienzoComponent);
     http.expectOne(`${BASE}/subgrafos/7`).flush(subgrafo);
     http.expectOne(`${BASE}/categorias`).flush([]);
-    http.expectOne(`${BASE}/bases`).flush([]);
+    http.expectOne(`${BASE}/bases`).flush(bases);
     harness.detectChanges();
     el = harness.routeNativeElement as HTMLElement;
   }
@@ -96,53 +104,85 @@ describe('LienzoComponent: despublicar', () => {
 
   afterEach(() => http.verify());
 
-  it('un borrador que no está publicado no ofrece «Despublicar»', async () => {
-    await abrir({ ...PUBLICADO, estado: 'BORRADOR', publicadoEn: null, puedeDescartar: false });
+  it('«Enviar a revisión» abre la confirmación y al confirmar llama al endpoint', async () => {
+    await abrir(BORRADOR);
 
-    expect(boton('Despublicar')).toBeUndefined();
-  });
-
-  it('pide confirmación y explica que los recorridos en curso terminan', async () => {
-    await abrir(PUBLICADO);
-
-    boton('Despublicar')!.click();
+    boton('Enviar a revisión')!.click();
     harness.detectChanges();
-
-    expect(el.textContent).toContain('Despublicar subgrafo');
-    expect(el.textContent).toContain('Las que ya van por él lo terminan con normalidad');
-    http.expectNone(`${BASE}/subgrafos/7/despublicar`);
-  });
-
-  it('al confirmar, el subgrafo vuelve a «Borrador» y se cierra el diálogo', async () => {
-    await abrir(PUBLICADO);
-    boton('Despublicar')!.click();
-    harness.detectChanges();
+    expect(el.querySelector('app-modal-publicar')!.textContent).toContain('Un supervisor lo revisará');
+    http.expectNone(`${BASE}/subgrafos/7/enviar-revision`);
 
     el.querySelector<HTMLElement>('.panel-foot app-boton:last-child button')!.click();
-    const peticion = http.expectOne(`${BASE}/subgrafos/7/despublicar`);
+    const peticion = http.expectOne(`${BASE}/subgrafos/7/enviar-revision`);
     expect(peticion.request.method).toBe('POST');
-    peticion.flush({ ...PUBLICADO, estado: 'BORRADOR', publicadoEn: null, puedeDescartar: false });
+    peticion.flush(EN_REVISION);
     harness.detectChanges();
 
-    expect(el.textContent).toContain('Borrador');
-    expect(el.textContent).toContain('Despublicado');
-    expect(el.querySelector('app-dialogo-confirmar')).toBeNull();
-    expect(boton('Despublicar')).toBeUndefined();
+    expect(el.querySelector('app-modal-publicar')).toBeNull();
+    expect(el.textContent).toContain('En revisión');
+    expect(boton('Retirar de revisión')).toBeTruthy();
   });
 
-  it('si el servidor lo rechaza, muestra su mensaje dentro del diálogo y no cambia el estado', async () => {
-    await abrir(PUBLICADO);
-    boton('Despublicar')!.click();
+  it('si el envío tiene avisos bloqueantes, los muestra en el modal', async () => {
+    await abrir(BORRADOR);
+    boton('Enviar a revisión')!.click();
     harness.detectChanges();
 
     el.querySelector<HTMLElement>('.panel-foot app-boton:last-child button')!.click();
-    http.expectOne(`${BASE}/subgrafos/7/despublicar`).flush(
-      { mensaje: 'Este es el único subgrafo publicado. Publica otro antes.', avisos: [] },
+    http.expectOne(`${BASE}/subgrafos/7/enviar-revision`).flush(
+      {
+        mensaje: 'No se pudo enviar a revisión: revisa los avisos del lienzo y de las reglas.',
+        avisos: [{ codigo: 'RESPUESTA_SIN_CAMINO', mensaje: '«Hoy» no tiene camino.', bloqueante: true, nodoId: 'p1', respuestaId: 'r1' }]
+      },
       { status: 422, statusText: 'Unprocessable Entity' });
     harness.detectChanges();
 
-    const dialogo = el.querySelector('app-dialogo-confirmar')!;
-    expect(dialogo.textContent).toContain('Este es el único subgrafo publicado. Publica otro antes.');
-    expect(el.textContent).toContain('Publicado');
+    const modal = el.querySelector('app-modal-publicar')!;
+    expect(modal.textContent).toContain('«Hoy» no tiene camino.');
+    expect(modal.textContent).toContain('No se pudo enviar a revisión');
+  });
+
+  it('en revisión el lienzo queda en solo lectura y se puede retirar', async () => {
+    await abrir(EN_REVISION);
+
+    expect(el.textContent).toContain('Mientras tanto no se puede editar');
+    expect(boton('Enviar a revisión')).toBeUndefined();
+    expect(boton('Editar datos')!.disabled).toBeTrue();
+    expect(el.querySelector('button.mas')).toBeNull();
+
+    el.querySelector<HTMLButtonElement>('button.nodo')!.click();
+    harness.detectChanges();
+    expect(el.querySelector('app-panel-nodo')).toBeNull();
+
+    boton('Retirar de revisión')!.click();
+    const peticion = http.expectOne(`${BASE}/subgrafos/7/retirar-revision`);
+    expect(peticion.request.method).toBe('POST');
+    peticion.flush(BORRADOR);
+    harness.detectChanges();
+
+    expect(boton('Enviar a revisión')).toBeTruthy();
+    expect(el.querySelector('button.mas')).toBeTruthy();
+  });
+
+  it('si el supervisor lo rechazó, muestra su comentario', async () => {
+    await abrir({ ...BORRADOR, comentarioRevision: 'Agrega qué hacer si el bebé no come.' });
+
+    const aviso = el.querySelector('.comentario-revision')!;
+    expect(aviso.textContent).toContain('El supervisor pidió cambios');
+    expect(aviso.textContent).toContain('Agrega qué hacer si el bebé no come.');
+  });
+
+  it('ya no ofrece «Despublicar» ni deja enviar lo que ya está publicado', async () => {
+    await abrir(PUBLICADO, [{ id: 3, grafoId: 'grafo_ictericia', estado: 'PUBLICADO' }]);
+
+    expect(boton('Despublicar')).toBeUndefined();
+    expect(boton('Publicado')!.disabled).toBeTrue();
+  });
+
+  it('publicado pero con reglas sin publicar, sí deja enviar a revisión', async () => {
+    await abrir(PUBLICADO, [{ id: 3, grafoId: 'grafo_ictericia', estado: 'CAMBIOS_SIN_PUBLICAR' }]);
+
+    expect(boton('Enviar a revisión')!.disabled).toBeFalse();
+    expect(boton('Despublicar')).toBeUndefined();
   });
 });

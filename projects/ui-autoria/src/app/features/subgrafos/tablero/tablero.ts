@@ -76,11 +76,11 @@ export class TableroComponent implements OnInit {
   /** Confirmación breve de la última acción ("Se eliminó…"). */
   protected readonly mensaje = signal<string | null>(null);
 
-  /** Subgrafos publicados o con cambios sin publicar. */
+  /** Subgrafos que las cuidadoras ya ven (aunque tengan cambios o estén en revisión). */
   protected readonly totalPublicados = computed(
-    () => this.subgrafos().filter(s => s.estado !== 'BORRADOR').length
+    () => this.subgrafos().filter(s => s.publicadoEn !== null).length
   );
-  /** Subgrafos que no están publicados. */
+  /** Subgrafos con algo sin publicar (borradores, cambios o en revisión). */
   protected readonly totalBorradores = computed(
     () => this.subgrafos().filter(s => s.estado !== 'PUBLICADO').length
   );
@@ -236,7 +236,7 @@ export class TableroComponent implements OnInit {
 
   /** Tono de la etiqueta según el estado del borrador. */
   protected tonoEstado(estado: EstadoBorrador): 'calma' | 'aviso' | 'marca' {
-    return estado === 'PUBLICADO' ? 'calma' : estado === 'CAMBIOS_SIN_PUBLICAR' ? 'aviso' : 'marca';
+    return estado === 'PUBLICADO' ? 'calma' : estado === 'BORRADOR' ? 'marca' : 'aviso';
   }
 
   /** Nombre legible de una categoría, expuesto a la plantilla. */

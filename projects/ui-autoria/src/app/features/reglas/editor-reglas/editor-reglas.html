@@ -19,7 +19,7 @@
         @if (base(); as b) {
           @if (b.estado === 'CAMBIOS_SIN_PUBLICAR') {
             <app-boton tono="neutro" variante="contorno" alto="compacto" ancho="auto"
-              [disabled]="!b.puedeDescartar"
+              [disabled]="!b.puedeDescartar || enRevision()"
               [title]="b.puedeDescartar
                 ? 'Vuelve la base a como está publicada'
                 : 'Se publicó antes de que se guardara una copia: podrás descartar cambios después de su próxima publicación'"
@@ -31,8 +31,8 @@
         } @else {
           <app-boton tono="marca" alto="compacto" ancho="auto"
             [disabled]="subgrafoId() === null"
-            title="Publica el subgrafo: al publicarlo se activan también estas reglas"
-            (click)="irAPublicar()">Publicar subgrafo</app-boton>
+            title="Las reglas se envían a revisión junto con su subgrafo"
+            (click)="irAlSubgrafo()">Ir al subgrafo</app-boton>
         }
       </div>
     </div>
@@ -56,7 +56,14 @@
           </div>
         }
 
-        <div class="editor-shell">
+        @if (enRevision()) {
+          <div class="avisos-panel" role="status">
+            <span class="avisos-titulo">En revisión</span>
+            <ul><li>El subgrafo de estas reglas está en revisión. Para editarlas, retíralo de revisión desde el subgrafo.</li></ul>
+          </div>
+        }
+
+        <fieldset class="editor-shell" style="border: 0; padding: 0; margin: 0; min-width: 0;" [disabled]="enRevision()">
           <aside class="reglas-menu">
             <div class="menu-head">
               <h4>Reglas de la base</h4>
@@ -219,7 +226,7 @@
               </app-boton>
             </div>
           </div>
-        </div>
+        </fieldset>
 
         <section class="visor-seccion">
           <div class="seccion-head">

@@ -80,4 +80,21 @@ describe('EditorReglasComponent: descartar cambios', () => {
 
     expect(el.textContent).toContain('Cambios descartados');
   });
+
+  it('con el subgrafo en revisión no deja editar ni descartar', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/reglas/3', EditorReglasComponent);
+    http.expectOne(`${BASE}/bases/3`).flush(CON_CAMBIOS);
+    http
+      .expectOne(`${BASE}/bases/catalogo?grafoId=grafo_fiebre`)
+      .flush({ grafoId: 'grafo_fiebre', nodos: [] });
+    http.expectOne(`${BASE}/subgrafos`).flush([{ id: 5, grafoId: 'grafo_fiebre', estado: 'EN_REVISION' }]);
+    harness.detectChanges();
+
+    const el = harness.routeNativeElement as HTMLElement;
+    expect(el.textContent).toContain('retíralo de revisión desde el subgrafo');
+    expect(el.querySelector<HTMLFieldSetElement>('fieldset.editor-shell')!.disabled).toBeTrue();
+    expect(conTexto(el, 'Descartar cambios')!.disabled).toBeTrue();
+    expect(conTexto(el, 'Ir al subgrafo')).toBeTruthy();
+  });
 });

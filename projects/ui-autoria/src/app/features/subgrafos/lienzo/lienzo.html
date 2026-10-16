@@ -25,15 +25,19 @@
                 : 'Se publicó antes de que se guardara una copia: podrás descartar cambios después de su próxima publicación'"
               (click)="abrirDescartar()">Descartar cambios</app-boton>
           }
-          @if (s.estado !== 'BORRADOR') {
+          <app-boton tono="neutro" variante="contorno" alto="compacto" ancho="auto"
+            [disabled]="enRevision()" (click)="abrirDatos()">Editar datos</app-boton>
+          @if (enRevision()) {
             <app-boton tono="neutro" variante="contorno" alto="compacto" ancho="auto"
-              title="Las cuidadoras dejan de verlo al empezar un recorrido nuevo"
-              (click)="abrirDespublicar()">Despublicar</app-boton>
+              data-ref="retirar" [disabled]="retirando()"
+              title="Vuelve a editarlo; para publicarlo tendrás que enviarlo otra vez"
+              (click)="retirarRevision()">{{ retirando() ? 'Retirando…' : 'Retirar de revisión' }}</app-boton>
+          } @else {
+            <app-boton tono="marca" alto="compacto" ancho="auto" data-ref="enviar"
+              [disabled]="!puedeEnviar()"
+              title="Un supervisor lo revisa y, si lo aprueba, se publica"
+              (click)="abrirEnviar()">{{ puedeEnviar() ? 'Enviar a revisión' : 'Publicado' }}</app-boton>
           }
-          <app-boton tono="neutro" variante="contorno" alto="compacto" ancho="auto" (click)="abrirDatos()">Editar datos</app-boton>
-          <app-boton tono="marca" alto="compacto" ancho="auto" [disabled]="s.estado === 'PUBLICADO'" (click)="abrirPublicar()">
-            {{ s.estado === 'PUBLICADO' ? 'Publicado' : 'Publicar' }}
-          </app-boton>
         }
       </div>
     </div>
@@ -45,6 +49,15 @@
         } @else if (cargando()) {
           <p class="estado-carga">Cargando el lienzo…</p>
         } @else if (subgrafo(); as s) {
+          @if (enRevision()) {
+            <div class="zona-aviso-reglas" role="status">
+              <span>Está en revisión: un supervisor lo aprobará (y así se publica) o te dejará un comentario. Mientras tanto no se puede editar.</span>
+            </div>
+          } @else if (s.comentarioRevision) {
+            <div class="zona-aviso-reglas comentario-revision" role="alert">
+              <span><b>El supervisor pidió cambios:</b> {{ s.comentarioRevision }}</span>
+            </div>
+          }
           @if (avisosReglas().length > 0) {
             <div class="zona-aviso-reglas">
               <span>Hay reglas que usan preguntas o conclusiones que ya no están en el lienzo.</span>
@@ -60,7 +73,7 @@
             (scroll)="alScroll()" (wheel)="alRueda($event)"
             (pointerdown)="alPulsar($event)" (pointermove)="alMover($event)"
             (pointerup)="alSoltar()" (pointercancel)="alSoltar()">
-            @if (vacio()) {
+            @if (vacio() && !enRevision()) {
               <button type="button" class="primera" data-ref="primera" (click)="abrirPrimera()">
                 <span class="mas-icono">+</span> Primera pregunta
               </button>
@@ -83,7 +96,7 @@
                     <span>{{ r.respuesta.texto || '(sin texto)' }}</span>
                   </div>
 
-                  @if (r.tipo === 'mas') {
+                  @if (r.tipo === 'mas' && !enRevision()) {
                     <button type="button" class="mas" [attr.data-ref]="r.respuesta.id"
                       [class.resaltado]="resaltado() === r.respuesta.id"
                       [style.left.px]="r.x" [style.top.px]="r.y"
@@ -167,20 +180,20 @@
   </div>
 </div>
 
-@if (mostrarPublicar() && subgrafo(); as s) {
+@if (mostrarEnviar() && subgrafo(); as s) {
   <app-modal-publicar
     [nombre]="s.nombre"
     [etiquetaOpcion]="s.etiquetaOpcion"
     [preguntaPuente]="preguntaPuente()"
     [conteoNodos]="s.nodos.length"
-    [avisos]="avisosPublicar()"
-    [publicando]="publicando()"
-    [error]="errorPublicar()"
+    [avisos]="avisosEnviar()"
+    [enviando]="enviando()"
+    [error]="errorEnviar()"
     [republicar]="s.publicadoEn !== null"
     [publicaReglas]="baseId() !== null"
-    (confirmar)="publicar()"
+    (confirmar)="enviarRevision()"
     (irAReglas)="abrirReglas()"
-    (cancelar)="mostrarPublicar.set(false)" />
+    (cancelar)="mostrarEnviar.set(false)" />
 }
 
 @if (porEliminar(); as n) {
@@ -203,18 +216,6 @@
     [error]="errorDescartar()"
     (confirmar)="confirmarDescartar()"
     (cancelar)="cancelarDescartar()" />
-}
-
-@if (mostrarDespublicar() && subgrafo(); as s) {
-  <app-dialogo-confirmar
-    titulo="Despublicar subgrafo"
-    [mensaje]="'Las cuidadoras que empiecen un recorrido nuevo ya no verán «' + s.etiquetaOpcion + '». Las que ya van por él lo terminan con normalidad. Tu lienzo se conserva como borrador y podrás corregirlo y volver a publicarlo.'"
-    textoConfirmar="Despublicar"
-    textoOcupado="Despublicando…"
-    [ocupado]="despublicando()"
-    [error]="errorDespublicar()"
-    (confirmar)="confirmarDespublicar()"
-    (cancelar)="cancelarDespublicar()" />
 }
 
 @if (mostrarDatos() && subgrafo(); as s) {

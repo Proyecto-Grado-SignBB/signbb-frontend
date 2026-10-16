@@ -12,7 +12,7 @@ export interface DatosSubgrafo {
 /**
  * Edita el nombre técnico y el nombre para la familia de un subgrafo. La
  * categoría se muestra pero no cambia aquí. Si el subgrafo ya estaba
- * publicado, los cambios llegan a las cuidadoras al volver a publicar.
+ * publicado, los cambios llegan a las cuidadoras cuando se aprueba su próxima revisión.
  */
 @Component({
   selector: 'app-modal-datos',

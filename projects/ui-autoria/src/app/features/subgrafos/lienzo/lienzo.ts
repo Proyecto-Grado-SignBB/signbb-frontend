@@ -10,6 +10,7 @@ import { AutoriaService, avisosDeError, mensajeDeError } from '../../../core/htt
 import {
   Aviso,
   ETIQUETA_DESENLACE,
+  EstadoBorrador,
   ETIQUETA_ESTADO,
   NodoLienzo,
   NodoRequest,
@@ -37,6 +38,10 @@ import {
  * derecha con un "+" en cada respuesta que todavía no dice qué pasa después.
  * Cada operación va al backend, que devuelve el borrador completo, y el
  * lienzo se vuelve a distribuir con {@link distribuir}.
+ *
+ * El médico no publica: envía el subgrafo a revisión y un supervisor lo
+ * aprueba o lo rechaza con un comentario. Mientras está en revisión el lienzo
+ * queda en solo lectura, hasta que lo retire o el supervisor responda.
  */
 @Component({
   selector: 'app-lienzo',
@@ -82,16 +87,32 @@ export class LienzoComponent implements OnInit {
   /** Id del nodo o de la respuesta resaltada (al tocar un aviso o al abrir el panel). */
   protected readonly resaltado = signal<string | null>(null);
 
-  /** True si el modal de publicar está abierto. */
-  protected readonly mostrarPublicar = signal(false);
-  /** True mientras se publica. */
-  protected readonly publicando = signal(false);
-  /** Error de la última publicación. */
-  protected readonly errorPublicar = signal<string | null>(null);
-  /** Avisos mostrados en el modal de publicar. */
-  protected readonly avisosPublicar = signal<Aviso[]>([]);
+  /** True si el modal de enviar a revisión está abierto. */
+  protected readonly mostrarEnviar = signal(false);
+  /** True mientras se envía a revisión. */
+  protected readonly enviando = signal(false);
+  /** Error del último envío a revisión. */
+  protected readonly errorEnviar = signal<string | null>(null);
+  /** Avisos mostrados en el modal de enviar a revisión. */
+  protected readonly avisosEnviar = signal<Aviso[]>([]);
+  /** True mientras se retira de revisión. */
+  protected readonly retirando = signal(false);
   /** Id de la base de reglas del subgrafo, o null si no tiene. */
   protected readonly baseId = signal<number | null>(null);
+  /** Estado de la base de reglas del subgrafo, o null si no tiene. */
+  protected readonly estadoBase = signal<EstadoBorrador | null>(null);
+  /** True si el subgrafo espera la respuesta de un supervisor: no se edita. */
+  protected readonly enRevision = computed(() => this.subgrafo()?.estado === 'EN_REVISION');
+  /**
+   * True si hay algo que revisar: el subgrafo no está publicado tal cual, o
+   * lo está pero su base de reglas tiene cambios sin publicar.
+   */
+  protected readonly puedeEnviar = computed(() => {
+    const estado = this.subgrafo()?.estado;
+    if (!estado || estado === 'EN_REVISION') return false;
+    const base = this.estadoBase();
+    return estado !== 'PUBLICADO' || (base !== null && base !== 'PUBLICADO');
+  });
   /** Avisos que vienen de las reglas (referencias a nodos del lienzo que ya no existen). */
   protected readonly avisosReglas = computed(
     () => (this.subgrafo()?.avisos ?? []).filter(a => a.codigo.startsWith('REGLA_'))
@@ -115,12 +136,6 @@ export class LienzoComponent implements OnInit {
   protected readonly descartando = signal(false);
   /** Error de la última vez que se descartaron cambios. */
   protected readonly errorDescartar = signal<string | null>(null);
-  /** Diálogo de «Despublicar» abierto. */
-  protected readonly mostrarDespublicar = signal(false);
-  /** True mientras se despublica. */
-  protected readonly despublicando = signal(false);
-  /** Error de la última vez que se intentó despublicar. */
-  protected readonly errorDespublicar = signal<string | null>(null);
 
   protected readonly mostrarDatos = signal(false);
   /** True mientras se guardan los datos. */
@@ -229,19 +244,26 @@ export class LienzoComponent implements OnInit {
     });
   }
 
-  /** Resuelve el texto de la pregunta puente para el modal de publicar. */
+  /** Resuelve el texto de la pregunta puente para el modal de enviar a revisión. */
   private cargarPreguntaPuente(puenteId: string): void {
     this.autoria.categorias().subscribe({
       next: categorias => this.preguntaPuente.set(categorias.find(c => c.puenteId === puenteId)?.pregunta ?? ''),
-      error: () => { /* el modal de publicar simplemente no nombra la pregunta */ }
+      error: () => { /* el modal de enviar a revisión simplemente no nombra la pregunta */ }
     });
   }
 
   /** Busca la base de reglas del subgrafo, para el enlace «Ir a las reglas». */
   private resolverBase(grafoId: string): void {
     this.autoria.listarBases().subscribe({
-      next: bases => this.baseId.set(bases.find(b => b.grafoId === grafoId)?.id ?? null),
-      error: () => this.baseId.set(null)
+      next: bases => {
+        const base = bases.find(b => b.grafoId === grafoId);
+        this.baseId.set(base?.id ?? null);
+        this.estadoBase.set(base?.estado ?? null);
+      },
+      error: () => {
+        this.baseId.set(null);
+        this.estadoBase.set(null);
+      }
     });
   }
 
@@ -304,8 +326,9 @@ export class LienzoComponent implements OnInit {
     this.errorPanel.set(null);
   }
 
-  /** Abre el panel con un contexto y resalta una referencia. */
+  /** Abre el panel con un contexto y resalta una referencia. En revisión no se abre: nada se edita. */
   private abrir(contexto: ContextoPanel, resaltado: string | null): void {
+    if (this.enRevision()) return;
     this.errorPanel.set(null);
     this.contexto.set(contexto);
     this.resaltado.set(resaltado);
@@ -402,33 +425,52 @@ export class LienzoComponent implements OnInit {
     });
   }
 
-  // --- Publicar -----------------------------------------------------------------
+  // --- Revisión ---------------------------------------------------------------
 
-  /** Abre el modal de publicar con los avisos actuales. */
-  protected abrirPublicar(): void {
-    this.errorPublicar.set(null);
-    this.avisosPublicar.set(this.subgrafo()?.avisos ?? []);
-    this.mostrarPublicar.set(true);
+  /** Abre el modal de enviar a revisión con los avisos actuales. */
+  protected abrirEnviar(): void {
+    if (!this.puedeEnviar()) return;
+    this.errorEnviar.set(null);
+    this.avisosEnviar.set(this.subgrafo()?.avisos ?? []);
+    this.mostrarEnviar.set(true);
   }
 
-  /** Publica el subgrafo; si hay avisos bloqueantes, los muestra en el modal. */
-  protected publicar(): void {
-    this.publicando.set(true);
-    this.errorPublicar.set(null);
-    this.autoria.publicar(this.id).subscribe({
+  /** Envía el subgrafo a revisión; si hay avisos bloqueantes, los muestra en el modal. */
+  protected enviarRevision(): void {
+    this.enviando.set(true);
+    this.errorEnviar.set(null);
+    this.autoria.enviarRevision(this.id).subscribe({
       next: s => {
         this.subgrafo.set(s);
-        this.publicando.set(false);
-        this.mostrarPublicar.set(false);
-        this.avisar('Publicado: las cuidadoras ya pueden recorrerlo.');
+        this.enviando.set(false);
+        this.mostrarEnviar.set(false);
+        this.cerrarPanel();
+        this.avisar('Enviado a revisión: un supervisor lo revisará antes de publicarlo.');
       },
       error: e => {
-        this.publicando.set(false);
+        this.enviando.set(false);
         const avisos = avisosDeError(e);
         if (avisos.length > 0) {
-          this.avisosPublicar.set(avisos);
+          this.avisosEnviar.set(avisos);
         }
-        this.errorPublicar.set(mensajeDeError(e, 'No se pudo publicar. Intenta de nuevo.'));
+        this.errorEnviar.set(mensajeDeError(e, 'No se pudo enviar a revisión. Intenta de nuevo.'));
+      }
+    });
+  }
+
+  /** Retira el subgrafo de revisión para volver a editarlo. */
+  protected retirarRevision(): void {
+    if (this.retirando()) return;
+    this.retirando.set(true);
+    this.autoria.retirarRevision(this.id).subscribe({
+      next: s => {
+        this.subgrafo.set(s);
+        this.retirando.set(false);
+        this.avisar('Retirado de revisión: ya puedes editarlo.');
+      },
+      error: e => {
+        this.retirando.set(false);
+        this.avisar(mensajeDeError(e, 'No se pudo retirar de revisión. Intenta de nuevo.'));
       }
     });
   }
@@ -461,35 +503,6 @@ export class LienzoComponent implements OnInit {
       error: e => {
         this.descartando.set(false);
         this.errorDescartar.set(mensajeDeError(e, 'No se pudieron descartar los cambios. Intenta de nuevo.'));
-      }
-    });
-  }
-
-  // --- Despublicar --------------------------------------------------------------
-
-  protected abrirDespublicar(): void {
-    this.errorDespublicar.set(null);
-    this.mostrarDespublicar.set(true);
-  }
-
-  protected cancelarDespublicar(): void {
-    if (!this.despublicando()) this.mostrarDespublicar.set(false);
-  }
-
-  protected confirmarDespublicar(): void {
-    this.despublicando.set(true);
-    this.errorDespublicar.set(null);
-    this.autoria.despublicar(this.id).subscribe({
-      next: s => {
-        this.subgrafo.set(s);
-        this.despublicando.set(false);
-        this.mostrarDespublicar.set(false);
-        this.cerrarPanel();
-        this.avisar('Despublicado: las cuidadoras ya no lo ven al empezar. Tu lienzo sigue aquí como borrador.');
-      },
-      error: e => {
-        this.despublicando.set(false);
-        this.errorDespublicar.set(mensajeDeError(e, 'No se pudo despublicar. Intenta de nuevo.'));
       }
     });
   }
@@ -669,7 +682,7 @@ export class LienzoComponent implements OnInit {
 
   /** Tono de la etiqueta según el estado del borrador. */
   protected tonoEstado(s: SubgrafoDTO): 'calma' | 'aviso' | 'marca' {
-    return s.estado === 'PUBLICADO' ? 'calma' : s.estado === 'CAMBIOS_SIN_PUBLICAR' ? 'aviso' : 'marca';
+    return s.estado === 'PUBLICADO' ? 'calma' : s.estado === 'BORRADOR' ? 'marca' : 'aviso';
   }
 
   /** True si el nodo es la primera pregunta del lienzo. */

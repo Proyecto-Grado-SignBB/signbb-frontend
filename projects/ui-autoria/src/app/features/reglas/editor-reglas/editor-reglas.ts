@@ -82,6 +82,10 @@ export class EditorReglasComponent implements OnInit {
 
   /** Id del subgrafo dueño de la base, o null (p. ej. la base del grafo raíz). */
   protected readonly subgrafoId = signal<number | null>(null);
+  /** Estado del subgrafo dueño de la base, o null si no se encontró. */
+  protected readonly estadoSubgrafo = signal<EstadoBorrador | null>(null);
+  /** True si el subgrafo está en revisión: sus reglas tampoco se editan. */
+  protected readonly enRevision = computed(() => this.estadoSubgrafo() === 'EN_REVISION');
   /** True si la base pertenece al grafo raíz (no se publica desde un subgrafo). */
   protected readonly esRaiz = computed(() => this.base()?.grafoId === 'grafo_raiz');
 
@@ -135,16 +139,23 @@ export class EditorReglasComponent implements OnInit {
     });
   }
 
-  /** Busca el subgrafo dueño de la base, para poder publicarla desde él. */
+  /** Busca el subgrafo dueño de la base: las reglas se envían a revisión con él. */
   private resolverSubgrafo(grafoId: string): void {
     this.autoria.listar().subscribe({
-      next: subgrafos => this.subgrafoId.set(subgrafos.find(s => s.grafoId === grafoId)?.id ?? null),
-      error: () => this.subgrafoId.set(null)
+      next: subgrafos => {
+        const subgrafo = subgrafos.find(s => s.grafoId === grafoId);
+        this.subgrafoId.set(subgrafo?.id ?? null);
+        this.estadoSubgrafo.set(subgrafo?.estado ?? null);
+      },
+      error: () => {
+        this.subgrafoId.set(null);
+        this.estadoSubgrafo.set(null);
+      }
     });
   }
 
-  /** Abre el subgrafo: las reglas se publican publicando el subgrafo. */
-  protected irAPublicar(): void {
+  /** Abre el subgrafo: las reglas se envían a revisión (y se publican) con él. */
+  protected irAlSubgrafo(): void {
     const id = this.subgrafoId();
     if (id !== null) {
       this.router.navigate(['/subgrafos', id]);
@@ -385,7 +396,7 @@ export class EditorReglasComponent implements OnInit {
 
   /** Tono de la etiqueta según el estado del borrador. */
   protected tonoEstado(estado: EstadoBorrador): 'calma' | 'aviso' | 'marca' {
-    return estado === 'PUBLICADO' ? 'calma' : estado === 'CAMBIOS_SIN_PUBLICAR' ? 'aviso' : 'marca';
+    return estado === 'PUBLICADO' ? 'calma' : estado === 'BORRADOR' ? 'marca' : 'aviso';
   }
 
   /** Muestra un mensaje de confirmación que desaparece solo. */

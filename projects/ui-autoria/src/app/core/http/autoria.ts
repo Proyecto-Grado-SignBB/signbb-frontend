@@ -99,9 +99,18 @@ export class AutoriaService {
     return this.http.get<Aviso[]>(`${this.base}/subgrafos/${id}/avisos`);
   }
 
-  /** Publica el borrador; si hay avisos bloqueantes, responde 422 con ellos. */
-  publicar(id: number): Observable<SubgrafoDTO> {
-    return this.http.post<SubgrafoDTO>(`${this.base}/subgrafos/${id}/publicar`, {});
+  /**
+   * Envía el subgrafo (y su base de reglas) a revisión: un supervisor lo
+   * aprueba, y así se publica, o lo rechaza con un comentario. Si hay avisos
+   * bloqueantes, responde 422 con ellos.
+   */
+  enviarRevision(id: number): Observable<SubgrafoDTO> {
+    return this.http.post<SubgrafoDTO>(`${this.base}/subgrafos/${id}/enviar-revision`, {});
+  }
+
+  /** Retira el subgrafo de revisión para volver a editarlo. */
+  retirarRevision(id: number): Observable<SubgrafoDTO> {
+    return this.http.post<SubgrafoDTO>(`${this.base}/subgrafos/${id}/retirar-revision`, {});
   }
 
   // --- Reglas ----------------------------------------------------------------
@@ -151,11 +160,6 @@ export class AutoriaService {
     return this.http.get<Aviso[]>(`${this.base}/bases/${id}/avisos`);
   }
 
-  /** Publica la base como la activa de su grafo. */
-  publicarBase(id: number): Observable<BaseReglaDTO> {
-    return this.http.post<BaseReglaDTO>(`${this.base}/bases/${id}/publicar`, {});
-  }
-
   /** Descarta los cambios sin publicar de una base: vuelve a su última publicación. */
   descartarBase(id: number): Observable<BaseReglaDTO> {
     return this.http.post<BaseReglaDTO>(`${this.base}/bases/${id}/descartar`, {});
@@ -184,13 +188,6 @@ export class AutoriaService {
     return this.http.post<SubgrafoDTO>(`${this.base}/subgrafos/${id}/descartar`, {});
   }
 
-  /**
-   * Despublica el subgrafo: las cuidadoras que empiecen un recorrido nuevo ya no lo ven
-   * (las que ya van por él lo terminan) y el borrador vuelve a «Borrador» con su lienzo intacto.
-   */
-  despublicar(id: number): Observable<SubgrafoDTO> {
-    return this.http.post<SubgrafoDTO>(`${this.base}/subgrafos/${id}/despublicar`, {});
-  }
 }
 
 /**
