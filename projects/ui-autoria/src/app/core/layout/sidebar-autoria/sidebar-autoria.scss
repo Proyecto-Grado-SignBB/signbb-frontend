@@ -136,3 +136,21 @@
   font-size: 11px;
   color: $color-ink-faint;
 }
+
+.salir {
+  margin-top: 8px;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: $radius-sm;
+  background: none;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  color: $color-ink-faint;
+  cursor: pointer;
+
+  &:hover {
+    background: $color-surface-2;
+    color: $color-alert-dark;
+  }
+}

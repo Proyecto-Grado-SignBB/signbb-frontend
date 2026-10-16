@@ -47,6 +47,8 @@ export interface BaseReglaDTO {
   descripcion: string | null;
   autor: string | null;
   institucion: string | null;
+  /** Cuenta del autor; nula en borradores de antes de las cuentas. */
+  autorId: number | null;
   estado: EstadoBorrador;
   reglas: ReglaDTO[];
   avisos: Aviso[];
@@ -57,14 +59,12 @@ export interface BaseReglaDTO {
   puedeDescartar: boolean;
 }
 
-/** Datos de una base de reglas para crearla o editar sus datos. */
+/** Datos de una base de reglas para crearla o editar sus datos. El autor lo pone el back desde la sesión. */
 export interface BaseReglaRequest {
   nombre: string;
   descripcion?: string;
   /** Grafo (subgrafo) al que pertenecen las reglas; se fija al crear. */
   grafoId: string;
-  autor?: string;
-  institucion?: string;
 }
 
 /** Fila del tablero de bases de reglas. */
@@ -74,6 +74,8 @@ export interface ResumenBaseReglaDTO {
   nombre: string;
   descripcion: string | null;
   autor: string | null;
+  /** Cuenta del autor; nula en borradores de antes de las cuentas. */
+  autorId: number | null;
   estado: EstadoBorrador;
   /** Número de reglas. */
   reglas: number;

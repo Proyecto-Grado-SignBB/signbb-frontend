@@ -5,6 +5,7 @@ import { provideRouter } from '@angular/router';
 import { environment } from '../../../../environments/environment';
 import { Categoria, ResumenSubgrafoDTO } from '../../../models/lienzo.model';
 import { TableroComponent } from './tablero';
+import { proveerSesion } from '../../../core/sesion/sesion';
 
 const BASE = `${environment.apiUrl}/autoria`;
 
@@ -12,7 +13,7 @@ const PIEL: Categoria = { puenteId: 'puente_piel', nombre: 'piel', pregunta: '¿
 
 const BORRADOR: ResumenSubgrafoDTO = {
   id: 7, grafoId: 'grafo_ictericia_en_la_piel', nombre: 'Ictericia en la piel', categoria: 'piel',
-  etiquetaOpcion: 'Piel u ojos amarillos', autor: null, estado: 'BORRADOR', nodos: 0,
+  etiquetaOpcion: 'Piel u ojos amarillos', autor: null, autorId: 7, estado: 'BORRADOR', nodos: 0,
   actualizadoEn: '2026-10-10T10:00:00Z', publicadoEn: null
 };
 
@@ -40,7 +41,7 @@ describe('TableroComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [TableroComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])]
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), ...proveerSesion()]
     }).compileComponents();
     http = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(TableroComponent);
@@ -69,6 +70,21 @@ describe('TableroComponent', () => {
 
     await escribir('Ej: Piel u ojos amarillos', 'Piel u ojos amarillos');
     expect(el.textContent).not.toContain('Escribe cómo lo verán las familias.');
+  });
+
+  it('crea sin mandar autor ni institución: los pone el back desde la sesión', async () => {
+    boton('+ Nuevo subgrafo').click();
+    fixture.detectChanges();
+    await escribir('Ej: Ictericia en la piel', 'Ictericia en la piel');
+    boton('Piel').click();
+    await escribir('Ej: Piel u ojos amarillos', 'Piel u ojos amarillos');
+    boton('Crear y abrir el lienzo').click();
+
+    const crear = http.expectOne(`${BASE}/subgrafos`);
+    expect(crear.request.method).toBe('POST');
+    expect(crear.request.body).toEqual({
+      nombre: 'Ictericia en la piel', puenteId: 'puente_piel', etiquetaOpcion: 'Piel u ojos amarillos'
+    });
   });
 
   it('sin nombre del subgrafo lo explica y no crea nada', async () => {

@@ -22,7 +22,8 @@
   </a>
 
   <a class="sidebar-foot" [class.sidebar-foot--activo]="seccionActiva === 'perfil'" routerLink="/perfil" title="Mi perfil">
-    <div class="avatar">{{ iniciales }}</div>
-    <div><b>{{ nombreMedico }}</b><span>{{ institucion }}</span></div>
+    <div class="avatar">{{ iniciales() }}</div>
+    <div><b>{{ nombreMedico() }}</b><span>{{ institucion() }}</span></div>
   </a>
+  <button type="button" class="salir" (click)="salir()">Cerrar sesión</button>
 </aside>

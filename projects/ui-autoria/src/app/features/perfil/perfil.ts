@@ -1,19 +1,15 @@
-import { Component, OnInit, signal } from '@angular/core';
-import { BotonComponent, MensajeErrorComponent } from 'ui-compartida';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
+import { BotonComponent, MensajeErrorComponent, SesionService, UsuarioSesion } from 'ui-compartida';
 import { SidebarAutoriaComponent } from '../../core/layout/sidebar-autoria/sidebar-autoria';
 import { AutoriaService } from '../../core/http/autoria';
+import { ETIQUETA_ROL, iniciales } from '../../core/sesion/sesion';
 
 /**
- * Pantalla 8: perfil del autor (médico).
- *
- * Todavía no existe autenticación real de médicos (ver sidebar-autoria: el
- * nombre es un valor fijo, no viene de una sesión). Esta pantalla deja lista
- * la vista a la que llegaría ese trabajo cuando se construya — por eso los
- * datos de identidad son de solo lectura y estáticos, igual que en el resto
- * de la interfaz. Los conteos de subgrafos sí son reales (vienen de GET
- * /autoria/subgrafos), pero son el total del sistema, no un filtro "solo los
- * míos": el autor es un texto libre, no un usuario autenticado, y sería
- * deshonesto mostrarlo como si ya distinguiera autores.
+ * Pantalla 8: perfil del médico de la sesión. Los datos de la cuenta vienen
+ * de `GET /auth/yo` (mientras carga, se muestran los de la sesión) y los
+ * conteos son de los subgrafos de los que es autor. Solo lectura: las cuentas
+ * las administra un supervisor.
  */
 @Component({
   selector: 'app-perfil',
@@ -23,38 +19,47 @@ import { AutoriaService } from '../../core/http/autoria';
   styleUrl: './perfil.scss'
 })
 export class PerfilComponent implements OnInit {
+  private readonly autoria = inject(AutoriaService);
+  private readonly sesion = inject(SesionService);
+  private readonly router = inject(Router);
+
   /** True mientras se cargan los conteos. */
   protected readonly cargando = signal(true);
   /** Error a mostrar si falla la carga. */
   protected readonly error = signal<string | null>(null);
-  /** Número de subgrafos publicados. */
+  /** Número de subgrafos propios publicados. */
   protected readonly conteoPublicados = signal(0);
-  /** Número de subgrafos que no están publicados. */
+  /** Número de subgrafos propios que no están publicados. */
   protected readonly conteoBorrador = signal(0);
-  /** Fecha relativa de la última publicación, o nula. */
+  /** Fecha relativa de la última publicación propia, o nula. */
   protected readonly ultimaPublicacion = signal<string | null>(null);
 
-  /** Nombre del médico (placeholder hasta que exista autenticación). */
-  protected readonly nombreMedico = 'Dra. Catalina Rodríguez';
-  /** Institución del médico. */
-  protected readonly institucion = 'Fundación Canguro';
-  /** Correo del médico. */
-  protected readonly correo = 'c.rodriguez@fundacioncanguro.co';
-  /** Rol del médico. */
-  protected readonly rol = 'Autor clínico';
-
-  constructor(private autoria: AutoriaService) {}
+  /** Cuenta que se muestra: la de `/auth/yo` o, mientras llega, la de la sesión. */
+  protected readonly cuenta = signal<UsuarioSesion | null>(this.sesion.usuario());
+  /** Rol legible. */
+  protected readonly rol = computed(() => {
+    const rol = this.cuenta()?.rol;
+    return rol ? ETIQUETA_ROL[rol] : '';
+  });
+  /** Iniciales del nombre, para el avatar. */
+  protected readonly iniciales = computed(() => iniciales(this.cuenta()?.nombre ?? ''));
 
   ngOnInit(): void {
     this.cargar();
   }
 
-  /** Carga los subgrafos y calcula los conteos del perfil. */
+  /** Carga la cuenta y sus subgrafos, y calcula los conteos del perfil. */
   protected cargar(): void {
     this.cargando.set(true);
     this.error.set(null);
+    this.autoria.cuenta().subscribe({
+      next: cuenta => this.cuenta.set(cuenta),
+      error: () => undefined
+    });
     this.autoria.listar().subscribe({
-      next: subgrafos => {
+      next: todos => {
+        // Un supervisor recibe todos los subgrafos: el perfil cuenta solo los suyos.
+        const subgrafos = todos.filter(g => g.autorId === this.cuenta()?.id);
         const publicados = subgrafos.filter(g => g.publicadoEn !== null);
         this.conteoPublicados.set(publicados.length);
         this.conteoBorrador.set(subgrafos.filter(g => g.estado !== 'PUBLICADO').length);
@@ -72,6 +77,12 @@ export class PerfilComponent implements OnInit {
     });
   }
 
+  /** Cierra la sesión y lleva al ingreso. */
+  protected salir(): void {
+    this.sesion.salir();
+    this.router.navigate(['/ingresar'], { replaceUrl: true });
+  }
+
   /** Convierte una fecha ISO en texto relativo ("hoy", "hace 3 días"). */
   private tiempoRelativo(iso: string): string {
     const fecha = new Date(iso);
@@ -84,17 +95,5 @@ export class PerfilComponent implements OnInit {
     if (diffDias < 30) return `hace ${diffDias} días`;
     const diffMeses = Math.floor(diffDias / 30);
     return diffMeses === 1 ? 'hace 1 mes' : `hace ${diffMeses} meses`;
-  }
-
-  /** Iniciales del nombre del médico, para el avatar. */
-  protected get iniciales(): string {
-    const limpio = this.nombreMedico.replace(/^Dra?\.\s*/i, '');
-    return limpio
-      .split(' ')
-      .filter(Boolean)
-      .slice(0, 2)
-      .map(parte => parte[0])
-      .join('')
-      .toUpperCase();
   }
 }

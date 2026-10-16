@@ -81,6 +81,8 @@ export interface ResumenSubgrafoDTO {
   categoria: string;
   etiquetaOpcion: string;
   autor: string | null;
+  /** Cuenta del autor; nula en borradores de antes de las cuentas. */
+  autorId: number | null;
   estado: EstadoBorrador;
   nodos: number;
   actualizadoEn: string;
@@ -97,6 +99,8 @@ export interface SubgrafoDTO {
   etiquetaOpcion: string;
   autor: string | null;
   institucion: string | null;
+  /** Cuenta del autor; nula en borradores de antes de las cuentas. */
+  autorId: number | null;
   estado: EstadoBorrador;
   inicio: string | null;
   nodos: NodoLienzo[];
@@ -114,15 +118,13 @@ export interface ErrorAutoriaDTO {
   avisos: Aviso[];
 }
 
-/** Datos de un subgrafo, para crearlo o cambiar sus datos. */
+/** Datos de un subgrafo, para crearlo o cambiar sus datos. El autor lo pone el back desde la sesión. */
 export interface SubgrafoRequest {
   /** Nombre técnico: solo lo ven los médicos. */
   nombre: string;
   puenteId: string;
   /** Nombre para la familia (obligatorio): la opción que verá la cuidadora. */
   etiquetaOpcion: string;
-  autor?: string;
-  institucion?: string;
 }
 
 export interface OpcionRequest {

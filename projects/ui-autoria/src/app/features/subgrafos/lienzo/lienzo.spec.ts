@@ -6,6 +6,7 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { environment } from '../../../../environments/environment';
 import { SubgrafoDTO } from '../../../models/lienzo.model';
 import { LienzoComponent } from './lienzo';
+import { proveerSesion } from '../../../core/sesion/sesion';
 
 const BASE = `${environment.apiUrl}/autoria`;
 
@@ -18,7 +19,8 @@ describe('LienzoComponent: dirección con un subgrafo que no existe', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
-        provideRouter([{ path: 'subgrafos/:id', component: LienzoComponent }])
+        provideRouter([{ path: 'subgrafos/:id', component: LienzoComponent }]),
+        ...proveerSesion()
       ]
     });
     http = TestBed.inject(HttpTestingController);
@@ -60,7 +62,7 @@ describe('LienzoComponent: despublicar', () => {
 
   const PUBLICADO: SubgrafoDTO = {
     id: 7, grafoId: 'grafo_ictericia', nombre: 'Ictericia en la piel', puenteId: 'puente_piel',
-    categoria: 'piel', etiquetaOpcion: 'Piel u ojos amarillos', autor: null, institucion: null,
+    categoria: 'piel', etiquetaOpcion: 'Piel u ojos amarillos', autor: null, institucion: null, autorId: 7,
     estado: 'PUBLICADO', inicio: null, nodos: [], avisos: [], creadoEn: '2026-10-10T10:00:00Z',
     actualizadoEn: '2026-10-10T10:00:00Z', publicadoEn: '2026-10-10T10:00:00Z', puedeDescartar: true
   };
@@ -85,7 +87,8 @@ describe('LienzoComponent: despublicar', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
-        provideRouter([{ path: 'subgrafos/:id', component: LienzoComponent }])
+        provideRouter([{ path: 'subgrafos/:id', component: LienzoComponent }]),
+        ...proveerSesion()
       ]
     });
     http = TestBed.inject(HttpTestingController);

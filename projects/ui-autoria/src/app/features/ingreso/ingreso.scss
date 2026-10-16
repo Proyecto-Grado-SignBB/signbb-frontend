@@ -1,0 +1,77 @@
+@use 'tokens-admin' as *;
+@use '../../core/ui/campo';
+
+.ingreso {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.tarjeta {
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 28px;
+  background: $color-surface;
+  border: 1px solid $color-line;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+}
+
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+
+  .dot {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    background: linear-gradient(135deg, $color-brand, $color-brand-dark);
+  }
+
+  b {
+    display: block;
+    font-family: $font-heading;
+    font-weight: 800;
+    font-size: 14.5px;
+  }
+
+  span {
+    display: block;
+    font-size: 11.5px;
+    color: $color-ink-faint;
+  }
+}
+
+h1 {
+  font-size: 20px;
+}
+
+.ayuda,
+.pie {
+  margin: 0;
+  font-size: 13px;
+  color: $color-ink-soft;
+}
+
+.pie {
+  font-size: 12px;
+  text-align: center;
+  color: $color-ink-faint;
+}
+
+.error {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: $color-alert-dark;
+  background: $color-alert-tint;
+}

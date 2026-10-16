@@ -5,6 +5,7 @@ import { provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { environment } from '../../../../environments/environment';
 import { EditorReglasComponent } from './editor-reglas';
+import { proveerSesion } from '../../../core/sesion/sesion';
 
 const BASE = `${environment.apiUrl}/autoria`;
 
@@ -15,6 +16,7 @@ const CON_CAMBIOS = {
   nombre: 'Reglas de fiebre',
   descripcion: null,
   autor: null,
+  autorId: 7,
   institucion: null,
   estado: 'CAMBIOS_SIN_PUBLICAR',
   reglas: [],
@@ -40,7 +42,8 @@ describe('EditorReglasComponent: descartar cambios', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
-        provideRouter([{ path: 'reglas/:id', component: EditorReglasComponent }])
+        provideRouter([{ path: 'reglas/:id', component: EditorReglasComponent }]),
+        ...proveerSesion()
       ]
     });
     http = TestBed.inject(HttpTestingController);

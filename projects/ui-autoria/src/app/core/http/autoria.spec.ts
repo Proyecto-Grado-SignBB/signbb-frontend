@@ -30,6 +30,11 @@ describe('AutoriaService', () => {
     expect(crear.request.body).toEqual(request);
   });
 
+  it('lee la cuenta de la sesión en /auth/yo', () => {
+    servicio.cuenta().subscribe();
+    expect(http.expectOne(`${environment.apiUrl}/auth/yo`).request.method).toBe('GET');
+  });
+
   it('sube una imagen como multipart y devuelve su nombre', () => {
     const archivo = new File([new Uint8Array([1, 2, 3])], 'foto.png', { type: 'image/png' });
     let nombre: string | undefined;
@@ -159,6 +164,8 @@ describe('errores de autoría', () => {
     expect(mensajeDeError(new HttpErrorResponse({ status: 409 }), 'x')).toContain('al mismo tiempo');
     expect(mensajeDeError(new HttpErrorResponse({ status: 404 }), 'x')).toContain('ya no existe');
     expect(mensajeDeError(new HttpErrorResponse({ status: 400 }), 'x')).toContain('no es válido');
+    expect(mensajeDeError(new HttpErrorResponse({ status: 401 }), 'x')).toBe('Tu sesión terminó. Vuelve a ingresar.');
+    expect(mensajeDeError(new HttpErrorResponse({ status: 403 }), 'x')).toBe('No tienes permiso para hacer esto.');
     expect(mensajeDeError(new HttpErrorResponse({ status: 503 }), 'x')).toContain('El servidor tuvo un problema');
     expect(mensajeDeError(new HttpErrorResponse({ status: 0 }), 'x')).toContain('No hay conexión');
     expect(mensajeDeError(new Error('otro'), 'por defecto')).toBe('por defecto');

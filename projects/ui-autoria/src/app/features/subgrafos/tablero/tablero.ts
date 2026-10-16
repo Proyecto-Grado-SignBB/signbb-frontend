@@ -76,10 +76,6 @@ export class TableroComponent implements OnInit {
   /** Confirmación breve de la última acción ("Se eliminó…"). */
   protected readonly mensaje = signal<string | null>(null);
 
-  /** Placeholder hasta que exista autenticación de médicos (ver sidebar-autoria). */
-  protected readonly autor = 'Dra. Catalina Rodríguez';
-  protected readonly institucion = 'Fundación Canguro';
-
   /** Subgrafos publicados o con cambios sin publicar. */
   protected readonly totalPublicados = computed(
     () => this.subgrafos().filter(s => s.estado !== 'BORRADOR').length
@@ -178,9 +174,7 @@ export class TableroComponent implements OnInit {
     this.autoria.crear({
       nombre: this.nombreNuevo.trim(),
       puenteId,
-      etiquetaOpcion: this.etiquetaNueva.trim(),
-      autor: this.autor,
-      institucion: this.institucion
+      etiquetaOpcion: this.etiquetaNueva.trim()
     }).subscribe({
       next: creado => {
         this.creando.set(false);

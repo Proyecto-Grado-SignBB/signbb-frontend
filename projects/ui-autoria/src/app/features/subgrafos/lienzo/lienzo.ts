@@ -511,9 +511,7 @@ export class LienzoComponent implements OnInit {
     this.autoria.actualizar(this.id, {
       nombre: datos.nombre,
       puenteId: s.puenteId,
-      etiquetaOpcion: datos.etiquetaOpcion,
-      autor: s.autor ?? undefined,
-      institucion: s.institucion ?? undefined
+      etiquetaOpcion: datos.etiquetaOpcion
     }).subscribe({
       next: actualizado => {
         this.subgrafo.set(actualizado);

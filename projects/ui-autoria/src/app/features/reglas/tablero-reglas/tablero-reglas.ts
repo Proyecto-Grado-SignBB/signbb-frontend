@@ -62,10 +62,6 @@ export class TableroReglasComponent implements OnInit {
   /** Confirmación breve de la última acción. */
   protected readonly mensaje = signal<string | null>(null);
 
-  /** Placeholder hasta que exista autenticación de médicos (ver sidebar-autoria). */
-  protected readonly autor = 'Dra. Catalina Rodríguez';
-  protected readonly institucion = 'Fundación Canguro';
-
   constructor(private autoria: AutoriaService, private router: Router) {}
 
   ngOnInit(): void {
@@ -128,9 +124,7 @@ export class TableroReglasComponent implements OnInit {
     this.autoria.crearBase({
       nombre: this.nombreNuevo.trim(),
       descripcion: this.descripcionNueva.trim() || undefined,
-      grafoId: this.grafoSeleccionado,
-      autor: this.autor,
-      institucion: this.institucion
+      grafoId: this.grafoSeleccionado
     }).subscribe({
       next: creada => {
         this.creando.set(false);

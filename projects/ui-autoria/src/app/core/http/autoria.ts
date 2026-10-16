@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
+import { UsuarioSesion } from 'ui-compartida';
 import { environment } from '../../../environments/environment';
 import {
   Aviso,
@@ -30,6 +31,11 @@ export class AutoriaService {
   private readonly base = `${environment.apiUrl}/autoria`;
 
   constructor(private http: HttpClient) { }
+
+  /** Cuenta de la sesión (`GET /auth/yo`), con los datos al día. */
+  cuenta(): Observable<UsuarioSesion> {
+    return this.http.get<UsuarioSesion>(`${environment.apiUrl}/auth/yo`);
+  }
 
   /** Categorías: las preguntas puente del grafo raíz. */
   categorias(): Observable<Categoria[]> {
@@ -199,6 +205,8 @@ export function mensajeDeError(error: unknown, porDefecto: string): string {
     }
     if (error.status === 0) return 'No hay conexión con el servidor. Verifica que el backend esté disponible.';
     if (error.status === 400) return 'Algo en los datos no es válido. Revisa e intenta de nuevo.';
+    if (error.status === 401) return 'Tu sesión terminó. Vuelve a ingresar.';
+    if (error.status === 403) return 'No tienes permiso para hacer esto.';
     if (error.status === 404) return 'Ese elemento ya no existe. Recarga la página.';
     if (error.status === 409) return 'Alguien más editó este subgrafo al mismo tiempo. Recarga la página.';
     if (error.status >= 500) return 'El servidor tuvo un problema. Intenta de nuevo en un momento.';

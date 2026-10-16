@@ -13,6 +13,15 @@ los publica para que la cuidadora los pueda recorrer.
   `models/lienzo.model.ts`.
 - **Diálogos y errores** en `core/ui/` (`dialogo-confirmar`, `modal-datos`,
   `modal-publicar`).
+- **Ingreso y sesión** en `features/ingreso/` y `core/sesion/`: el médico
+  ingresa con correo y contraseña (no hay registro: las cuentas las crea un
+  supervisor). Todas las rutas menos `/ingresar` piden sesión de `MEDICO` o
+  `MEDICO_SUPERVISOR`; la sesión se guarda en `localStorage`
+  (`signbb.autoria.sesion`). El servicio, el interceptor y el guard vienen de
+  `ui-compartida`.
+- **Autor**: el back lo toma de la sesión. El tablero, el perfil y la barra
+  lateral muestran los datos de la cuenta; el front ya no manda `autor` ni
+  `institucion`.
 - **API base** en `src/environments/environment*.ts`.
 
 ## Cómo se documenta
