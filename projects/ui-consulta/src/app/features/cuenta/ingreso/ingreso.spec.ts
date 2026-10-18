@@ -60,6 +60,7 @@ describe('IngresoComponent (consulta)', () => {
   afterEach(() => {
     http.verify();
     localStorage.removeItem(CLAVE_SESION_CONSULTA);
+    sessionStorage.removeItem(CLAVE_SESION_CONSULTA);
   });
 
   it('con los datos correctos ingresa y vuelve a la ruta de ?volver=', async () => {
@@ -72,6 +73,31 @@ describe('IngresoComponent (consulta)', () => {
     expect(TestBed.inject(SesionService).autenticado()).toBeTrue();
   });
 
+  it('sin marcar «dispositivo seguro» manda false y la sesión queda solo en sessionStorage', async () => {
+    await abrir();
+    await ingresar('p1@signbb.local', 'clave-larga');
+    const req = http.expectOne(`${environment.apiUrl}/auth/login`);
+    expect(req.request.body).toEqual({ correo: 'p1@signbb.local', contrasena: 'clave-larga', dispositivoSeguro: false });
+    req.flush(sesion('PADRE'));
+    await harness.fixture.whenStable();
+
+    expect(localStorage.getItem(CLAVE_SESION_CONSULTA)).toBeNull();
+    expect(sessionStorage.getItem(CLAVE_SESION_CONSULTA)).not.toBeNull();
+  });
+
+  it('marcar «dispositivo seguro» manda true y la sesión queda en localStorage', async () => {
+    await abrir();
+    el.querySelector<HTMLInputElement>('input[name="seguro"]')!.click();
+    await ingresar('p1@signbb.local', 'clave-larga');
+    const req = http.expectOne(`${environment.apiUrl}/auth/login`);
+    expect(req.request.body.dispositivoSeguro).toBeTrue();
+    req.flush(sesion('PADRE'));
+    await harness.fixture.whenStable();
+
+    expect(localStorage.getItem(CLAVE_SESION_CONSULTA)).not.toBeNull();
+    expect(sessionStorage.getItem(CLAVE_SESION_CONSULTA)).toBeNull();
+  });
+
   it('un ?volver= externo se ignora y lleva al inicio', async () => {
     await abrir('/ingresar?volver=https%3A%2F%2Fotro.sitio');
     await ingresar('p1@signbb.local', 'clave-larga');
@@ -79,6 +105,25 @@ describe('IngresoComponent (consulta)', () => {
     await harness.fixture.whenStable();
 
     expect(TestBed.inject(Router).url).toBe('/');
+  });
+
+  it('un ingreso bloqueado por intentos fallidos (429) muestra el mensaje del back', async () => {
+    await abrir();
+    await ingresar('p1@signbb.local', 'mala');
+    http.expectOne(`${environment.apiUrl}/auth/login`).flush(
+      { mensaje: 'Demasiados intentos fallidos. Vuelve a intentar en 15 minutos.', avisos: [] },
+      { status: 429, statusText: 'Too Many Requests' });
+    harness.detectChanges();
+
+    expect(el.querySelector('[role="alert"]')?.textContent).toContain('Demasiados intentos fallidos');
+    expect(TestBed.inject(Router).url).toBe('/ingresar');
+  });
+
+  it('con ?motivo=sesion avisa que la sesión terminó', async () => {
+    await abrir('/ingresar?motivo=sesion&volver=%2Fmis-recorridos');
+
+    expect(el.querySelector('[role="alert"]')?.textContent).toContain('Tu sesión terminó. Ingresa de nuevo para continuar.');
+    expect(TestBed.inject(Router).url).toContain('/ingresar');
   });
 
   it('una credencial mala muestra el error en la pantalla', async () => {

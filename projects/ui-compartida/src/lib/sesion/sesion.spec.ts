@@ -31,10 +31,14 @@ describe('SesionService', () => {
     return TestBed.inject(SesionService);
   }
 
-  beforeEach(() => localStorage.removeItem(CLAVE));
+  beforeEach(() => {
+    localStorage.removeItem(CLAVE);
+    sessionStorage.removeItem(CLAVE);
+  });
   afterEach(() => {
     http.verify();
     localStorage.removeItem(CLAVE);
+    sessionStorage.removeItem(CLAVE);
   });
 
   it('ingresar guarda la sesión en localStorage', () => {
@@ -51,6 +55,65 @@ describe('SesionService', () => {
     expect(servicio.token()).toBe('token-de-prueba');
     expect(servicio.usuario()?.nombre).toBe('Dra. Ana');
     expect(JSON.parse(localStorage.getItem(CLAVE)!)).toEqual(sesion);
+  });
+
+  it('un dispositivo NO seguro guarda la sesión solo en sessionStorage y manda el dato al back', () => {
+    const servicio = crear();
+    servicio.ingresar('p@signbb.local', 'clave-larga', false).subscribe();
+
+    const peticion = http.expectOne(`${API}/auth/login`);
+    expect(peticion.request.body).toEqual({ correo: 'p@signbb.local', contrasena: 'clave-larga', dispositivoSeguro: false });
+    peticion.flush(sesionDePrueba('PADRE'));
+
+    expect(servicio.autenticado()).toBeTrue();
+    expect(sessionStorage.getItem(CLAVE)).not.toBeNull();
+    expect(localStorage.getItem(CLAVE)).toBeNull();
+  });
+
+  it('un dispositivo seguro guarda la sesión en localStorage', () => {
+    const servicio = crear();
+    servicio.ingresar('p@signbb.local', 'clave-larga', true).subscribe();
+
+    const peticion = http.expectOne(`${API}/auth/login`);
+    expect(peticion.request.body.dispositivoSeguro).toBeTrue();
+    peticion.flush(sesionDePrueba('PADRE'));
+
+    expect(localStorage.getItem(CLAVE)).not.toBeNull();
+    expect(sessionStorage.getItem(CLAVE)).toBeNull();
+  });
+
+  it('registrar también respeta el dispositivo seguro', () => {
+    const servicio = crear();
+    servicio.registrar('Papá', 'p@signbb.local', 'clave-larga', false).subscribe();
+
+    const peticion = http.expectOne(`${API}/auth/registro`);
+    expect(peticion.request.body).toEqual({
+      nombre: 'Papá', correo: 'p@signbb.local', contrasena: 'clave-larga', dispositivoSeguro: false
+    });
+    peticion.flush(sesionDePrueba('PADRE'));
+
+    expect(sessionStorage.getItem(CLAVE)).not.toBeNull();
+    expect(localStorage.getItem(CLAVE)).toBeNull();
+  });
+
+  it('al arrancar lee la sesión de sessionStorage y salir la borra de los dos sitios', () => {
+    sessionStorage.setItem(CLAVE, JSON.stringify(sesionDePrueba('PADRE')));
+    const servicio = crear();
+
+    expect(servicio.autenticado()).toBeTrue();
+    servicio.salir();
+
+    expect(servicio.autenticado()).toBeFalse();
+    expect(sessionStorage.getItem(CLAVE)).toBeNull();
+    expect(localStorage.getItem(CLAVE)).toBeNull();
+  });
+
+  it('una sesión vencida en sessionStorage se descarta al arrancar', () => {
+    sessionStorage.setItem(CLAVE, JSON.stringify(sesionDePrueba('PADRE', -5)));
+    const servicio = crear();
+
+    expect(servicio.autenticado()).toBeFalse();
+    expect(sessionStorage.getItem(CLAVE)).toBeNull();
   });
 
   it('registrar llama a /auth/registro y deja la sesión abierta', () => {
@@ -99,6 +162,31 @@ describe('SesionService', () => {
 
     expect(servicio.vigente()).toBeFalse();
     expect(servicio.autenticado()).toBeFalse();
+  });
+
+  it('cerrarTodas llama a /auth/cerrar-todas y después limpia la sesión', () => {
+    localStorage.setItem(CLAVE, JSON.stringify(sesionDePrueba()));
+    const servicio = crear();
+    servicio.cerrarTodas().subscribe();
+
+    const peticion = http.expectOne(`${API}/auth/cerrar-todas`);
+    expect(peticion.request.method).toBe('POST');
+    expect(servicio.autenticado()).toBeTrue();
+    peticion.flush(null, { status: 204, statusText: 'No Content' });
+
+    expect(servicio.autenticado()).toBeFalse();
+    expect(localStorage.getItem(CLAVE)).toBeNull();
+  });
+
+  it('si cerrarTodas falla, la sesión local se conserva', () => {
+    localStorage.setItem(CLAVE, JSON.stringify(sesionDePrueba()));
+    const servicio = crear();
+    servicio.cerrarTodas().subscribe({ error: () => undefined });
+
+    http.expectOne(`${API}/auth/cerrar-todas`).flush({ mensaje: 'x' }, { status: 500, statusText: 'Error' });
+
+    expect(servicio.autenticado()).toBeTrue();
+    expect(localStorage.getItem(CLAVE)).not.toBeNull();
   });
 
   it('salir limpia la sesión', () => {

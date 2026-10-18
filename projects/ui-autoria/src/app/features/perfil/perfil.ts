@@ -77,6 +77,24 @@ export class PerfilComponent implements OnInit {
     });
   }
 
+  /** True mientras se pide cerrar la sesión en todos los dispositivos. */
+  protected readonly cerrandoTodas = signal(false);
+  /** Mensaje si no se pudo cerrar la sesión en todos los dispositivos. */
+  protected readonly errorCerrarTodas = signal<string | null>(null);
+
+  /** Cierra la sesión en todos los dispositivos y lleva al ingreso. */
+  protected cerrarTodas(): void {
+    this.cerrandoTodas.set(true);
+    this.errorCerrarTodas.set(null);
+    this.sesion.cerrarTodas().subscribe({
+      next: () => this.router.navigate(['/ingresar'], { replaceUrl: true }),
+      error: () => {
+        this.cerrandoTodas.set(false);
+        this.errorCerrarTodas.set('No se pudo cerrar la sesión en todos los dispositivos. Intenta de nuevo.');
+      }
+    });
+  }
+
   /** Cierra la sesión y lleva al ingreso. */
   protected salir(): void {
     this.sesion.salir();

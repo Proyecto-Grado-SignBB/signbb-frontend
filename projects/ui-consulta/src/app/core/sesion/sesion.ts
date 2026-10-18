@@ -23,7 +23,8 @@ export function proveerSesion(): Provider[] {
 
 /**
  * Mensaje sencillo para un error de ingreso o registro: el `mensaje` que manda
- * el back en los 401 y 422, o un texto según el caso.
+ * el back en los 401, 422 y 429 (ingreso bloqueado por intentos fallidos), o un
+ * texto según el caso.
  */
 export function mensajeCuenta(error: unknown, porDefecto: string): string {
   if (!(error instanceof HttpErrorResponse)) {
@@ -33,7 +34,7 @@ export function mensajeCuenta(error: unknown, porDefecto: string): string {
     return 'No hay conexión. Revisa tu internet e intenta de nuevo.';
   }
   const mensaje = (error.error as { mensaje?: unknown } | null)?.mensaje;
-  if ((error.status === 401 || error.status === 422) && typeof mensaje === 'string' && mensaje) {
+  if ((error.status === 401 || error.status === 422 || error.status === 429) && typeof mensaje === 'string' && mensaje) {
     return mensaje;
   }
   return porDefecto;

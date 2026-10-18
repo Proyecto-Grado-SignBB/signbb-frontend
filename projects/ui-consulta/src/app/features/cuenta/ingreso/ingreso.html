@@ -16,6 +16,15 @@
              [(ngModel)]="contrasena" [disabled]="ingresando()" />
     </label>
 
+    <label class="cuenta__seguro">
+      <input type="checkbox" name="seguro" [(ngModel)]="dispositivoSeguro" [disabled]="ingresando()" />
+      <span>
+        <b>Este es un dispositivo seguro</b>
+        Márcalo solo si es tu teléfono o computador personal: tu sesión seguirá abierta hasta 30 días.
+        Si es un equipo compartido, déjalo sin marcar.
+      </span>
+    </label>
+
     @if (error()) {
       <p class="cuenta__error" role="alert">{{ error() }}</p>
     }

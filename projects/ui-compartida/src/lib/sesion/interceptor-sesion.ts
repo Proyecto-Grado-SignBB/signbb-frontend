@@ -7,7 +7,8 @@ import { API_URL, SesionService } from './sesion';
 /**
  * Agrega `Authorization: Bearer` a las peticiones hacia {@link API_URL} (y a
  * ninguna otra). Si la API responde 401 fuera del ingreso y el registro, la
- * sesión terminó: la cierra y lleva a `/ingresar?volver=<ruta actual>`.
+ * sesión terminó: la cierra y lleva a `/ingresar?motivo=sesion&volver=<ruta
+ * actual>`, para que el ingreso avise por qué y regrese a donde estaba.
  */
 export const interceptorSesion: HttpInterceptorFn = (req, next) => {
   const sesion = inject(SesionService);
@@ -27,7 +28,7 @@ export const interceptorSesion: HttpInterceptorFn = (req, next) => {
       if (haciaApi && !deIngreso && error instanceof HttpErrorResponse && error.status === 401) {
         sesion.salir();
         const volver = router.url.startsWith('/ingresar') ? undefined : router.url;
-        router.navigate(['/ingresar'], { queryParams: volver ? { volver } : {} });
+        router.navigate(['/ingresar'], { queryParams: volver ? { motivo: 'sesion', volver } : { motivo: 'sesion' } });
       }
       return throwError(() => error);
     })

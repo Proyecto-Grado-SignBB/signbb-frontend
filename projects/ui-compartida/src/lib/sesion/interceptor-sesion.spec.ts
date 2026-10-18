@@ -64,7 +64,7 @@ describe('interceptorSesion', () => {
 
     expect(status).toBe(401);
     expect(sesion.autenticado()).toBeFalse();
-    expect(router.navigate).toHaveBeenCalledWith(['/ingresar'], { queryParams: { volver: '/subgrafos/3' } });
+    expect(router.navigate).toHaveBeenCalledWith(['/ingresar'], { queryParams: { motivo: 'sesion', volver: '/subgrafos/3' } });
   });
 
   it('un 401 del login no cierra nada ni redirige', () => {

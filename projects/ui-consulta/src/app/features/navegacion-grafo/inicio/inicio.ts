@@ -14,7 +14,7 @@ import { MENSAJE_RECORRIDO_NO_DISPONIBLE } from '../../../core/sesion/sesion';
 /**
  * Pantalla inicial de la familia con sesión (sin ella, el guard lleva a la
  * bienvenida): saluda por el nombre, arranca el recorrido y lleva a «Mis
- * recorridos» y al perfil, donde se cierra la sesión.
+ * recorridos», al manual de usuario y al perfil, donde se cierra la sesión.
  */
 export class Inicio implements OnInit {
   /** TODO: confirma con tu asesora si hay una sección específica del portal (recomendaciones/padres) en vez de la home. */
@@ -58,9 +58,5 @@ export class Inicio implements OnInit {
         this.error = 'No pudimos iniciar la consulta. Intenta de nuevo.';
       }
     });
-  }
-
-  abrirManualUsuario(): void {
-    // TODO: sin destino definido todavía en el diseño.
   }
 }

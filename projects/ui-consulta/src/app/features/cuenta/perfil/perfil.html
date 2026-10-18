@@ -24,6 +24,13 @@
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
         stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>
     </a>
+    <button type="button" class="perfil__fila perfil__fila--todas" [disabled]="cerrandoTodas()"
+      (click)="cerrarTodas()">
+      Cerrar sesión en todos los dispositivos
+    </button>
+    @if (errorCerrarTodas(); as mensaje) {
+      <p class="perfil__error" role="alert">{{ mensaje }}</p>
+    }
     <button type="button" class="perfil__fila perfil__fila--salir" (click)="cerrarSesion()">
       Cerrar sesión
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"

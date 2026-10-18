@@ -1,0 +1,105 @@
+<main class="manual pantalla">
+  <div class="manual__blob manual__blob--1"></div>
+  <div class="manual__blob manual__blob--2"></div>
+  <div class="manual__blob manual__blob--3"></div>
+
+  <div class="manual__header">
+    <a routerLink="/" class="manual__volver" aria-label="Volver al inicio">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+    </a>
+    <span class="manual__marca">SignBB</span>
+    <span class="manual__espacio" aria-hidden="true"></span>
+  </div>
+
+  <div class="manual__hero">
+    <div class="manual__insignia">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+        stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+    </div>
+    <h1>Manual de usuario</h1>
+    <p>Todo lo que necesitas saber para usar SignBB con tranquilidad.</p>
+  </div>
+
+  <div class="manual__lista">
+    <details class="manual__seccion" open>
+      <summary><span class="manual__icono" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg></span><span class="manual__titulo">¿Para qué sirve SignBB?</span></summary>
+      <div class="manual__contenido">
+        <p>SignBB te acompaña en el cuidado de tu bebé prematuro con el método madre canguro. Te hace preguntas
+          sobre cómo está tu bebé y te orienta sobre qué hacer.</p>
+        <p>No reemplaza a tu médico. Es una ayuda para que sepas cuándo estar tranquila o tranquilo y cuándo buscar
+          atención.</p>
+      </div>
+    </details>
+
+    <details class="manual__seccion">
+      <summary><span class="manual__icono" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M10 8l4 4-4 4"></path></svg></span><span class="manual__titulo">Cómo hacer una consulta</span></summary>
+      <div class="manual__contenido">
+        <ol class="manual__pasos">
+          <li>En el inicio, toca <b>Comenzar consulta</b>.</li>
+          <li>Lee cada pregunta con calma.</li>
+          <li>Elige tu respuesta. En algunas preguntas puedes elegir más de una opción.</li>
+          <li>Toca <b>Continuar</b> para pasar a la siguiente pregunta.</li>
+          <li>Al terminar, verás el resultado.</li>
+        </ol>
+      </div>
+    </details>
+
+    <details class="manual__seccion">
+      <summary><span class="manual__icono" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="8 12.5 10.8 15.3 16 9.5"></polyline></svg></span><span class="manual__titulo">Qué significan los resultados</span></summary>
+      <div class="manual__contenido">
+        <div class="manual__resultado manual__resultado--normal">
+          <b>Todo tranquilo por ahora</b>
+          <span>No se detectan signos de alarma en este momento. Sigue cuidando a tu bebé y vuelve a consultar si
+            algo cambia.</span>
+        </div>
+        <div class="manual__resultado manual__resultado--medico">
+          <b>Conviene consultar a tu médico</b>
+          <span>No es una emergencia, pero tu bebé presenta señales que conviene revisar pronto.</span>
+        </div>
+        <div class="manual__resultado manual__resultado--urgencia">
+          <b>Ve a urgencias ahora</b>
+          <span>Se detectaron señales de alarma. Ve a urgencias de inmediato. En esta pantalla verás cuáles fueron
+            las señales.</span>
+        </div>
+      </div>
+    </details>
+
+    <details class="manual__seccion">
+      <summary><span class="manual__icono" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></span><span class="manual__titulo">Mis recorridos</span></summary>
+      <div class="manual__contenido">
+        <p>Cada consulta que haces queda guardada como un recorrido. En <b>Mis recorridos</b>, en el inicio, puedes
+          ver tus consultas anteriores y su resultado.</p>
+      </div>
+    </details>
+
+    <details class="manual__seccion">
+      <summary><span class="manual__icono" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg></span><span class="manual__titulo">Tu cuenta y tu seguridad</span></summary>
+      <div class="manual__contenido">
+        <p><b>Dispositivo seguro.</b> Al ingresar o registrarte puedes marcar <i>Este es un dispositivo seguro</i>.
+          Así tu sesión dura hasta 30 días y no tienes que ingresar cada vez. Márcalo solo en un teléfono que usas
+          tú. Si no lo marcas, la sesión se cierra cuando cierras la pestaña o el navegador.</p>
+        <p><b>Cerrar sesión.</b> En tu perfil (el ícono de persona en el inicio) toca <b>Cerrar sesión</b> para salir
+          de este dispositivo.</p>
+        <p><b>Cerrar sesión en todos los dispositivos.</b> Si perdiste o prestaste un teléfono, usa esta opción en tu
+          perfil. Se cerrará tu sesión en todos los dispositivos y tendrás que ingresar de nuevo.</p>
+        <p><b>Intentos fallidos.</b> Si te equivocas 5 veces seguidas con la contraseña, tu cuenta se bloquea 15
+          minutos por seguridad. Pasado ese tiempo, puedes intentar de nuevo.</p>
+      </div>
+    </details>
+
+    <details class="manual__seccion manual__seccion--importante">
+      <summary><span class="manual__icono" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v5"></path><path d="M12 16.5h.01"></path></svg></span><span class="manual__titulo">Importante</span></summary>
+      <div class="manual__contenido">
+        <p>SignBB no sustituye la atención médica. Si tu bebé se ve mal o estás preocupada o preocupado, no esperes a
+          usar la aplicación: ve a urgencias o llama a tu médico.</p>
+      </div>
+    </details>
+
+    <a class="manual__enlace" [href]="urlFundacionCanguro" target="_blank" rel="noopener">
+      <span>Más información en la Fundación Canguro</span>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>
+    </a>
+  </div>
+</main>

@@ -8,12 +8,13 @@ import { RegistroComponent } from './features/cuenta/registro/registro';
 import { MisRecorridosComponent } from './features/mis-recorridos/mis-recorridos';
 import { BienvenidaComponent } from './features/cuenta/bienvenida/bienvenida';
 import { PerfilComponent } from './features/cuenta/perfil/perfil';
+import { ManualComponent } from './features/manual/manual';
 import { guardFamilia } from './core/sesion/sesion';
 
 /**
  * Rutas de la app. La bienvenida, el ingreso y el registro son públicos. El
  * inicio sin sesión lleva a la bienvenida; la pregunta en curso, el resultado
- * (los dos por el `recorridoId` de la sesión), «Mis recorridos» y el perfil
+ * (los dos por el `recorridoId` de la sesión), «Mis recorridos», el perfil y el manual
  * piden una cuenta de familia (`PADRE`). No hay ruta comodín ni 404.
  */
 export const routes: Routes = [
@@ -24,5 +25,6 @@ export const routes: Routes = [
   { path: 'pregunta/:recorridoId', component: PreguntaComponent, canActivate: [guardSesion('PADRE')] },
   { path: 'resultado/:recorridoId', component: ResultadoComponent, canActivate: [guardSesion('PADRE')] },
   { path: 'mis-recorridos', component: MisRecorridosComponent, canActivate: [guardSesion('PADRE')] },
-  { path: 'perfil', component: PerfilComponent, canActivate: [guardSesion('PADRE')] }
+  { path: 'perfil', component: PerfilComponent, canActivate: [guardSesion('PADRE')] },
+  { path: 'manual', component: ManualComponent, canActivate: [guardSesion('PADRE')] }
 ];

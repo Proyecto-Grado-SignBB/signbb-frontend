@@ -5,6 +5,7 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  min-height: 100dvh;
   overflow: hidden;
   background: linear-gradient(165deg, oklch(88% 0.06 340) 0%, oklch(90% 0.05 300) 50%, oklch(90% 0.06 200) 100%);
 }
@@ -62,6 +63,12 @@
   box-shadow: 0 2px 10px rgba(20, 20, 19, 0.06);
   color: oklch(40% 0.03 300);
   cursor: pointer;
+}
+
+/* Ocupa el lugar del ícono que había a la derecha para que la marca siga centrada. */
+.inicio__espacio {
+  width: 38px;
+  height: 38px;
 }
 
 .inicio__marca {
@@ -128,11 +135,11 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  height: 74px;
+  min-height: 74px;
   border: none;
   border-radius: 20px;
   background: linear-gradient(135deg, oklch(60% 0.14 340), oklch(56% 0.14 320));
-  padding: 0 20px;
+  padding: 10px 20px;
   cursor: pointer;
   box-shadow: 0 14px 26px rgba(180, 70, 120, 0.28);
 
@@ -187,11 +194,11 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  height: 58px;
+  min-height: 58px;
   border: none;
   border-bottom: 1px solid rgba(20, 20, 19, 0.06);
   background: transparent;
-  padding: 0 16px;
+  padding: 10px 16px;
   cursor: pointer;
   text-decoration: none;
 

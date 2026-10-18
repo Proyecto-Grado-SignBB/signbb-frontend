@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { BotonComponent, SesionService } from 'ui-compartida';
+import { BotonComponent, MENSAJE_SESION_TERMINADA, SesionService } from 'ui-compartida';
 import { mensajeDeError } from '../../core/http/autoria';
 import { ROLES_AUTORIA } from '../../core/sesion/sesion';
 
@@ -33,6 +33,9 @@ export class IngresoComponent implements OnInit {
   protected readonly error = signal<string | null>(null);
 
   ngOnInit(): void {
+    if (this.ruta.snapshot.queryParamMap.get('motivo') === 'sesion') {
+      this.error.set(MENSAJE_SESION_TERMINADA);
+    }
     if (this.ruta.snapshot.queryParamMap.get('motivo') === 'rol') {
       this.sesion.salir();
       this.error.set(MENSAJE_CUENTA_FAMILIA);

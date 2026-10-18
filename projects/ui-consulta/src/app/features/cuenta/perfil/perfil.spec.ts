@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { Component } from '@angular/core';
 import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
@@ -46,6 +46,28 @@ describe('PerfilComponent', () => {
     expect(el.textContent).toContain('Cuenta de familia');
     expect(el.querySelector('.perfil__avatar')?.textContent?.trim()).toBe('PU');
     expect(el.querySelector('a[href="/mis-recorridos"]')).not.toBeNull();
+  });
+
+  it('«Cerrar sesión en todos los dispositivos» llama al back, limpia la sesión y vuelve a la bienvenida', async () => {
+    el.querySelector<HTMLButtonElement>('.perfil__fila--todas')!.click();
+    const http = TestBed.inject(HttpTestingController);
+    http.expectOne(r => r.method === 'POST' && r.url.endsWith('/auth/cerrar-todas')).flush(null, { status: 204, statusText: 'No Content' });
+    await harness.fixture.whenStable();
+
+    expect(TestBed.inject(SesionService).autenticado()).toBeFalse();
+    expect(localStorage.getItem(CLAVE_SESION_CONSULTA)).toBeNull();
+    expect(TestBed.inject(Router).url).toBe('/bienvenida');
+  });
+
+  it('si el back falla al cerrar todas, conserva la sesión y avisa', async () => {
+    el.querySelector<HTMLButtonElement>('.perfil__fila--todas')!.click();
+    const http = TestBed.inject(HttpTestingController);
+    http.expectOne(r => r.url.endsWith('/auth/cerrar-todas')).flush({ mensaje: 'x' }, { status: 500, statusText: 'Error' });
+    harness.fixture.detectChanges();
+
+    expect(TestBed.inject(SesionService).autenticado()).toBeTrue();
+    expect(el.querySelector('.perfil__error')?.textContent).toContain('No se pudo cerrar la sesión en todos los dispositivos');
+    expect(TestBed.inject(Router).url).toBe('/perfil');
   });
 
   it('«Cerrar sesión» limpia la sesión y vuelve a la bienvenida', async () => {

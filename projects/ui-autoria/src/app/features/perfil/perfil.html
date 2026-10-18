@@ -59,6 +59,17 @@
 
         <div class="profile-danger">
           <div>
+            <b>Cerrar sesión en todos los dispositivos</b>
+            <span>Termina tu sesión aquí y en cualquier otro navegador o equipo donde hayas ingresado</span>
+          </div>
+          <app-boton tono="alerta" variante="contorno" alto="compacto" ancho="auto" [disabled]="cerrandoTodas()" (click)="cerrarTodas()">Cerrar en todos</app-boton>
+        </div>
+        @if (errorCerrarTodas()) {
+          <p class="hint" role="alert">{{ errorCerrarTodas() }}</p>
+        }
+
+        <div class="profile-danger">
+          <div>
             <b>Cerrar sesión</b>
             <span>Sales de la app en este navegador; para volver, ingresa de nuevo</span>
           </div>

@@ -65,6 +65,30 @@
   }
 }
 
+.cuenta__seguro {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: $color-text-secondary;
+  cursor: pointer;
+
+  input {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    margin: 1px 0 0;
+    accent-color: $color-brand;
+  }
+
+  b {
+    display: block;
+    font-size: 14px;
+    color: $color-text-primary;
+  }
+}
+
 .cuenta__error {
   margin: 0;
   padding: 10px 12px;

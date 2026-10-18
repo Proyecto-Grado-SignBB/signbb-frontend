@@ -1,10 +1,11 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { SesionService } from 'ui-compartida';
 
 /**
- * Perfil de la familia: sus datos de cuenta, el acceso a «Mis recorridos» y
- * «Cerrar sesión», que vuelve a la bienvenida.
+ * Perfil de la familia: sus datos de cuenta, el acceso a «Mis recorridos»,
+ * «Cerrar sesión» y «Cerrar sesión en todos los dispositivos», que vuelven a
+ * la bienvenida.
  */
 @Component({
   selector: 'app-perfil',
@@ -28,6 +29,24 @@ export class PerfilComponent {
       .slice(0, 2)
       .map(p => p[0].toUpperCase())
       .join(''));
+
+  /** True mientras se pide cerrar la sesión en todos los dispositivos. */
+  protected readonly cerrandoTodas = signal(false);
+  /** Mensaje si no se pudo cerrar la sesión en todos los dispositivos. */
+  protected readonly errorCerrarTodas = signal<string | null>(null);
+
+  /** Cierra la sesión en todos los dispositivos y vuelve a la bienvenida. */
+  protected cerrarTodas(): void {
+    this.cerrandoTodas.set(true);
+    this.errorCerrarTodas.set(null);
+    this.sesion.cerrarTodas().subscribe({
+      next: () => this.router.navigate(['/bienvenida']),
+      error: () => {
+        this.cerrandoTodas.set(false);
+        this.errorCerrarTodas.set('No se pudo cerrar la sesión en todos los dispositivos. Intenta de nuevo.');
+      }
+    });
+  }
 
   /** Cierra la sesión y vuelve a la bienvenida. */
   protected cerrarSesion(): void {

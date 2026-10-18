@@ -103,3 +103,16 @@
 .perfil__fila--salir {
   color: $color-alert-dark;
 }
+
+.perfil__fila--todas:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.perfil__error {
+  margin: 0;
+  padding: 0 4px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: $color-alert-dark;
+}

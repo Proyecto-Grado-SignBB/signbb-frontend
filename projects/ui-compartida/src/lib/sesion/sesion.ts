@@ -24,6 +24,9 @@ export interface Sesion {
   usuario: UsuarioSesion;
 }
 
+/** Aviso del ingreso cuando la sesión terminó (`?motivo=sesion`): venció, la cerraron o se desactivó la cuenta. */
+export const MENSAJE_SESION_TERMINADA = 'Tu sesión terminó. Ingresa de nuevo para continuar.';
+
 /**
  * URL base de la API (por ejemplo `http://localhost:8080/api`). Solo a las
  * peticiones que empiezan por ella se les agrega el token.
@@ -31,15 +34,18 @@ export interface Sesion {
 export const API_URL = new InjectionToken<string>('API_URL');
 
 /**
- * Clave de `localStorage` donde la app guarda su sesión. Cada app usa la suya,
- * así ingresar en una no abre la otra.
+ * Clave con la que la app guarda su sesión en el navegador. Cada app usa la
+ * suya, así ingresar en una no abre la otra.
  */
 export const CLAVE_SESION = new InjectionToken<string>('CLAVE_SESION');
 
 /**
  * Sesión de la cuenta que usa la app. Ingresa y registra contra `/auth` del
- * back, guarda la sesión en `localStorage` y la descarta si ya venció.
- * Requiere que la app provea {@link API_URL} y {@link CLAVE_SESION}.
+ * back, guarda la sesión y la descarta si ya venció. Se guarda en
+ * `localStorage` (sigue abierta al cerrar el navegador) salvo que el
+ * dispositivo se indique como NO seguro: entonces va en `sessionStorage` y se
+ * pierde al cerrar la pestaña. Requiere que la app provea {@link API_URL} y
+ * {@link CLAVE_SESION}.
  */
 @Injectable({ providedIn: 'root' })
 export class SesionService {
@@ -72,44 +78,76 @@ export class SesionService {
     return actual !== null;
   }
 
-  /** Ingresa con correo y contraseña y guarda la sesión. Un 401 es credencial mala. */
-  ingresar(correo: string, contrasena: string): Observable<Sesion> {
-    return this.http.post<Sesion>(`${this.apiUrl}/auth/login`, { correo, contrasena })
-      .pipe(tap(s => this.guardar(s)));
+  /**
+   * Ingresa con correo y contraseña y guarda la sesión. Un 401 es credencial
+   * mala y un 429 es un ingreso bloqueado por intentos fallidos.
+   *
+   * `dispositivoSeguro` lo usan las familias: `true` mantiene la sesión abierta
+   * más tiempo y la guarda en `localStorage`; `false` la guarda solo en
+   * `sessionStorage`. Si no se indica (médicos), se guarda en `localStorage`.
+   */
+  ingresar(correo: string, contrasena: string, dispositivoSeguro?: boolean): Observable<Sesion> {
+    const cuerpo = dispositivoSeguro === undefined
+      ? { correo, contrasena }
+      : { correo, contrasena, dispositivoSeguro };
+    return this.http.post<Sesion>(`${this.apiUrl}/auth/login`, cuerpo)
+      .pipe(tap(s => this.guardar(s, dispositivoSeguro)));
   }
 
-  /** Registra un padre o acudiente y deja la sesión abierta. Un 422 trae el motivo. */
-  registrar(nombre: string, correo: string, contrasena: string): Observable<Sesion> {
-    return this.http.post<Sesion>(`${this.apiUrl}/auth/registro`, { nombre, correo, contrasena })
-      .pipe(tap(s => this.guardar(s)));
+  /**
+   * Registra un padre o acudiente y deja la sesión abierta. Un 422 trae el
+   * motivo. `dispositivoSeguro` funciona igual que en {@link ingresar}.
+   */
+  registrar(nombre: string, correo: string, contrasena: string, dispositivoSeguro?: boolean): Observable<Sesion> {
+    const cuerpo = dispositivoSeguro === undefined
+      ? { nombre, correo, contrasena }
+      : { nombre, correo, contrasena, dispositivoSeguro };
+    return this.http.post<Sesion>(`${this.apiUrl}/auth/registro`, cuerpo)
+      .pipe(tap(s => this.guardar(s, dispositivoSeguro)));
   }
 
-  /** Cierra la sesión y la borra de `localStorage`. */
+  /**
+   * Cierra la sesión en todos los dispositivos (`POST /auth/cerrar-todas`) y,
+   * si el back responde, también la de este navegador. Si falla, la sesión
+   * local se conserva para poder reintentar.
+   */
+  cerrarTodas(): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/auth/cerrar-todas`, {})
+      .pipe(tap(() => this.salir()));
+  }
+
+  /** Cierra la sesión y la borra del navegador. */
   salir(): void {
     localStorage.removeItem(this.clave);
+    sessionStorage.removeItem(this.clave);
     this.sesion.set(null);
   }
 
-  private guardar(sesion: Sesion): void {
-    localStorage.setItem(this.clave, JSON.stringify(sesion));
+  /** Guarda la sesión en `sessionStorage` si el dispositivo es NO seguro; si no, en `localStorage`. */
+  private guardar(sesion: Sesion, dispositivoSeguro?: boolean): void {
+    const persistente = dispositivoSeguro !== false;
+    (persistente ? sessionStorage : localStorage).removeItem(this.clave);
+    (persistente ? localStorage : sessionStorage).setItem(this.clave, JSON.stringify(sesion));
     this.sesion.set(sesion);
   }
 
-  /** Lee la sesión guardada; la descarta si está dañada o vencida. */
+  /** Lee la sesión guardada (en `localStorage` o `sessionStorage`); la descarta si está dañada o vencida. */
   private leer(): Sesion | null {
-    const texto = localStorage.getItem(this.clave);
-    if (!texto) {
-      return null;
-    }
-    try {
-      const sesion = JSON.parse(texto) as Sesion;
-      if (sesion?.token && sesion.usuario && !vencida(sesion)) {
-        return sesion;
+    for (const almacen of [localStorage, sessionStorage]) {
+      const texto = almacen.getItem(this.clave);
+      if (!texto) {
+        continue;
       }
-    } catch {
-      // JSON dañado: se descarta igual que una sesión vencida.
+      try {
+        const sesion = JSON.parse(texto) as Sesion;
+        if (sesion?.token && sesion.usuario && !vencida(sesion)) {
+          return sesion;
+        }
+      } catch {
+        // JSON dañado: se descarta igual que una sesión vencida.
+      }
+      almacen.removeItem(this.clave);
     }
-    localStorage.removeItem(this.clave);
     return null;
   }
 }

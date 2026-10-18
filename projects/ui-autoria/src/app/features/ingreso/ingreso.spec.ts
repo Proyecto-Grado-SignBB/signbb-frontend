@@ -81,6 +81,25 @@ describe('IngresoComponent', () => {
     expect(TestBed.inject(Router).url).toBe('/subgrafos');
   });
 
+  it('un ingreso bloqueado por intentos fallidos (429) muestra el mensaje del back', async () => {
+    await abrir();
+    await ingresar('a@signbb.local', 'mala');
+    http.expectOne(`${environment.apiUrl}/auth/login`).flush(
+      { mensaje: 'Demasiados intentos fallidos. Vuelve a intentar en 15 minutos.', avisos: [] },
+      { status: 429, statusText: 'Too Many Requests' });
+    harness.detectChanges();
+
+    expect(el.querySelector('[role="alert"]')?.textContent).toContain('Demasiados intentos fallidos');
+    expect(TestBed.inject(Router).url).toBe('/ingresar');
+  });
+
+  it('con ?motivo=sesion avisa que la sesión terminó', async () => {
+    await abrir('/ingresar?motivo=sesion&volver=%2Fmis-recorridos');
+
+    expect(el.querySelector('[role="alert"]')?.textContent).toContain('Tu sesión terminó. Ingresa de nuevo para continuar.');
+    expect(TestBed.inject(Router).url).toContain('/ingresar');
+  });
+
   it('una credencial mala muestra el error en la pantalla', async () => {
     await abrir();
     await ingresar('a@signbb.local', 'mala');

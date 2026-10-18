@@ -55,6 +55,41 @@ describe('PerfilComponent', () => {
     expect(stats.slice(0, 2)).toEqual(['1', '1']);
   });
 
+  it('cerrar en todos los dispositivos llama al back y borra la sesión', () => {
+    const fixture = TestBed.createComponent(PerfilComponent);
+    fixture.detectChanges();
+    http.expectOne(`${environment.apiUrl}/auth/yo`).flush(ANA);
+    http.expectOne(`${environment.apiUrl}/autoria/subgrafos`).flush([]);
+    fixture.detectChanges();
+
+    const boton = [...(fixture.nativeElement as HTMLElement).querySelectorAll('button')]
+      .find(b => b.textContent?.trim() === 'Cerrar en todos')!;
+    boton.click();
+    const peticion = http.expectOne(`${environment.apiUrl}/auth/cerrar-todas`);
+    expect(peticion.request.method).toBe('POST');
+    peticion.flush(null, { status: 204, statusText: 'No Content' });
+
+    expect(TestBed.inject(SesionService).autenticado()).toBeFalse();
+    expect(localStorage.getItem(CLAVE_SESION_AUTORIA)).toBeNull();
+  });
+
+  it('si el back falla al cerrar todas, conserva la sesión y avisa', () => {
+    const fixture = TestBed.createComponent(PerfilComponent);
+    fixture.detectChanges();
+    http.expectOne(`${environment.apiUrl}/auth/yo`).flush(ANA);
+    http.expectOne(`${environment.apiUrl}/autoria/subgrafos`).flush([]);
+    fixture.detectChanges();
+
+    const boton = [...(fixture.nativeElement as HTMLElement).querySelectorAll('button')]
+      .find(b => b.textContent?.trim() === 'Cerrar en todos')!;
+    boton.click();
+    http.expectOne(`${environment.apiUrl}/auth/cerrar-todas`).flush({ mensaje: 'x' }, { status: 500, statusText: 'Error' });
+    fixture.detectChanges();
+
+    expect(TestBed.inject(SesionService).autenticado()).toBeTrue();
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('No se pudo cerrar la sesión en todos los dispositivos');
+  });
+
   it('cerrar sesión la borra', () => {
     const fixture = TestBed.createComponent(PerfilComponent);
     fixture.detectChanges();

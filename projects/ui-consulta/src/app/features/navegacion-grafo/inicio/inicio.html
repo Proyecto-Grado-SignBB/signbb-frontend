@@ -12,15 +12,7 @@
       </svg>
     </a>
     <span class="inicio__marca">SignBB</span>
-    <button type="button" class="inicio__icono-header" aria-label="Configuración">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-        stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="3"></circle>
-        <path
-          d="M19.4 13.5a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V19.5a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H4.5a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H10a1.65 1.65 0 0 0 1-1.51V4.5a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V10c.03.7.44 1.32 1.51 1.51H19.5a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-.51 1z">
-        </path>
-      </svg>
-    </button>
+    <span class="inicio__espacio" aria-hidden="true"></span>
   </div>
 
   <div class="inicio__hero">
@@ -71,7 +63,7 @@
             <path d="M9 18l6-6-6-6"></path>
           </svg>
         </a>
-        <button type="button" class="inicio__fila" (click)="abrirManualUsuario()">
+        <a class="inicio__fila" routerLink="/manual">
           <span class="inicio__fila-icono inicio__fila-icono--calma">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
               stroke-linecap="round" stroke-linejoin="round">
@@ -84,7 +76,7 @@
             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 18l6-6-6-6"></path>
           </svg>
-        </button>
+        </a>
         <a class="inicio__fila" [href]="urlFundacionCanguro" target="_blank" rel="noopener">
           <span class="inicio__fila-icono inicio__fila-icono--marca">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"

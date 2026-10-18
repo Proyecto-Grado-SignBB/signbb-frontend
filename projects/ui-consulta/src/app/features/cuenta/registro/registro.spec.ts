@@ -62,18 +62,37 @@ describe('RegistroComponent', () => {
   afterEach(() => {
     http.verify();
     localStorage.removeItem(CLAVE_SESION_CONSULTA);
+    sessionStorage.removeItem(CLAVE_SESION_CONSULTA);
   });
 
   it('crea la cuenta, abre la sesión y lleva al inicio', async () => {
     await abrir();
     registrar(completo);
     const req = http.expectOne(`${environment.apiUrl}/auth/registro`);
-    expect(req.request.body).toEqual({ nombre: 'Papá Uno', correo: 'p1@signbb.local', contrasena: 'clave-larga' });
+    expect(req.request.body).toEqual({
+      nombre: 'Papá Uno', correo: 'p1@signbb.local', contrasena: 'clave-larga', dispositivoSeguro: false
+    });
     req.flush(SESION_PADRE, { status: 201, statusText: 'Created' });
     await harness.fixture.whenStable();
 
     expect(TestBed.inject(Router).url).toBe('/');
     expect(TestBed.inject(SesionService).tieneRol('PADRE')).toBeTrue();
+    // Sin marcar «dispositivo seguro» la sesión no queda en localStorage.
+    expect(localStorage.getItem(CLAVE_SESION_CONSULTA)).toBeNull();
+    expect(sessionStorage.getItem(CLAVE_SESION_CONSULTA)).not.toBeNull();
+  });
+
+  it('marcar «dispositivo seguro» lo manda al back y guarda la sesión en localStorage', async () => {
+    await abrir();
+    el.querySelector<HTMLInputElement>('input[name="seguro"]')!.click();
+    registrar(completo);
+    const req = http.expectOne(`${environment.apiUrl}/auth/registro`);
+    expect(req.request.body.dispositivoSeguro).toBeTrue();
+    req.flush(SESION_PADRE, { status: 201, statusText: 'Created' });
+    await harness.fixture.whenStable();
+
+    expect(localStorage.getItem(CLAVE_SESION_CONSULTA)).not.toBeNull();
+    expect(sessionStorage.getItem(CLAVE_SESION_CONSULTA)).toBeNull();
   });
 
   it('las contraseñas deben coincidir', async () => {

@@ -83,6 +83,14 @@ describe('Inicio', () => {
     expect(el.textContent).not.toContain('Cerrar sesión');
   });
 
+  it('abre el manual de usuario y ya no tiene el botón de configuración', async () => {
+    localStorage.setItem(CLAVE_SESION_CONSULTA, JSON.stringify(SESION_PADRE));
+    await abrir();
+
+    expect(el.querySelector('a[href="/manual"]')).not.toBeNull();
+    expect(el.querySelector('[aria-label="Configuración"]')).toBeNull();
+  });
+
   it('con ?aviso=recorrido explica que ese recorrido no está disponible', async () => {
     localStorage.setItem(CLAVE_SESION_CONSULTA, JSON.stringify(SESION_PADRE));
     await abrir('/?aviso=recorrido');
