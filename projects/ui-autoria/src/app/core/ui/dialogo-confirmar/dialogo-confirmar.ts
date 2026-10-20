@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, Output, ViewChild } from '@angular/core';
-import { BotonComponent } from 'ui-compartida';
+import { BotonComponent, TonoBoton } from 'ui-compartida';
 
 /**
  * Confirmación propia de la interfaz para acciones que no se pueden deshacer
@@ -23,6 +23,8 @@ export class DialogoConfirmarComponent implements AfterViewInit {
   @Input() textoConfirmar = 'Eliminar';
   /** Texto del botón mientras la acción está en curso. */
   @Input() textoOcupado = 'Eliminando…';
+  /** Tono del botón que confirma: alerta para acciones destructivas, marca para acciones positivas. */
+  @Input() tonoConfirmar: TonoBoton = 'alerta';
   /** True mientras la acción está en curso (bloquea cerrar y confirmar). */
   @Input() ocupado = false;
   /** Error a mostrar dentro del diálogo si la acción falla. */

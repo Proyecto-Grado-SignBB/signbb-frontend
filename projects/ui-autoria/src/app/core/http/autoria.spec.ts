@@ -98,6 +98,21 @@ describe('AutoriaService', () => {
     expect(retirar.request.body).toEqual({});
   });
 
+  it('lista, aprueba y rechaza revisiones', () => {
+    servicio.listarRevisiones().subscribe();
+    expect(http.expectOne(`${base}/revisiones`).request.method).toBe('GET');
+
+    servicio.aprobarRevision(7).subscribe();
+    const aprobar = http.expectOne(`${base}/subgrafos/7/aprobar`);
+    expect(aprobar.request.method).toBe('POST');
+    expect(aprobar.request.body).toEqual({});
+
+    servicio.rechazarRevision(7, 'Falta explicar el destino.').subscribe();
+    const rechazar = http.expectOne(`${base}/subgrafos/7/rechazar`);
+    expect(rechazar.request.method).toBe('POST');
+    expect(rechazar.request.body).toEqual({ comentario: 'Falta explicar el destino.' });
+  });
+
   it('avisos y categorías', () => {
     servicio.avisos(7).subscribe();
     expect(http.expectOne(`${base}/subgrafos/7/avisos`).request.method).toBe('GET');

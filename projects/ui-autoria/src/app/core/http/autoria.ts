@@ -113,6 +113,23 @@ export class AutoriaService {
     return this.http.post<SubgrafoDTO>(`${this.base}/subgrafos/${id}/retirar-revision`, {});
   }
 
+  // --- Revisión del supervisor ----------------------------------------------
+
+  /** Revisiones pendientes de otros autores (solo supervisor). */
+  listarRevisiones(): Observable<ResumenSubgrafoDTO[]> {
+    return this.http.get<ResumenSubgrafoDTO[]>(`${this.base}/revisiones`);
+  }
+
+  /** Aprueba y publica el subgrafo junto con su base de reglas. */
+  aprobarRevision(id: number): Observable<SubgrafoDTO> {
+    return this.http.post<SubgrafoDTO>(`${this.base}/subgrafos/${id}/aprobar`, {});
+  }
+
+  /** Rechaza la revisión con un comentario obligatorio para el autor. */
+  rechazarRevision(id: number, comentario: string): Observable<SubgrafoDTO> {
+    return this.http.post<SubgrafoDTO>(`${this.base}/subgrafos/${id}/rechazar`, { comentario });
+  }
+
   // --- Reglas ----------------------------------------------------------------
 
   /** Lista las bases de reglas del tablero, del último editado al primero. */

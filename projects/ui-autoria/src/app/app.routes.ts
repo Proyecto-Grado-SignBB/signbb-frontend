@@ -5,11 +5,14 @@ import { ROLES_AUTORIA } from './core/sesion/sesion';
 /** Solo médicos y supervisores; sin sesión lleva a `/ingresar`. */
 const soloMedicos = guardSesion(...ROLES_AUTORIA);
 
+/** Solo el médico supervisor: revisión y administración de personal. */
+const soloSupervisor = guardSesion('MEDICO_SUPERVISOR');
+
 /**
  * Rutas de la app: ingreso, tablero de subgrafos, lienzo de un subgrafo,
- * tablero de bases de reglas, editor de una base y perfil. Todas menos el
- * ingreso piden sesión de médico. Cada pantalla se carga de forma diferida;
- * cualquier ruta desconocida redirige al tablero de subgrafos.
+ * tablero y editor de reglas, revisión y personal (solo supervisor) y perfil.
+ * Todas menos el ingreso piden sesión clínica. Cada pantalla se carga de forma
+ * diferida; cualquier ruta desconocida redirige al tablero de subgrafos.
  */
 export const routes: Routes = [
   {
@@ -36,6 +39,22 @@ export const routes: Routes = [
     path: 'reglas/:id',
     canActivate: [soloMedicos],
     loadComponent: () => import('./features/reglas/editor-reglas/editor-reglas').then(m => m.EditorReglasComponent)
+  },
+  {
+    path: 'revision',
+    canActivate: [soloSupervisor],
+    loadComponent: () => import('./features/revision/revision').then(m => m.RevisionComponent)
+  },
+  {
+    path: 'revision/:id',
+    canActivate: [soloSupervisor],
+    loadComponent: () => import('./features/revision/detalle-revision/detalle-revision')
+      .then(m => m.DetalleRevisionComponent)
+  },
+  {
+    path: 'personal',
+    canActivate: [soloSupervisor],
+    loadComponent: () => import('./features/personal/personal').then(m => m.PersonalComponent)
   },
   {
     path: 'perfil',

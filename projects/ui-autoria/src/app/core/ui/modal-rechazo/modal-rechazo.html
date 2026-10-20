@@ -1,0 +1,34 @@
+<div class="backdrop" (click)="cerrar()">
+  <div class="panel" role="dialog" aria-modal="true" aria-label="Rechazar cambios" (click)="$event.stopPropagation()">
+    <div class="panel-head">
+      <h3>Rechazar cambios</h3>
+      <button type="button" class="btn-cerrar" title="Cerrar" [disabled]="ocupado" (click)="cerrar()">✕</button>
+    </div>
+
+    <div class="panel-body">
+      <p class="texto-modal">El médico recibirá tu comentario y podrá corregir y reenviar la revisión.</p>
+
+      <label class="campo">
+        <span>Comentario para el médico</span>
+        <textarea [(ngModel)]="comentario" (blur)="tocado = true" rows="5"
+          placeholder="Explica qué debe corregir…" [class.invalido]="tocado && !puedeRechazar"
+          [disabled]="ocupado"></textarea>
+        <small>Obligatorio. Sé específico para que el médico sepa qué ajustar.</small>
+        @if (tocado && !puedeRechazar) {
+          <small class="falta">Escribe un comentario para el médico.</small>
+        }
+      </label>
+
+      @if (error) {
+        <div class="error-modal" role="alert">{{ error }}</div>
+      }
+    </div>
+
+    <div class="panel-foot">
+      <app-boton tono="neutro" variante="texto" alto="compacto" ancho="auto" [disabled]="ocupado" (click)="cerrar()">Cancelar</app-boton>
+      <app-boton tono="alerta" alto="compacto" ancho="auto" [disabled]="ocupado || !puedeRechazar" (click)="enviar()">
+        {{ ocupado ? 'Rechazando…' : 'Rechazar cambios' }}
+      </app-boton>
+    </div>
+  </div>
+</div>

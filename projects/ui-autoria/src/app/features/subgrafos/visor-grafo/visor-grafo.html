@@ -1,0 +1,84 @@
+<div class="vista">
+  <div class="scroll" #scroll [class.arrastrando]="arrastrando()"
+    (scroll)="alScroll()" (wheel)="alRueda($event)"
+    (pointerdown)="alPulsar($event)" (pointermove)="alMover($event)"
+    (pointerup)="alSoltar()" (pointercancel)="alSoltar()">
+
+    @if (distribucion(); as d) {
+      <div class="sizer" [style.width.px]="d.ancho * escala()" [style.height.px]="d.alto * escala()">
+        <div class="lienzo" [style.width.px]="d.ancho" [style.height.px]="d.alto"
+          [style.transform]="'scale(' + escala() + ')'">
+          <svg class="lineas" [attr.width]="d.ancho" [attr.height]="d.alto" aria-hidden="true">
+            @for (r of d.ramas; track r.respuesta.id) {
+              <path [attr.d]="r.d" class="linea linea--{{ r.tipo }}" />
+            }
+          </svg>
+
+          @for (r of d.ramas; track r.respuesta.id) {
+            <div class="etiqueta-rama" [style.left.px]="r.etiquetaX" [style.top.px]="r.etiquetaY"
+              [title]="r.respuesta.texto">
+              <i class="punto punto--{{ r.respuesta.gravedad }}"></i>
+              <span>{{ r.respuesta.texto || '(sin texto)' }}</span>
+            </div>
+
+            @if (r.tipo === 'mas') {
+              <div class="enlace enlace--pendiente" [style.left.px]="r.x" [style.top.px]="r.y"
+                [style.width.px]="medidas.anchoEnlace" [style.height.px]="medidas.altoEnlace">
+                Sin destino
+              </div>
+            } @else if (r.tipo === 'enlace') {
+              <div class="enlace" [style.left.px]="r.x" [style.top.px]="r.y"
+                [style.width.px]="medidas.anchoEnlace" [style.height.px]="medidas.altoEnlace">
+                ↪ va a: {{ r.destinoTexto || '(pregunta sin texto)' }}
+              </div>
+            }
+          }
+
+          @for (c of d.nodos; track c.nodo.id) {
+            <div class="nodo nodo--{{ c.nodo.tipo }} desenlace--{{ c.nodo.desenlace }}"
+              [class.suelto]="c.suelto"
+              [style.left.px]="c.x" [style.top.px]="c.y"
+              [style.width.px]="medidas.anchoNodo" [style.height.px]="medidas.altoNodo">
+              <span class="nodo-tipo">
+                @if (c.nodo.tipo === 'PREGUNTA') {
+                  {{ esInicio(c.nodo) ? 'Primera pregunta' : 'Pregunta' }}{{ c.nodo.variasRespuestas ? ' · varias' : '' }}
+                } @else {
+                  {{ c.nodo.desenlace ? etiquetaDesenlace[c.nodo.desenlace] : 'Conclusión' }}
+                }
+                @if (c.nodo.imagenes?.length) {
+                  · {{ c.nodo.imagenes!.length === 1 ? '1 imagen' : c.nodo.imagenes!.length + ' imágenes' }}
+                }
+                @if (c.suelto) { · suelta }
+              </span>
+              <span class="nodo-texto">{{ c.nodo.texto || (c.nodo.tipo === 'PREGUNTA' ? 'Pregunta sin texto' : 'Conclusión sin mensaje') }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  @if (!vacio()) {
+    <div class="controles-zoom" role="group" aria-label="Zoom del lienzo">
+      <button type="button" (click)="alejar()" [disabled]="!puedeAlejar()" aria-label="Alejar" title="Alejar">−</button>
+      <button type="button" class="porcentaje" (click)="restablecer()" title="Volver al 100 %">{{ porcentaje() }} %</button>
+      <button type="button" (click)="acercar()" [disabled]="!puedeAcercar()" aria-label="Acercar" title="Acercar">+</button>
+      <button type="button" class="ajustar" (click)="ajustar()" title="Ver todo el lienzo en la pantalla">Ajustar</button>
+    </div>
+  }
+
+  @if (minimapa(); as m) {
+    <svg class="minimapa" [attr.width]="m.ancho" [attr.height]="m.alto"
+      [attr.viewBox]="'0 0 ' + m.contenidoAncho + ' ' + m.contenidoAlto"
+      role="img" aria-label="Mini-mapa del lienzo: toca una zona para ir a ella"
+      (pointerdown)="alPulsarMinimapa($event)" (pointermove)="alMoverMinimapa($event)"
+      (pointerup)="alSoltarMinimapa()" (pointercancel)="alSoltarMinimapa()">
+      @for (c of distribucion().nodos; track c.nodo.id) {
+        <rect class="mm-nodo mm-nodo--{{ c.nodo.tipo }}" [class.mm-suelto]="c.suelto"
+          [attr.x]="c.x" [attr.y]="c.y" [attr.width]="medidas.anchoNodo" [attr.height]="medidas.altoNodo" rx="14" />
+      }
+      <rect class="mm-vista" [attr.x]="m.area.x" [attr.y]="m.area.y"
+        [attr.width]="m.area.ancho" [attr.height]="m.area.alto" />
+    </svg>
+  }
+</div>

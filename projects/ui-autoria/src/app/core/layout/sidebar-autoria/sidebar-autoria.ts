@@ -1,14 +1,15 @@
 import { Component, Input, computed, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { SesionService } from 'ui-compartida';
+import { RevisionesStore } from '../../revision/revisiones.store';
 import { iniciales } from '../../sesion/sesion';
 
-export type SeccionAutoria = 'subgrafos' | 'reglas' | 'perfil';
+export type SeccionAutoria = 'subgrafos' | 'reglas' | 'revision' | 'personal' | 'perfil';
 
 /**
- * Navegación lateral del panel de autoría (subgrafos, reglas de alarma y
- * perfil). El nombre y la institución salen de la sesión; «Cerrar sesión»
- * la cierra y vuelve al ingreso.
+ * Navegación lateral del panel de autoría. Los médicos ven subgrafos, reglas
+ * y perfil; los supervisores ven además revisión y personal. El nombre y la
+ * institución salen de la sesión; «Cerrar sesión» la cierra y vuelve al ingreso.
  */
 @Component({
   selector: 'app-sidebar-autoria',
@@ -20,9 +21,15 @@ export type SeccionAutoria = 'subgrafos' | 'reglas' | 'perfil';
 export class SidebarAutoriaComponent {
   private readonly sesion = inject(SesionService);
   private readonly router = inject(Router);
+  private readonly revisiones = inject(RevisionesStore);
 
   /** Qué ítem del menú se resalta como activo. */
   @Input() seccionActiva: SeccionAutoria = 'subgrafos';
+
+  /** True si la cuenta es de médico supervisor. */
+  protected readonly esSupervisor = computed(() => this.sesion.tieneRol('MEDICO_SUPERVISOR'));
+  /** Revisiones pendientes para el badge. */
+  protected readonly pendientes = this.revisiones.pendientes;
 
   /** Nombre del médico de la sesión. */
   protected readonly nombreMedico = computed(() => this.sesion.usuario()?.nombre ?? '');

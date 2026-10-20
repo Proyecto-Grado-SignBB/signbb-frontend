@@ -1,0 +1,240 @@
+@use 'tokens-admin' as *;
+
+.pantalla-autoria {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 30px;
+  border-bottom: 1px solid $color-line;
+  background: $color-surface;
+}
+
+.topbar-left .crumb {
+  font-size: 12px;
+  color: $color-ink-faint;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.topbar-left h3 {
+  font-size: 19px;
+  font-weight: 800;
+  color: $color-ink;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mensaje-ok {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: $color-calm-dark;
+}
+
+.contador {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: $color-surface-2;
+  border: 1px solid $color-line;
+  border-radius: $radius-pill;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: $color-ink-soft;
+  white-space: nowrap;
+
+  b {
+    font-family: $font-heading;
+    font-size: 14px;
+    color: $color-brand-dark;
+  }
+}
+
+.content {
+  flex: 1;
+  min-height: 0;
+  padding: 28px 30px;
+  overflow: auto;
+}
+
+.estado-carga,
+.estado-vacio {
+  color: $color-ink-faint;
+  font-size: 14px;
+  padding: 12px 0;
+}
+
+.estado-vacio {
+  background: $color-surface;
+  border: 1px dashed $color-line;
+  border-radius: $radius-lg;
+  padding: 36px 24px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.revision-intro {
+  margin-bottom: 20px;
+
+  h2 {
+    font-size: 23px;
+    font-weight: 800;
+    color: $color-ink;
+  }
+
+  p {
+    margin: 6px 0 0;
+    font-size: 13.5px;
+    color: $color-ink-soft;
+    line-height: 1.5;
+    max-width: 720px;
+  }
+}
+
+.review-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.review-card {
+  background: $color-surface;
+  border: 1px solid $color-line;
+  border-radius: $radius-lg;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: $shadow-card;
+  transition: border-color 0.15s, transform 0.15s;
+
+  &:hover {
+    border-color: $color-brand;
+    transform: translateY(-1px);
+  }
+
+  .top-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  h4 {
+    font-family: $font-heading;
+    font-size: 16px;
+    font-weight: 800;
+    line-height: 1.3;
+    color: $color-ink;
+  }
+}
+
+.autor-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  b {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: $color-ink;
+  }
+
+  span {
+    display: block;
+    font-size: 11.5px;
+    color: $color-ink-faint;
+  }
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, $color-brand, $color-brand-dark);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-family: $font-heading;
+  font-weight: 700;
+  font-size: 11.5px;
+}
+
+.chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: $radius-pill;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.chip--categoria {
+  background: $color-brand-tint;
+  color: $color-brand-dark;
+}
+
+.chip--cambio {
+  background: $color-surface-2;
+  border: 1px solid $color-line;
+  color: $color-ink-soft;
+
+  &::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: $color-brand;
+  }
+}
+
+.card-foot {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid $color-line-soft;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.card-meta {
+  font-size: 11.5px;
+  color: $color-ink-faint;
+  font-weight: 600;
+}
+
+@media (max-width: 900px) {
+  .review-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,118 @@
+<div class="pantalla-autoria">
+  <app-sidebar-autoria seccionActiva="personal" />
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="crumb">Autoría</div>
+        <h3>Personal</h3>
+      </div>
+      <div class="topbar-right">
+        @if (mensaje()) {
+          <span class="mensaje-ok" role="status">{{ mensaje() }}</span>
+        }
+        <app-boton tono="marca" alto="compacto" ancho="auto" (click)="abrirNuevo()">+ Agregar médico</app-boton>
+      </div>
+    </div>
+
+    <div class="content">
+      @if (error()) {
+        <app-mensaje-error [texto]="error()!" (reintentar)="cargar()" />
+      }
+
+      @if (cargando()) {
+        <p class="estado-carga">Cargando personal…</p>
+      } @else {
+        <div class="personal-intro">
+          <h2>Médicos registrados</h2>
+          <p>Administra las cuentas de los médicos. Puedes buscar por nombre, agregar una cuenta nueva o desactivarla para impedir el ingreso.</p>
+        </div>
+
+        <div class="personal-toolbar">
+          <label class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="11" cy="11" r="7" />
+              <path d="m20 20-3.5-3.5" />
+            </svg>
+            <input type="search" [ngModel]="filtro()" (ngModelChange)="filtro.set($event)"
+              placeholder="Buscar por nombre…" autocomplete="off" />
+          </label>
+          <span class="personal-count">{{ contador() }}</span>
+        </div>
+
+        @if (filtrados().length === 0) {
+          <div class="estado-vacio">
+            @if (filtro().trim()) {
+              No hay médicos que coincidan con la búsqueda.
+            } @else {
+              Todavía no hay médicos registrados. Agrega el primero con el botón de arriba.
+            }
+          </div>
+        } @else {
+          <table class="tabla-personal">
+            <thead>
+              <tr>
+                <th>Médico</th>
+                <th>Institución</th>
+                <th>Estado</th>
+                <th class="col-acciones">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (usuario of filtrados(); track usuario.id) {
+                <tr>
+                  <td>
+                    <div class="persona">
+                      <div class="avatar">{{ iniciales(usuario.nombre) }}</div>
+                      <div>
+                        <b>{{ usuario.nombre }}</b>
+                        <span>{{ usuario.correo }}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>{{ usuario.institucion || '—' }}</td>
+                  <td>
+                    <span class="estado" [class.estado--activo]="usuario.activo"
+                      [class.estado--inactivo]="!usuario.activo">
+                      {{ usuario.activo ? 'Activo' : 'Inactivo' }}
+                    </span>
+                  </td>
+                  <td class="col-acciones">
+                    @if (usuario.activo) {
+                      <app-boton tono="alerta" variante="texto" alto="compacto" ancho="auto"
+                        (click)="pedirCambio(usuario)">Desactivar</app-boton>
+                    } @else {
+                      <app-boton tono="marca" variante="texto" alto="compacto" ancho="auto"
+                        (click)="pedirCambio(usuario)">Activar</app-boton>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      }
+    </div>
+  </div>
+</div>
+
+@if (mostrarNuevo()) {
+  <app-modal-nuevo-medico
+    [guardando]="guardando()"
+    [error]="errorNuevo()"
+    (crear)="crear($event)"
+    (cancelar)="cancelarNuevo()" />
+}
+
+@if (porCambiar()) {
+  <app-dialogo-confirmar
+    [titulo]="tituloCambio()"
+    [mensaje]="mensajeCambio()"
+    [textoConfirmar]="textoCambio()"
+    textoOcupado="Actualizando…"
+    [tonoConfirmar]="tonoCambio()"
+    [ocupado]="cambiando()"
+    [error]="errorCambio()"
+    (confirmar)="confirmarCambio()"
+    (cancelar)="cancelarCambio()" />
+}

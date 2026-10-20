@@ -1,0 +1,174 @@
+<div class="pantalla-autoria">
+  <app-sidebar-autoria seccionActiva="revision" />
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="crumb"><a routerLink="/revision">Revisión</a>@if (subgrafo(); as s) { / {{ s.nombre }} }</div>
+        <h3>
+          {{ subgrafo()?.nombre ?? 'Revisión' }}
+          @if (subgrafo(); as s) {
+            <app-etiqueta [tono]="tonoEstado(s.estado)">{{ etiquetaEstado[s.estado] }}</app-etiqueta>
+          }
+        </h3>
+      </div>
+      <div class="topbar-right">
+        @if (puedeDecidir()) {
+          <app-boton tono="alerta" variante="contorno" alto="compacto" ancho="auto"
+            [disabled]="aprobando() || rechazando()" (click)="abrirRechazo()">Rechazar</app-boton>
+          <app-boton tono="marca" alto="compacto" ancho="auto"
+            [disabled]="aprobando() || rechazando()" (click)="abrirAprobar()">Aprobar y publicar</app-boton>
+        }
+      </div>
+    </div>
+
+    <div class="content">
+      @if (error()) {
+        <app-mensaje-error [texto]="error()!" (reintentar)="cargar()" />
+      }
+
+      @if (cargando()) {
+        <p class="estado-carga">Cargando la revisión…</p>
+      } @else if (subgrafo(); as s) {
+        <div class="detalle-head">
+          <div>
+            <h2>
+              {{ s.nombre }}
+              <app-etiqueta [tono]="tonoEstado(s.estado)">{{ etiquetaEstado[s.estado] }}</app-etiqueta>
+            </h2>
+            <div class="detalle-meta">
+              <div class="autor-row">
+                <div class="avatar">{{ iniciales(s.autor) }}</div>
+                <div>
+                  <b>{{ s.autor ?? 'Autor desconocido' }}</b>
+                  <span>@if (s.institucion) { {{ s.institucion }} } @else { Sin institución }</span>
+                </div>
+              </div>
+              <span class="punto"></span>
+              <span class="chip chip--categoria">{{ categoria(s.categoria) }}</span>
+              @if (resumen()?.enviadoRevisionEn; as enviadoEn) {
+                <span class="punto"></span>
+                <span>Enviado {{ enviado(enviadoEn) }}</span>
+              }
+              <span class="punto"></span>
+              <span class="chip chip--cambio">Grafo</span>
+              <span class="chip chip--cambio">Base de reglas</span>
+            </div>
+            <p class="detalle-nota">Ambas pestañas muestran el contenido completo, sin importar dónde se hicieron los cambios.</p>
+          </div>
+        </div>
+
+        @if (esPropio()) {
+          <div class="aviso-panel aviso-panel--aviso" role="status">
+            No puedes revisar un subgrafo tuyo: lo revisa otro supervisor.
+          </div>
+        } @else if (s.estado !== 'EN_REVISION') {
+          <div class="aviso-panel aviso-panel--aviso" role="status">
+            Esta revisión ya no está pendiente. Vuelve a la bandeja para ver los cambios actuales.
+          </div>
+        }
+
+        @if (avisos().length > 0) {
+          <app-avisos [avisos]="avisos()" />
+        }
+
+        <div class="tabs" role="tablist" aria-label="Contenido de la revisión">
+          <button type="button" class="tab" [class.activo]="tab() === 'grafo'"
+            (click)="verTab('grafo')" role="tab" [attr.aria-selected]="tab() === 'grafo'">
+            Grafo <small>{{ s.nodos.length }} nodo{{ s.nodos.length === 1 ? '' : 's' }}</small>
+          </button>
+          <button type="button" class="tab" [class.activo]="tab() === 'reglas'"
+            (click)="verTab('reglas')" role="tab" [attr.aria-selected]="tab() === 'reglas'">
+            Base reglas <small>{{ totalReglas() }} regla{{ totalReglas() === 1 ? '' : 's' }}</small>
+          </button>
+        </div>
+
+        @if (tab() === 'grafo') {
+          <div class="aviso-info">
+            <span><b>Vista de solo lectura.</b> Usa el zoom, el arrastre y el mini-mapa para recorrer el grafo completo antes de decidir.</span>
+          </div>
+          <div class="grafo-panel">
+            <app-visor-grafo [inicio]="s.inicio" [nodos]="s.nodos" />
+          </div>
+        } @else {
+          <div class="aviso-info">
+            <span><b>Vista de solo lectura.</b> Selecciona una regla para ver cómo se activa y usa «Expandir» para observar cada caso en grande.</span>
+          </div>
+
+          @if (base(); as b) {
+            @if (b.reglas.length > 0) {
+              <div class="reglas-lectura">
+                <aside class="reglas-menu">
+                  <div class="menu-head">
+                    <h4>Reglas de la base</h4>
+                    <span>Selecciona una para verla</span>
+                  </div>
+                  @for (regla of b.reglas; track regla.id) {
+                    <button type="button" class="regla-item"
+                      [class.regla-item--activa]="reglaSeleccionada()?.id === regla.id"
+                      (click)="seleccionarRegla(regla)">
+                      <span class="regla-punto regla-punto--{{ regla.nivel }}"></span>
+                      <div class="r-info">
+                        <b>{{ regla.nombre }}</b>
+                        <small>{{ regla.id }} · {{ etiquetaNivel[regla.nivel] }} · {{ regla.casos.length }} caso{{ regla.casos.length === 1 ? '' : 's' }}</small>
+                      </div>
+                    </button>
+                  }
+                </aside>
+
+                <section class="regla-lectura">
+                  @if (reglaSeleccionada(); as regla) {
+                    <div class="regla-lectura-head">
+                      <div class="titulo">
+                        <span class="id-chip">{{ regla.id }}</span>
+                        <h4>{{ regla.nombre }}</h4>
+                      </div>
+                      <app-etiqueta [tono]="tonoNivel(regla.nivel)">{{ etiquetaNivel[regla.nivel] }}</app-etiqueta>
+                    </div>
+                    @if (regla.descripcion) {
+                      <p class="regla-desc">{{ regla.descripcion }}</p>
+                    }
+                    <div class="regla-meta">
+                      <span>Destino</span><b>{{ regla.nodoDestino }}</b><span class="punto"></span>
+                      <span>{{ regla.casos.length }} caso{{ regla.casos.length === 1 ? '' : 's' }}</span>
+                    </div>
+                    <div class="visor-panel">
+                      <app-visor-regla [casos]="regla.casos" [nodoDestino]="regla.nodoDestino" [catalogo]="catalogo()" />
+                    </div>
+                  } @else {
+                    <p class="estado-vacio">Selecciona una regla de la lista.</p>
+                  }
+                </section>
+              </div>
+            } @else {
+              <div class="estado-vacio">Esta base de reglas todavía no tiene reglas.</div>
+            }
+          } @else {
+            <div class="estado-vacio">Este subgrafo no tiene una base de reglas asociada.</div>
+          }
+        }
+      }
+    </div>
+  </div>
+</div>
+
+@if (mostrarAprobar()) {
+  <app-dialogo-confirmar
+    titulo="¿Aprobar y publicar?"
+    mensaje="Se publicará el subgrafo junto con su base de reglas. Las familias verán la nueva versión de inmediato; los recorridos en curso terminan con la versión con la que empezaron."
+    textoConfirmar="Aprobar y publicar"
+    textoOcupado="Publicando…"
+    tonoConfirmar="marca"
+    [ocupado]="aprobando()"
+    [error]="errorAprobar()"
+    (confirmar)="confirmarAprobar()"
+    (cancelar)="cancelarAprobar()" />
+}
+
+@if (mostrarRechazo()) {
+  <app-modal-rechazo
+    [ocupado]="rechazando()"
+    [error]="errorRechazo()"
+    (rechazar)="confirmarRechazo($event)"
+    (cancelar)="cancelarRechazo()" />
+}

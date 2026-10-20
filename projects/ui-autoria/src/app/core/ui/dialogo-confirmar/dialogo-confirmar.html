@@ -16,7 +16,7 @@
     <div class="panel-foot">
       <app-boton #botonCancelar tono="neutro" variante="texto" alto="compacto" ancho="auto" [disabled]="ocupado"
         (click)="cerrar()">Cancelar</app-boton>
-      <app-boton tono="alerta" alto="compacto" ancho="auto" [disabled]="ocupado" (click)="aceptar()">
+      <app-boton [tono]="tonoConfirmar" alto="compacto" ancho="auto" [disabled]="ocupado" (click)="aceptar()">
         {{ ocupado ? textoOcupado : (error ? 'Intentar de nuevo' : textoConfirmar) }}
       </app-boton>
     </div>
