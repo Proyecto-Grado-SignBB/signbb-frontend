@@ -233,8 +233,125 @@
   font-weight: 600;
 }
 
+.acciones-card {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.selector-vista {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 20px;
+  background: $color-surface-2;
+  border: 1px solid $color-line;
+  border-radius: $radius-pill;
+}
+
+.selector-opcion {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-radius: $radius-pill;
+  padding: 8px 14px;
+  background: transparent;
+  font-family: $font-body;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: $color-ink-soft;
+  cursor: pointer;
+
+  &:hover {
+    color: $color-brand-dark;
+  }
+
+  &.activa {
+    background: $color-surface;
+    color: $color-brand-dark;
+    box-shadow: $shadow-card;
+  }
+
+  span {
+    min-width: 20px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: $color-brand-tint;
+    color: $color-brand-dark;
+    font-size: 11px;
+    font-weight: 800;
+    text-align: center;
+  }
+}
+
+.publicados-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.search-box {
+  position: relative;
+  flex: 1;
+  max-width: 420px;
+  min-width: 240px;
+  display: block;
+
+  svg {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    color: $color-ink-faint;
+    pointer-events: none;
+  }
+
+  input {
+    width: 100%;
+    height: 40px;
+    padding: 0 14px 0 40px;
+    border: 1px solid $color-line;
+    border-radius: $radius-sm;
+    background: $color-surface;
+    font-family: $font-body;
+    font-size: 13.5px;
+    color: $color-ink;
+
+    &:focus-visible {
+      outline: 2px solid $color-brand;
+      outline-offset: 1px;
+      border-color: transparent;
+    }
+  }
+}
+
+.resultado-count {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: $color-ink-faint;
+  white-space: nowrap;
+}
+
 @media (max-width: 900px) {
   .review-grid {
     grid-template-columns: 1fr;
+  }
+
+  .card-foot {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .acciones-card {
+    width: 100%;
+    justify-content: flex-start;
   }
 }

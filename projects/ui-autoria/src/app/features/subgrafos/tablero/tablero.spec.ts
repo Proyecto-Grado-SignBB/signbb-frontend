@@ -165,7 +165,7 @@ describe('TableroComponent', () => {
   });
 });
 
-describe('TableroComponent: subgrafos de otros médicos', () => {
+describe('TableroComponent: cada médico ve solo sus subgrafos', () => {
   let fixture: ComponentFixture<TableroComponent>;
   let el: HTMLElement;
   let http: HttpTestingController;
@@ -203,28 +203,27 @@ describe('TableroComponent: subgrafos de otros médicos', () => {
     localStorage.removeItem(CLAVE_SESION_AUTORIA);
   });
 
-  it('el supervisor los ve aparte, con su autor, los en revisión primero y sin «Eliminar»', () => {
+  it('el supervisor no ve los subgrafos de otros médicos', () => {
     ingresarComo(99, 'MEDICO_SUPERVISOR');
     cargar([PROPIO, DE_ANA, DE_BETO_EN_REVISION]);
 
-    const [mios, otros] = [...el.querySelectorAll('.graph-grid')];
-    expect(mios.querySelectorAll('.graph-card').length).toBe(1);
-    expect(el.querySelector('.seccion-otros')!.textContent).toContain('De otros médicos');
-
-    const tarjetas = [...otros.querySelectorAll('.graph-card')];
-    expect(tarjetas.map(t => t.querySelector('.autor')!.textContent!.trim()))
-      .toEqual(['Por Dr. Beto Médico', 'Por Dra. Ana Médica']);
-    expect(otros.textContent).toContain('Ver lienzo');
-    expect(otros.textContent).not.toContain('Eliminar');
+    expect(el.querySelectorAll('.graph-card').length).toBe(1);
+    expect(el.textContent).toContain('Fiebre');
+    expect(el.textContent).not.toContain('Ictericia');
+    expect(el.textContent).not.toContain('Respiración');
+    expect(el.querySelector('.seccion-otros')).toBeNull();
+    expect(el.textContent).not.toContain('De otros médicos');
     expect(el.querySelector('.stat b')!.textContent).toBe('0');
     expect(el.querySelectorAll('.stat b')[2].textContent).toBe('3');
   });
 
-  it('un médico no ve la sección de otros', () => {
+  it('un médico también ve solo sus subgrafos', () => {
     ingresarComo(99, 'MEDICO');
-    cargar([PROPIO]);
+    cargar([PROPIO, DE_ANA]);
 
+    expect(el.querySelectorAll('.graph-card').length).toBe(1);
+    expect(el.textContent).toContain('Fiebre');
+    expect(el.textContent).not.toContain('Ictericia');
     expect(el.querySelector('.seccion-otros')).toBeNull();
-    expect(el.querySelector('.graph-card .autor')).toBeNull();
   });
 });

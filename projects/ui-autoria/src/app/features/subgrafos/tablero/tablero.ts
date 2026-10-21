@@ -21,8 +21,7 @@ import {
  * donde se ofrecerá) y el nombre para la familia, que es la opción que verá
  * la cuidadora. Eliminar un borrador se confirma en un diálogo propio.
  *
- * El supervisor recibe también los subgrafos de otros médicos: van aparte, en
- * «De otros médicos», con su autor y solo para verlos.
+ * Cada médico, incluido el supervisor, ve únicamente los subgrafos que creó.
  */
 @Component({
   selector: 'app-tablero',
@@ -86,10 +85,6 @@ export class TableroComponent implements OnInit {
   protected readonly propios = computed(
     () => this.subgrafos().filter(s => !esAjeno(s.autorId, this.sesion.usuario()))
   );
-  /** Subgrafos de otros médicos (solo le llegan al supervisor), con los que esperan revisión primero. */
-  protected readonly deOtros = computed(() => this.subgrafos()
-    .filter(s => esAjeno(s.autorId, this.sesion.usuario()))
-    .sort((a, b) => Number(b.estado === 'EN_REVISION') - Number(a.estado === 'EN_REVISION')));
 
   /** Subgrafos propios que las cuidadoras ya ven (aunque tengan cambios o estén en revisión). */
   protected readonly totalPublicados = computed(

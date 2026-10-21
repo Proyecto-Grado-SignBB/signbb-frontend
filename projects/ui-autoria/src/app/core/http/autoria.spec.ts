@@ -111,6 +111,11 @@ describe('AutoriaService', () => {
     const rechazar = http.expectOne(`${base}/subgrafos/7/rechazar`);
     expect(rechazar.request.method).toBe('POST');
     expect(rechazar.request.body).toEqual({ comentario: 'Falta explicar el destino.' });
+
+    servicio.despublicar(7).subscribe();
+    const despublicar = http.expectOne(`${base}/subgrafos/7/despublicar`);
+    expect(despublicar.request.method).toBe('POST');
+    expect(despublicar.request.body).toEqual({});
   });
 
   it('avisos y categorías', () => {

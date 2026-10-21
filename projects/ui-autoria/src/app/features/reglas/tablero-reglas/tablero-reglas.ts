@@ -14,8 +14,7 @@ import { ResumenBaseReglaDTO } from '../../../models/regla.model';
  * permite crear una nueva eligiendo el subgrafo con el que trabaja. Eliminar
  * una base se confirma en un diálogo propio (solo si nunca se publicó).
  *
- * Al supervisor le llegan también las bases de otros médicos: van aparte, en
- * «De otros médicos», con su autor y solo para verlas.
+ * Cada médico, incluido el supervisor, ve únicamente las bases que creó.
  */
 @Component({
   selector: 'app-tablero-reglas',
@@ -48,11 +47,6 @@ export class TableroReglasComponent implements OnInit {
   protected readonly propias = computed(
     () => this.bases().filter(b => !esAjeno(b.autorId, this.sesion.usuario()))
   );
-  /** Bases de otros médicos (solo le llegan al supervisor). */
-  protected readonly deOtros = computed(
-    () => this.bases().filter(b => esAjeno(b.autorId, this.sesion.usuario()))
-  );
-
   /** Subgrafos del médico, los únicos a los que puede asociar una base nueva. */
   protected readonly subgrafos = signal<ResumenSubgrafoDTO[]>([]);
   /** Error al cargar los subgrafos. */

@@ -130,6 +130,11 @@ export class AutoriaService {
     return this.http.post<SubgrafoDTO>(`${this.base}/subgrafos/${id}/rechazar`, { comentario });
   }
 
+  /** Despublica el subgrafo y su base de reglas (solo supervisor). */
+  despublicar(id: number): Observable<SubgrafoDTO> {
+    return this.http.post<SubgrafoDTO>(`${this.base}/subgrafos/${id}/despublicar`, {});
+  }
+
   // --- Reglas ----------------------------------------------------------------
 
   /** Lista las bases de reglas del tablero, del último editado al primero. */

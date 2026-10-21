@@ -200,3 +200,99 @@ describe('DetalleRevisionComponent', () => {
     expect(router.navigate).toHaveBeenCalledWith(['/revision']);
   });
 });
+
+
+describe('DetalleRevisionComponent: modo publicado', () => {
+  const PUBLICADO: SubgrafoDTO = {
+    ...SUBGRAFO,
+    estado: 'PUBLICADO',
+    publicadoEn: '2026-10-20T11:00:00Z'
+  };
+
+  let harness: RouterTestingHarness;
+  let el: HTMLElement;
+  let http: HttpTestingController;
+  let router: Router;
+
+  function boton(texto: string, root: ParentNode = el): HTMLButtonElement {
+    const encontrado = [...root.querySelectorAll<HTMLButtonElement>('button')]
+      .find(b => b.textContent?.trim().includes(texto));
+    if (!encontrado) throw new Error(`no hay un botón "${texto}"`);
+    return encontrado;
+  }
+
+  beforeEach(async () => {
+    localStorage.setItem(CLAVE_SESION_AUTORIA, JSON.stringify({
+      token: 'token-de-prueba',
+      expiraEn: new Date(Date.now() + 3_600_000).toISOString(),
+      usuario: { id: 99, nombre: 'Dra. Supervisora', correo: 's@signbb.local', rol: 'MEDICO_SUPERVISOR', institucion: 'SignBB', activo: true }
+    }));
+    await TestBed.configureTestingModule({
+      imports: [DetalleRevisionComponent],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([{ path: 'revision/:id', component: DetalleRevisionComponent }]),
+        ...proveerSesion()
+      ]
+    }).compileComponents();
+    http = TestBed.inject(HttpTestingController);
+    harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/revision/7?modo=publicado', DetalleRevisionComponent);
+
+    http.expectOne(`${BASE}/subgrafos/7`).flush(PUBLICADO);
+    http.expectOne(`${BASE}/revisiones`).flush([]);
+    harness.detectChanges();
+
+    http.expectOne(`${BASE}/bases`).flush([{
+      id: 3, grafoId: BASE_REGLAS.grafoId, nombre: BASE_REGLAS.nombre, descripcion: null,
+      autor: BASE_REGLAS.autor, autorId: BASE_REGLAS.autorId, estado: BASE_REGLAS.estado,
+      reglas: 1, actualizadoEn: BASE_REGLAS.actualizadoEn, publicadoEn: BASE_REGLAS.publicadoEn
+    }]);
+    harness.detectChanges();
+
+    http.expectOne(`${BASE}/bases/3`).flush(BASE_REGLAS);
+    http.expectOne(`${BASE}/bases/catalogo?grafoId=grafo_respiracion`).flush(CATALOGO);
+    harness.detectChanges();
+    el = harness.routeNativeElement as HTMLElement;
+
+    router = TestBed.inject(Router);
+    spyOn(router, 'navigate').and.resolveTo(true);
+  });
+
+  afterEach(() => {
+    http.verify();
+    localStorage.clear();
+  });
+
+  it('muestra Despublicar y Volver al buzón en lugar de aprobar o rechazar', () => {
+    const textos = [...el.querySelectorAll('button')].map(b => b.textContent?.trim());
+    expect(textos).not.toContain('Aprobar y publicar');
+    expect(textos).not.toContain('Rechazar');
+    expect(textos).toContain('Despublicar');
+    expect(textos).toContain('Volver al buzón');
+  });
+
+  it('vuelve al buzón de publicados sin cambiar nada', () => {
+    boton('Volver al buzón').click();
+
+    expect(router.navigate).toHaveBeenCalledWith(['/revision'], { queryParams: { vista: 'publicados' } });
+  });
+
+  it('despublica el subgrafo y vuelve al buzón', () => {
+    boton('Despublicar').click();
+    harness.detectChanges();
+
+    const dialogo = el.querySelector('app-dialogo-confirmar')!;
+    expect(dialogo.textContent).toContain('¿Despublicar «Evaluación de Respiración y Nariz»?');
+    boton('Despublicar', dialogo).click();
+
+    const peticion = http.expectOne(`${BASE}/subgrafos/7/despublicar`);
+    expect(peticion.request.method).toBe('POST');
+    peticion.flush({ ...PUBLICADO, estado: 'BORRADOR', publicadoEn: null });
+    harness.detectChanges();
+
+    expect(TestBed.inject(RevisionesStore).mensaje()).toContain('Se despublicó');
+    expect(router.navigate).toHaveBeenCalledWith(['/revision'], { queryParams: { vista: 'publicados' } });
+  });
+});

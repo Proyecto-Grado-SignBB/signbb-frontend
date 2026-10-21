@@ -74,6 +74,8 @@ export class DetalleRevisionComponent implements OnInit {
   protected readonly cargando = signal(true);
   protected readonly error = signal<string | null>(null);
   protected readonly tab = signal<'grafo' | 'reglas'>('grafo');
+  /** «revision» para aprobar/rechazar; «publicado» para consultar y despublicar. */
+  protected readonly modo = signal<'revision' | 'publicado'>('revision');
 
   protected readonly mostrarAprobar = signal(false);
   protected readonly aprobando = signal(false);
@@ -83,6 +85,10 @@ export class DetalleRevisionComponent implements OnInit {
   protected readonly rechazando = signal(false);
   protected readonly errorRechazo = signal<string | null>(null);
 
+  protected readonly mostrarDespublicar = signal(false);
+  protected readonly despublicando = signal(false);
+  protected readonly errorDespublicar = signal<string | null>(null);
+
   /** True si el subgrafo fue creado por el supervisor actual. */
   protected readonly esPropio = computed(() => {
     const s = this.subgrafo();
@@ -90,10 +96,21 @@ export class DetalleRevisionComponent implements OnInit {
     return s !== null && usuario !== null && s.autorId === usuario.id;
   });
 
-  /** True si el subgrafo está en revisión y no es propio. */
+  /** True si el subgrafo está en revisión, no es propio y se abrió desde pendientes. */
   protected readonly puedeDecidir = computed(() =>
-    this.subgrafo()?.estado === 'EN_REVISION' && !this.esPropio()
+    this.modo() === 'revision' && this.subgrafo()?.estado === 'EN_REVISION' && !this.esPropio()
   );
+
+  /** True si se puede despublicar el contenido abierto en modo moderación. */
+  protected readonly puedeDespublicar = computed(() =>
+    this.modo() === 'publicado' && !!this.subgrafo()?.publicadoEn
+  );
+
+  /** Título del diálogo de despublicar. */
+  protected readonly tituloDespublicar = computed(() => {
+    const subgrafo = this.subgrafo();
+    return subgrafo ? `¿Despublicar «${subgrafo.nombre}»?` : '¿Despublicar este subgrafo?';
+  });
 
   /** Número de reglas de la base. */
   protected readonly totalReglas = computed(() => this.base()?.reglas.length ?? 0);
@@ -104,6 +121,7 @@ export class DetalleRevisionComponent implements OnInit {
   private id = 0;
 
   ngOnInit(): void {
+    this.modo.set(this.ruta.snapshot.queryParamMap.get('modo') === 'publicado' ? 'publicado' : 'revision');
     this.id = Number(this.ruta.snapshot.paramMap.get('id'));
     this.cargar();
   }
@@ -175,9 +193,14 @@ export class DetalleRevisionComponent implements OnInit {
     this.reglaSeleccionada.set(regla);
   }
 
-  /** Vuelve a la bandeja. */
+  /** Vuelve a la bandeja de pendientes. */
   protected volver(): void {
     this.router.navigate(['/revision']);
+  }
+
+  /** Vuelve al buzón de publicados. */
+  protected volverAlBuzon(): void {
+    this.router.navigate(['/revision'], { queryParams: { vista: 'publicados' } });
   }
 
   /** Abre la confirmación de aprobar. */
@@ -232,6 +255,47 @@ export class DetalleRevisionComponent implements OnInit {
     if (!this.rechazando()) {
       this.mostrarRechazo.set(false);
     }
+  }
+
+  /** Abre la confirmación de despublicar. */
+  protected abrirDespublicar(): void {
+    if (!this.puedeDespublicar()) {
+      return;
+    }
+    this.errorDespublicar.set(null);
+    this.mostrarDespublicar.set(true);
+  }
+
+  /** Cancela la despublicación. */
+  protected cancelarDespublicar(): void {
+    if (!this.despublicando()) {
+      this.mostrarDespublicar.set(false);
+    }
+  }
+
+  /** Despublica el subgrafo y su base de reglas. */
+  protected confirmarDespublicar(): void {
+    if (!this.puedeDespublicar() || this.despublicando()) {
+      return;
+    }
+    const subgrafo = this.subgrafo();
+    if (!subgrafo) {
+      return;
+    }
+    this.despublicando.set(true);
+    this.errorDespublicar.set(null);
+    this.autoria.despublicar(subgrafo.id).subscribe({
+      next: () => {
+        this.despublicando.set(false);
+        this.mostrarDespublicar.set(false);
+        this.store.avisar(`Se despublicó «${subgrafo.nombre}».`);
+        this.volverAlBuzon();
+      },
+      error: e => {
+        this.despublicando.set(false);
+        this.errorDespublicar.set(mensajeDeError(e, 'No se pudo despublicar el subgrafo. Intenta de nuevo.'));
+      }
+    });
   }
 
   /** Rechaza la revisión con el comentario recibido. */

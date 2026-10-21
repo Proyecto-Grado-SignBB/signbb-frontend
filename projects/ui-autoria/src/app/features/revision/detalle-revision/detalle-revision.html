@@ -4,7 +4,8 @@
   <div class="main">
     <div class="topbar">
       <div class="topbar-left">
-        <div class="crumb"><a routerLink="/revision">Revisión</a>@if (subgrafo(); as s) { / {{ s.nombre }} }</div>
+        <div class="crumb"><a [routerLink]="['/revision']"
+          [queryParams]="modo() === 'publicado' ? { vista: 'publicados' } : {}">Revisión</a>@if (subgrafo(); as s) { / {{ s.nombre }} }</div>
         <h3>
           {{ subgrafo()?.nombre ?? 'Revisión' }}
           @if (subgrafo(); as s) {
@@ -13,7 +14,12 @@
         </h3>
       </div>
       <div class="topbar-right">
-        @if (puedeDecidir()) {
+        @if (modo() === 'publicado') {
+          <app-boton tono="neutro" variante="contorno" alto="compacto" ancho="auto"
+            (click)="volverAlBuzon()">Volver al buzón</app-boton>
+          <app-boton tono="alerta" alto="compacto" ancho="auto"
+            [disabled]="despublicando()" (click)="abrirDespublicar()">Despublicar</app-boton>
+        } @else if (puedeDecidir()) {
           <app-boton tono="alerta" variante="contorno" alto="compacto" ancho="auto"
             [disabled]="aprobando() || rechazando()" (click)="abrirRechazo()">Rechazar</app-boton>
           <app-boton tono="marca" alto="compacto" ancho="auto"
@@ -46,7 +52,12 @@
               </div>
               <span class="punto"></span>
               <span class="chip chip--categoria">{{ categoria(s.categoria) }}</span>
-              @if (resumen()?.enviadoRevisionEn; as enviadoEn) {
+              @if (modo() === 'publicado') {
+                @if (s.publicadoEn) {
+                  <span class="punto"></span>
+                  <span>Publicado {{ enviado(s.publicadoEn) }}</span>
+                }
+              } @else if (resumen()?.enviadoRevisionEn; as enviadoEn) {
                 <span class="punto"></span>
                 <span>Enviado {{ enviado(enviadoEn) }}</span>
               }
@@ -58,11 +69,15 @@
           </div>
         </div>
 
-        @if (esPropio()) {
+        @if (modo() === 'publicado' && s.estado !== 'PUBLICADO') {
+          <div class="aviso-panel aviso-panel--aviso" role="status">
+            Esta vista muestra el borrador actual. Si hay cambios sin publicar, la versión que ven las familias es la última publicada.
+          </div>
+        } @else if (modo() === 'revision' && esPropio()) {
           <div class="aviso-panel aviso-panel--aviso" role="status">
             No puedes revisar un subgrafo tuyo: lo revisa otro supervisor.
           </div>
-        } @else if (s.estado !== 'EN_REVISION') {
+        } @else if (modo() === 'revision' && s.estado !== 'EN_REVISION') {
           <div class="aviso-panel aviso-panel--aviso" role="status">
             Esta revisión ya no está pendiente. Vuelve a la bandeja para ver los cambios actuales.
           </div>
@@ -171,4 +186,17 @@
     [error]="errorRechazo()"
     (rechazar)="confirmarRechazo($event)"
     (cancelar)="cancelarRechazo()" />
+}
+
+@if (mostrarDespublicar()) {
+  <app-dialogo-confirmar
+    [titulo]="tituloDespublicar()"
+    mensaje="El subgrafo y su base de reglas dejarán de estar disponibles para recorridos nuevos. Los recorridos en curso terminan con la versión con la que empezaron. El borrador y sus reglas se conservan."
+    textoConfirmar="Despublicar"
+    textoOcupado="Despublicando…"
+    tonoConfirmar="alerta"
+    [ocupado]="despublicando()"
+    [error]="errorDespublicar()"
+    (confirmar)="confirmarDespublicar()"
+    (cancelar)="cancelarDespublicar()" />
 }

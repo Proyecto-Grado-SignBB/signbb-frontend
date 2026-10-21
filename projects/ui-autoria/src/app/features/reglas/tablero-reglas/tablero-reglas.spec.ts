@@ -53,16 +53,15 @@ describe('TableroReglasComponent', () => {
     localStorage.removeItem(CLAVE_SESION_AUTORIA);
   });
 
-  it('el supervisor ve aparte las bases de otros, con su autor y sin «Eliminar»', () => {
+  it('el supervisor no ve las bases de otros médicos', () => {
     ingresarComo(99, 'MEDICO_SUPERVISOR');
     cargar([base(1, 'Mías', 99, 'Dr. Supervisor'), base(2, 'De Ana', 7, 'Dra. Ana Médica')], []);
 
-    const [mias, otras] = [...el.querySelectorAll('.base-grid')];
-    expect(mias.querySelectorAll('.base-card').length).toBe(1);
-    expect(el.querySelector('.seccion-otros')!.textContent).toContain('De otros médicos');
-    expect(otras.querySelector('.autor')!.textContent).toContain('Por Dra. Ana Médica');
-    expect(otras.textContent).toContain('Ver base');
-    expect(otras.textContent).not.toContain('Eliminar');
+    expect(el.querySelectorAll('.base-card').length).toBe(1);
+    expect(el.textContent).toContain('Mías');
+    expect(el.textContent).not.toContain('De Ana');
+    expect(el.querySelector('.seccion-otros')).toBeNull();
+    expect(el.textContent).not.toContain('De otros médicos');
   });
 
   it('una base nueva solo se puede asociar a los subgrafos propios', () => {
@@ -76,11 +75,13 @@ describe('TableroReglasComponent', () => {
     expect(opciones).toEqual(['— Elige un subgrafo —', 'Fiebre · grafo_1']);
   });
 
-  it('un médico no ve la sección de otros', () => {
+  it('un médico también ve solo sus bases', () => {
     ingresarComo(99, 'MEDICO');
-    cargar([base(1, 'Mías', 99, 'Dr. Supervisor')], []);
+    cargar([base(1, 'Mías', 99, 'Dr. Supervisor'), base(2, 'De Ana', 7, 'Dra. Ana Médica')], []);
 
-    expect(el.querySelector('.seccion-otros')).toBeNull();
     expect(el.querySelectorAll('.base-card').length).toBe(1);
+    expect(el.textContent).toContain('Mías');
+    expect(el.textContent).not.toContain('De Ana');
+    expect(el.querySelector('.seccion-otros')).toBeNull();
   });
 });
