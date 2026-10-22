@@ -88,9 +88,11 @@ export class LienzoComponent implements OnInit {
   /** Id del nodo o de la respuesta resaltada (al tocar un aviso o al abrir el panel). */
   protected readonly resaltado = signal<string | null>(null);
 
-  /** True si el modal de enviar a revisión está abierto. */
+  /** True si el modal de enviar a revisión o publicar está abierto. */
   protected readonly mostrarEnviar = signal(false);
-  /** True mientras se envía a revisión. */
+  /** True si el modal abierto publica directamente (supervisor) en vez de enviar a revisión. */
+  protected readonly publicacionDirecta = signal(false);
+  /** True mientras se envía a revisión o se publica. */
   protected readonly enviando = signal(false);
   /** Error del último envío a revisión. */
   protected readonly errorEnviar = signal<string | null>(null);
@@ -105,6 +107,8 @@ export class LienzoComponent implements OnInit {
   /** True si el subgrafo espera la respuesta de un supervisor: no se edita. */
   protected readonly enRevision = computed(() => this.subgrafo()?.estado === 'EN_REVISION');
   private readonly sesion = inject(SesionService);
+  /** True si el usuario es médico supervisor: publica directamente sus grafos. */
+  protected readonly esSupervisor = computed(() => this.sesion.tieneRol('MEDICO_SUPERVISOR'));
   /** True si el subgrafo es de otro médico (lo abre el supervisor): solo se ve. */
   protected readonly ajeno = computed(() => {
     const s = this.subgrafo();
@@ -122,6 +126,10 @@ export class LienzoComponent implements OnInit {
     const base = this.estadoBase();
     return estado !== 'PUBLICADO' || (base !== null && base !== 'PUBLICADO');
   });
+  /** True si el supervisor autor puede publicar directamente el subgrafo y sus reglas. */
+  protected readonly puedePublicar = computed(
+    () => this.esSupervisor() && !this.ajeno() && !this.enRevision() && this.puedeEnviar()
+  );
   /** Avisos que vienen de las reglas (referencias a nodos del lienzo que ya no existen). */
   protected readonly avisosReglas = computed(
     () => (this.subgrafo()?.avisos ?? []).filter(a => a.codigo.startsWith('REGLA_'))
@@ -439,9 +447,28 @@ export class LienzoComponent implements OnInit {
   /** Abre el modal de enviar a revisión con los avisos actuales. */
   protected abrirEnviar(): void {
     if (!this.puedeEnviar()) return;
+    this.publicacionDirecta.set(false);
     this.errorEnviar.set(null);
     this.avisosEnviar.set(this.subgrafo()?.avisos ?? []);
     this.mostrarEnviar.set(true);
+  }
+
+  /** Abre el modal de publicación directa con los avisos actuales. */
+  protected abrirPublicar(): void {
+    if (!this.puedePublicar()) return;
+    this.publicacionDirecta.set(true);
+    this.errorEnviar.set(null);
+    this.avisosEnviar.set(this.subgrafo()?.avisos ?? []);
+    this.mostrarEnviar.set(true);
+  }
+
+  /** Confirma el modal según se trate de una revisión o de una publicación directa. */
+  protected confirmarPublicacion(): void {
+    if (this.publicacionDirecta()) {
+      this.publicarDirecto();
+    } else {
+      this.enviarRevision();
+    }
   }
 
   /** Envía el subgrafo a revisión; si hay avisos bloqueantes, los muestra en el modal. */
@@ -463,6 +490,30 @@ export class LienzoComponent implements OnInit {
           this.avisosEnviar.set(avisos);
         }
         this.errorEnviar.set(mensajeDeError(e, 'No se pudo enviar a revisión. Intenta de nuevo.'));
+      }
+    });
+  }
+
+  /** Publica directamente el subgrafo y su base de reglas. */
+  private publicarDirecto(): void {
+    this.enviando.set(true);
+    this.errorEnviar.set(null);
+    this.autoria.publicar(this.id).subscribe({
+      next: s => {
+        this.subgrafo.set(s);
+        this.enviando.set(false);
+        this.mostrarEnviar.set(false);
+        this.cerrarPanel();
+        this.estadoBase.set('PUBLICADO');
+        this.avisar('Publicado: las cuidadoras ya pueden recorrerlo.');
+      },
+      error: e => {
+        this.enviando.set(false);
+        const avisos = avisosDeError(e);
+        if (avisos.length > 0) {
+          this.avisosEnviar.set(avisos);
+        }
+        this.errorEnviar.set(mensajeDeError(e, 'No se pudo publicar. Intenta de nuevo.'));
       }
     });
   }

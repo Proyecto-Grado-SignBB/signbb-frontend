@@ -113,6 +113,14 @@ export class AutoriaService {
     return this.http.post<SubgrafoDTO>(`${this.base}/subgrafos/${id}/retirar-revision`, {});
   }
 
+  /**
+   * Publica directamente el subgrafo y su base de reglas. Solo el supervisor
+   * autor; no pasa por revisión. Si hay avisos bloqueantes, responde 422 con ellos.
+   */
+  publicar(id: number): Observable<SubgrafoDTO> {
+    return this.http.post<SubgrafoDTO>(`${this.base}/subgrafos/${id}/publicar`, {});
+  }
+
   // --- Revisión del supervisor ----------------------------------------------
 
   /** Revisiones pendientes de otros autores (solo supervisor). */

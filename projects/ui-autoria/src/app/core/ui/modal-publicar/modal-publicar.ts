@@ -3,11 +3,10 @@ import { BotonComponent } from 'ui-compartida';
 import { Aviso } from '../../../models/lienzo.model';
 
 /**
- * Confirmación antes de enviar un subgrafo a revisión. Muestra dónde
- * aparecerá para la cuidadora cuando un supervisor lo apruebe (la opción
- * nueva en la pregunta puente), cuántos nodos tiene y los avisos actuales. Si
- * el backend responde 422 al enviar, el lienzo pasa aquí los avisos que
- * vinieron en la respuesta.
+ * Confirmación antes de enviar un subgrafo a revisión o de publicarlo
+ * directamente. Muestra dónde aparecerá para la cuidadora, cuántos nodos
+ * tiene y los avisos actuales. Si el backend responde 422, el lienzo pasa aquí
+ * los avisos que vinieron en la respuesta.
  */
 @Component({
   selector: 'app-modal-publicar',
@@ -35,6 +34,8 @@ export class ModalPublicarComponent {
   @Input() republicar = false;
   /** true si el subgrafo tiene base de reglas: se revisa y se publica junto con el grafo. */
   @Input() publicaReglas = false;
+  /** true si publica directamente el supervisor, sin pasar por revisión. */
+  @Input() directo = false;
 
   /** Emite cuando el usuario confirma el envío. */
   @Output() confirmar = new EventEmitter<void>();

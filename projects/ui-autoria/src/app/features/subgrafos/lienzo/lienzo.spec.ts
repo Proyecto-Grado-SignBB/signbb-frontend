@@ -279,3 +279,104 @@ describe('LienzoComponent: subgrafo de otro médico', () => {
     expect(el.querySelector('button.mas')).toBeTruthy();
   });
 });
+
+describe('LienzoComponent: publicación directa del supervisor', () => {
+  let http: HttpTestingController;
+  let harness: RouterTestingHarness;
+  let el: HTMLElement;
+
+  const PREGUNTA = {
+    id: 'p1', tipo: 'PREGUNTA' as const, texto: '¿Desde cuándo?', variasRespuestas: false, desenlace: null,
+    imagenes: [], respuestas: [{ id: 'r1', texto: 'Hoy', gravedad: 'LEVE' as const, destino: null }]
+  };
+
+  const BORRADOR: SubgrafoDTO = {
+    id: 7, grafoId: 'grafo_ictericia', nombre: 'Ictericia en la piel', puenteId: 'puente_piel',
+    categoria: 'piel', etiquetaOpcion: 'Piel u ojos amarillos', autor: 'Dra. Supervisora',
+    institucion: 'Fundación Canguro', autorId: 7, estado: 'BORRADOR', inicio: 'p1', nodos: [PREGUNTA],
+    avisos: [], creadoEn: '2026-10-10T10:00:00Z', actualizadoEn: '2026-10-10T10:00:00Z',
+    publicadoEn: null, puedeDescartar: false, comentarioRevision: null, revisadoEn: null
+  };
+  const PUBLICADO: SubgrafoDTO = { ...BORRADOR, estado: 'PUBLICADO', publicadoEn: '2026-10-11T10:00:00Z' };
+
+  function ingresarComoSupervisora(): void {
+    localStorage.setItem(CLAVE_SESION_AUTORIA, JSON.stringify({
+      token: 'token-de-prueba',
+      expiraEn: new Date(Date.now() + 3_600_000).toISOString(),
+      usuario: { id: 7, nombre: 'Dra. Supervisora', correo: 's@signbb.local', rol: 'MEDICO_SUPERVISOR', institucion: 'SignBB', activo: true }
+    }));
+  }
+
+  function boton(texto: string): HTMLButtonElement | undefined {
+    return [...el.querySelectorAll<HTMLButtonElement>('button')].find(x => x.textContent?.trim() === texto);
+  }
+
+  async function abrir(subgrafo: SubgrafoDTO, bases: unknown[] = []): Promise<void> {
+    harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/subgrafos/7', LienzoComponent);
+    http.expectOne(`${BASE}/subgrafos/7`).flush(subgrafo);
+    http.expectOne(`${BASE}/categorias`).flush([]);
+    http.expectOne(`${BASE}/bases`).flush(bases);
+    harness.detectChanges();
+    el = harness.routeNativeElement as HTMLElement;
+  }
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      imports: [LienzoComponent],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([{ path: 'subgrafos/:id', component: LienzoComponent }]),
+        ...proveerSesion()
+      ]
+    });
+    http = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => {
+    http.verify();
+    localStorage.removeItem(CLAVE_SESION_AUTORIA);
+  });
+
+  it('en su propio borrador ve «Publicar» y no «Enviar a revisión»', async () => {
+    ingresarComoSupervisora();
+    await abrir(BORRADOR);
+
+    expect(boton('Publicar')).toBeTruthy();
+    expect(boton('Enviar a revisión')).toBeUndefined();
+  });
+
+  it('publica directamente y llama al endpoint', async () => {
+    ingresarComoSupervisora();
+    await abrir(BORRADOR);
+
+    boton('Publicar')!.click();
+    harness.detectChanges();
+    expect(el.querySelector('app-modal-publicar')!.textContent).toContain('Las familias verán');
+
+    el.querySelector<HTMLElement>('.panel-foot app-boton:last-child button')!.click();
+    const peticion = http.expectOne(`${BASE}/subgrafos/7/publicar`);
+    expect(peticion.request.method).toBe('POST');
+    peticion.flush(PUBLICADO);
+    harness.detectChanges();
+
+    expect(el.querySelector('app-modal-publicar')).toBeNull();
+    expect(boton('Publicado')!.disabled).toBeTrue();
+    expect(el.textContent).toContain('las cuidadoras ya pueden recorrerlo');
+  });
+
+  it('si ya está publicado sin cambios, «Publicar» queda deshabilitado', async () => {
+    ingresarComoSupervisora();
+    await abrir(PUBLICADO, [{ id: 3, grafoId: 'grafo_ictericia', estado: 'PUBLICADO' }]);
+
+    expect(boton('Publicado')!.disabled).toBeTrue();
+  });
+
+  it('si solo cambiaron las reglas, deja publicar', async () => {
+    ingresarComoSupervisora();
+    await abrir(PUBLICADO, [{ id: 3, grafoId: 'grafo_ictericia', estado: 'CAMBIOS_SIN_PUBLICAR' }]);
+
+    expect(boton('Publicar')!.disabled).toBeFalse();
+  });
+});

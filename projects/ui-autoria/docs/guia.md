@@ -2,7 +2,8 @@
 
 Aplicación del **médico**: arma subgrafos clínicos en un lienzo, ve los avisos y
 los envía a revisión. Cuando un supervisor los aprueba, se publican y la
-cuidadora los puede recorrer.
+cuidadora los puede recorrer. El **médico supervisor** puede publicar
+directamente sus propios subgrafos, sin enviarlos a revisión.
 
 ## Arquitectura
 
@@ -28,9 +29,12 @@ cuidadora los puede recorrer.
   supervisor. Se puede enviar si no está publicado, o si lo está pero sus
   reglas tienen cambios sin publicar. En `EN_REVISION` el lienzo y el editor de
   reglas quedan en solo lectura y aparece «Retirar de revisión». Si el
-  supervisor lo rechazó, arriba sale su comentario. El médico ya no publica ni
-  despublica: aprobar, rechazar y despublicar son del supervisor y por ahora no
-  tienen pantallas (se hacen por la API).
+  supervisor lo rechazó, arriba sale su comentario.
+- **Publicación directa del supervisor**: si el autor es `MEDICO_SUPERVISOR`,
+  el lienzo muestra «Publicar» en lugar de «Enviar a revisión». Publica el
+  subgrafo y su base de reglas en una sola acción, sin revisión, desde
+  `BORRADOR`, `CAMBIOS_SIN_PUBLICAR` o cuando solo cambiaron las reglas de un
+  subgrafo ya publicado. Solo puede publicar sus propios grafos.
 - **Vista del supervisor**: el back le lista al supervisor los subgrafos y las
   bases de todos. Los tableros los separan con `esAjeno` (`core/sesion/`): los
   propios arriba y, aparte, «De otros médicos» con «Por {autor}» (los que están
@@ -38,7 +42,9 @@ cuidadora los puede recorrer.
   {autor} · {institución}»; si es de otro, `soloLectura` oculta los botones de
   edición y los "+", y el editor de reglas deja recorrer las reglas pero no
   tocarlas. Solo el autor edita, igual que en el back
-  (`PoliticaAccesoBorradores`).
+  (`PoliticaAccesoBorradores`). La sección «Revisión» permite aprobar (y
+  publicar) o rechazar con comentario lo que enviaron otros médicos, y
+  despublicar lo que ya está vigente.
 - **API base** en `src/environments/environment*.ts`.
 
 ## Cómo se documenta

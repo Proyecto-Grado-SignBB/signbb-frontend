@@ -98,6 +98,13 @@ describe('AutoriaService', () => {
     expect(retirar.request.body).toEqual({});
   });
 
+  it('publicar directamente hace POST a /publicar', () => {
+    servicio.publicar(7).subscribe();
+    const publicar = http.expectOne(`${base}/subgrafos/7/publicar`);
+    expect(publicar.request.method).toBe('POST');
+    expect(publicar.request.body).toEqual({});
+  });
+
   it('lista, aprueba y rechaza revisiones', () => {
     servicio.listarRevisiones().subscribe();
     expect(http.expectOne(`${base}/revisiones`).request.method).toBe('GET');
