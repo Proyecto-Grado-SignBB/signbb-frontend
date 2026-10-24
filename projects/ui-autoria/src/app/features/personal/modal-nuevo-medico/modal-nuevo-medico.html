@@ -10,7 +10,7 @@
 
       <label class="campo">
         <span>Nombre completo</span>
-        <input type="text" name="nombre" [(ngModel)]="nombre" (blur)="tocadoNombre = true"
+        <input maxlength="100" type="text" name="nombre" [(ngModel)]="nombre" (blur)="tocadoNombre = true"
           placeholder="Ej: Dra. Valentina Herrera" [class.invalido]="faltaNombre" />
         @if (faltaNombre) {
           <small class="falta">Escribe el nombre del médico.</small>
@@ -19,7 +19,7 @@
 
       <label class="campo">
         <span>Correo</span>
-        <input type="email" name="correo" [(ngModel)]="correo" (blur)="tocadoCorreo = true"
+        <input maxlength="254" type="email" name="correo" [(ngModel)]="correo" (blur)="tocadoCorreo = true"
           placeholder="nombre@institucion.org" [class.invalido]="faltaCorreo" />
         @if (faltaCorreo) {
           <small class="falta">Escribe un correo válido.</small>
@@ -28,14 +28,14 @@
 
       <label class="campo">
         <span>Institución</span>
-        <input type="text" name="institucion" [(ngModel)]="institucion"
+        <input maxlength="150" type="text" name="institucion" [(ngModel)]="institucion"
           placeholder="Ej: Fundación Canguro" />
         <small>Opcional.</small>
       </label>
 
       <label class="campo">
         <span>Contraseña inicial</span>
-        <input type="password" name="contrasena" [(ngModel)]="contrasena" (blur)="tocadoContrasena = true"
+        <input maxlength="72" type="password" name="contrasena" [(ngModel)]="contrasena" (blur)="tocadoContrasena = true"
           placeholder="Mínimo 8 caracteres" [class.invalido]="faltaContrasena" />
         <small>El médico usará esta contraseña para ingresar por primera vez.</small>
         @if (faltaContrasena) {

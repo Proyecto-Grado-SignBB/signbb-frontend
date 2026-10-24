@@ -78,6 +78,8 @@ export interface ResponderRequest {
   opciones?: string[];
   /** Pista del tipo de interacción para la auditoría. */
   tipo?: TipoInteraccion;
+  /** Id de la pregunta que se contesta; si ya no es la actual, el backend responde 409. */
+  idPregunta?: string;
 }
 
 /** Fila de «Mis recorridos»: un recorrido de esta cuenta, en curso o terminado. */

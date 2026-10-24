@@ -124,6 +124,39 @@ describe('PreguntaComponent', () => {
       }));
   });
 
+  describe('responder()', () => {
+    const pregunta = (id: string): RecorridoResponse => ({
+      recorridoId: 'r1',
+      estado: 'EN_CURSO',
+      pregunta: { id, texto: '¿Tiene fiebre?', opciones: ['SI', 'NO'], tieneImagenes: false, imagenes: [] },
+      resultado: null
+    });
+
+    const peticionResponder = () => httpMock.expectOne(r => r.url.endsWith('/respuestas'));
+
+    it('envía el id de la pregunta que se está contestando', () => {
+      component.respuesta.set(pregunta('q1'));
+
+      component.seleccionar('SI');
+
+      expect(peticionResponder().request.body).toEqual({ respuesta: 'SI', idPregunta: 'q1' });
+    });
+
+    it('si el backend dice 409 muestra la pregunta actual sin mostrar error', () => {
+      component.respuesta.set(pregunta('q1'));
+
+      component.seleccionar('SI');
+      peticionResponder().flush(
+        { mensaje: 'Esa pregunta ya fue respondida. Te mostramos la que sigue.', avisos: [] },
+        { status: 409, statusText: 'Conflict' });
+      httpMock.match(r => r.method === 'GET').forEach(req => req.flush(pregunta('q2')));
+
+      expect(component.respuesta()?.pregunta?.id).toBe('q2');
+      expect(component.error()).toBeNull();
+      expect(component.enviando()).toBeFalse();
+    });
+  });
+
   describe('imágenes de la pregunta', () => {
     const IMG_1 = '11111111-1111-1111-1111-111111111111.png';
     const IMG_2 = '22222222-2222-2222-2222-222222222222.jpg';

@@ -10,12 +10,12 @@
 
     <label class="campo">
       Correo
-      <input type="email" name="correo" autocomplete="username" placeholder="tu@correo.com"
+      <input maxlength="254" type="email" name="correo" autocomplete="username" placeholder="tu@correo.com"
              [(ngModel)]="correo" [disabled]="ingresando()" />
     </label>
     <label class="campo">
       Contraseña
-      <input type="password" name="contrasena" autocomplete="current-password" placeholder="Tu contraseña"
+      <input maxlength="72" type="password" name="contrasena" autocomplete="current-password" placeholder="Tu contraseña"
              [(ngModel)]="contrasena" [disabled]="ingresando()" />
     </label>
 

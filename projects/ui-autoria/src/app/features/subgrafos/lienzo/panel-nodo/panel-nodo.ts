@@ -95,6 +95,9 @@ export class PanelNodoComponent implements OnChanges {
   protected subiendo = false;
   protected errorImagen: string | null = null;
   protected readonly maxImagenes = MAX_IMAGENES;
+
+  /** Máximo de respuestas por pregunta (el servidor rechaza más de 10). */
+  protected readonly maxRespuestas = 10;
   protected readonly urlImagen = urlImagen;
 
   /** Reinicia el formulario cada vez que cambia el contexto. */

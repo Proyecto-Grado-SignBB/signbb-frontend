@@ -7,23 +7,23 @@
 
     <label class="cuenta__campo">
       Tu nombre
-      <input type="text" name="nombre" autocomplete="name" placeholder="Cómo te llamas"
+      <input maxlength="100" type="text" name="nombre" autocomplete="name" placeholder="Cómo te llamas"
              [(ngModel)]="nombre" [disabled]="registrando()" />
     </label>
     <label class="cuenta__campo">
       Correo
-      <input type="email" name="correo" autocomplete="email" placeholder="tu@correo.com"
+      <input maxlength="254" type="email" name="correo" autocomplete="email" placeholder="tu@correo.com"
              [(ngModel)]="correo" [disabled]="registrando()" />
     </label>
     <label class="cuenta__campo">
       Contraseña
-      <input type="password" name="contrasena" autocomplete="new-password"
+      <input maxlength="72" type="password" name="contrasena" autocomplete="new-password"
              [placeholder]="'Al menos ' + minimo + ' caracteres'"
              [(ngModel)]="contrasena" [disabled]="registrando()" />
     </label>
     <label class="cuenta__campo">
       Repite la contraseña
-      <input type="password" name="confirmacion" autocomplete="new-password" placeholder="La misma de arriba"
+      <input maxlength="72" type="password" name="confirmacion" autocomplete="new-password" placeholder="La misma de arriba"
              [(ngModel)]="confirmacion" [disabled]="registrando()" />
     </label>
 

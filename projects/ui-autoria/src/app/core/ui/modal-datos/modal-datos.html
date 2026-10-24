@@ -8,7 +8,7 @@
     <form class="panel-body" (ngSubmit)="enviar()">
       <label class="campo">
         <span>Nombre del subgrafo</span>
-        <input type="text" name="nombre" [(ngModel)]="nombre" (blur)="tocadoNombre = true"
+        <input maxlength="100" type="text" name="nombre" [(ngModel)]="nombre" (blur)="tocadoNombre = true"
           [class.invalido]="tocadoNombre && !nombre.trim()" />
         <small>Nombre técnico; solo lo ven los médicos.</small>
         @if (tocadoNombre && !nombre.trim()) {
@@ -18,7 +18,7 @@
 
       <label class="campo">
         <span>Nombre para la familia</span>
-        <input type="text" name="etiquetaOpcion" [(ngModel)]="etiquetaOpcion" (blur)="tocadoEtiqueta = true"
+        <input maxlength="100" type="text" name="etiquetaOpcion" [(ngModel)]="etiquetaOpcion" (blur)="tocadoEtiqueta = true"
           placeholder="Ej: Piel u ojos amarillos" [class.invalido]="tocadoEtiqueta && !etiquetaOpcion.trim()" />
         <small>{{ ayudaNombreFamilia }}</small>
         @if (tocadoEtiqueta && !etiquetaOpcion.trim()) {

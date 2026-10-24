@@ -220,7 +220,8 @@ export class PreguntaComponent implements OnInit {
   private enviarSolicitud(request: ResponderRequest): void {
     this.error.set(null);
     this.enviando.set(true);
-    this.recorridoService.responder(this.recorridoId, request).subscribe({
+    const idPregunta = this.respuesta()?.pregunta?.id;
+    this.recorridoService.responder(this.recorridoId, { ...request, idPregunta }).subscribe({
       next: r => {
         this.enviando.set(false);
         this.seleccionActual.set(null);
@@ -237,8 +238,29 @@ export class PreguntaComponent implements OnInit {
           this.router.navigate(['/'], { queryParams: AVISO_RECORRIDO_NO_DISPONIBLE });
           return;
         }
+        if (e instanceof HttpErrorResponse && e.status === 409) {
+          // La pregunta ya se respondió (clic repetido) o se está guardando: se muestra cómo va el recorrido.
+          this.mostrarEstadoActual();
+          return;
+        }
         this.error.set('No pudimos registrar tu respuesta. Intenta de nuevo.');
       }
+    });
+  }
+
+  /** Consulta el recorrido y muestra la pregunta actual, o el resultado si ya terminó. */
+  private mostrarEstadoActual(): void {
+    this.recorridoService.consultar(this.recorridoId).subscribe({
+      next: r => {
+        this.seleccionActual.set(null);
+        this.opcionesSeleccionadas.set(new Set());
+        if (r.estado === 'FINALIZADO') {
+          this.router.navigate(['/resultado', this.recorridoId]);
+        } else {
+          this.respuesta.set(r);
+        }
+      },
+      error: () => this.error.set('No pudimos cargar la pregunta. Intenta de nuevo.')
     });
   }
 }

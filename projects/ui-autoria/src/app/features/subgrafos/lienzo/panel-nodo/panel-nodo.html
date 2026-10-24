@@ -30,7 +30,7 @@
     } @else if (modo === 'PREGUNTA') {
       <label class="campo">
         <span>Pregunta para la cuidadora</span>
-        <textarea rows="2" [(ngModel)]="texto" placeholder="Ej: ¿Cuánto marca el termómetro?"></textarea>
+        <textarea maxlength="1000" rows="2" [(ngModel)]="texto" placeholder="Ej: ¿Cuánto marca el termómetro?"></textarea>
       </label>
 
       <label class="check">
@@ -66,7 +66,7 @@
         <span class="respuestas-titulo">Respuestas y qué tan grave es cada una</span>
         @for (fila of respuestas; track $index; let i = $index) {
           <div class="respuesta">
-            <input type="text" [(ngModel)]="fila.texto" placeholder="Respuesta {{ i + 1 }}" [attr.aria-label]="'Respuesta ' + (i + 1)" />
+            <input maxlength="200" type="text" [(ngModel)]="fila.texto" placeholder="Respuesta {{ i + 1 }}" [attr.aria-label]="'Respuesta ' + (i + 1)" />
             <div class="semaforo" role="radiogroup" [attr.aria-label]="'Gravedad de la respuesta ' + (i + 1)">
               @for (g of gravedades; track g) {
                 <button
@@ -83,7 +83,7 @@
               [title]="fila.tieneCamino ? 'Quitar (lo que sigue quedará suelto)' : 'Quitar'">✕</button>
           </div>
         }
-        <button type="button" class="btn-agregar" (click)="agregarRespuesta()">+ Agregar respuesta</button>
+        <button type="button" class="btn-agregar" [disabled]="respuestas.length >= maxRespuestas" (click)="agregarRespuesta()">+ Agregar respuesta</button>
       </div>
     } @else if (modo === 'CONCLUSION') {
       <div class="desenlaces">
@@ -95,7 +95,7 @@
       </div>
       <label class="campo">
         <span>Mensaje para la cuidadora</span>
-        <textarea rows="3" [(ngModel)]="texto" placeholder="Ej: Lleve al bebé a urgencias ahora."></textarea>
+        <textarea maxlength="1000" rows="3" [(ngModel)]="texto" placeholder="Ej: Lleve al bebé a urgencias ahora."></textarea>
       </label>
     } @else {
       @if (preguntasDestino.length === 0) {
