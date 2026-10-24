@@ -195,4 +195,11 @@ describe('RecorridoService', () => {
       iniciadoEn: '2026-10-16T10:00:00Z', finalizadoEn: '2026-10-16T10:05:00Z'
     }]);
   });
+
+  it('reiniciar() hace POST /recorridos/{id}/reiniciar y devuelve el recorrido nuevo', () => {
+    servicio.reiniciar('abc-123').subscribe(r => expect(r.recorridoId).toBe('nuevo-456'));
+    const peticion = httpMock.expectOne(`${environment.apiUrl}/recorridos/abc-123/reiniciar`);
+    expect(peticion.request.method).toBe('POST');
+    peticion.flush({ recorridoId: 'nuevo-456', estado: 'EN_CURSO', pregunta: null, resultado: null });
+  });
 });

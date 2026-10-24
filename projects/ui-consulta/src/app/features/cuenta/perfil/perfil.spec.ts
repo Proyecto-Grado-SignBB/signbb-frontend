@@ -70,6 +70,21 @@ describe('PerfilComponent', () => {
     expect(TestBed.inject(Router).url).toBe('/perfil');
   });
 
+  it('permite guardar el teléfono del pediatra en la cuenta', async () => {
+    await harness.fixture.whenStable();
+    const input = el.querySelector<HTMLInputElement>('.perfil__pediatra input')!;
+    input.value = '3001234567';
+    input.dispatchEvent(new Event('input'));
+    el.querySelector<HTMLButtonElement>('.perfil__pediatra button')!.click();
+
+    const http = TestBed.inject(HttpTestingController);
+    const req = http.expectOne(r => r.method === 'PUT' && r.url.endsWith('/auth/yo/pediatra'));
+    expect(req.request.body).toEqual({ telefono: '3001234567' });
+    req.flush({ ...SESION_PADRE.usuario, telefonoPediatra: '3001234567' });
+
+    expect(TestBed.inject(SesionService).usuario()?.telefonoPediatra).toBe('3001234567');
+  });
+
   it('«Cerrar sesión» limpia la sesión y vuelve a la bienvenida', async () => {
     el.querySelector<HTMLButtonElement>('.perfil__fila--salir')!.click();
     await harness.fixture.whenStable();

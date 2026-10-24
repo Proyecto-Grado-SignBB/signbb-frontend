@@ -40,6 +40,17 @@ export class RecorridoService {
     return this.http.get<RecorridoResponse>(`${environment.apiUrl}/recorridos/${recorridoId}`);
   }
 
+  /**
+   * Reinicia el recorrido en curso: el back lo marca reiniciado y devuelve uno
+   * nuevo con su primera pregunta. Un recorrido terminado responde 409.
+   */
+  reiniciar(recorridoId: string): Observable<RecorridoResponse> {
+    return this.http.post<RecorridoResponse>(
+      `${environment.apiUrl}/recorridos/${recorridoId}/reiniciar`,
+      {}
+    );
+  }
+
   /** Recorridos de esta cuenta, del más nuevo al más viejo. */
   misRecorridos(): Observable<ResumenRecorridoDTO[]> {
     return this.http.get<ResumenRecorridoDTO[]>(`${environment.apiUrl}/recorridos`);

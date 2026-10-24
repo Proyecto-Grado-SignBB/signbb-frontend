@@ -71,13 +71,23 @@ describe('PreguntaComponent', () => {
       expect(component.seleccionActual()).toBeNull();
     });
 
-    it('en la primera pregunta (400) sale al inicio', () => {
+    it('en la primera pregunta (400) ofrece reiniciar en vez de salir al inicio', () => {
       const navegar = spyOn(router, 'navigate').and.resolveTo(true);
 
       component.volver();
       peticionRetroceder().flush(null, { status: 400, statusText: 'Bad Request' });
 
-      expect(navegar).toHaveBeenCalledWith(['/']);
+      expect(component.confirmarReinicio()).toBe('primera');
+      expect(navegar).not.toHaveBeenCalled();
+    });
+
+    it('si el recorrido venció (410) vuelve al inicio con el aviso de vencido', () => {
+      const navegar = spyOn(router, 'navigate').and.resolveTo(true);
+
+      component.volver();
+      peticionRetroceder().flush({ mensaje: 'venció' }, { status: 410, statusText: 'Gone' });
+
+      expect(navegar).toHaveBeenCalledWith(['/'], { queryParams: { aviso: 'vencido' } });
     });
 
     it('si el recorrido no es de esta cuenta (404) vuelve al inicio con el aviso', () => {
@@ -215,6 +225,78 @@ describe('PreguntaComponent', () => {
 
       expect(navegar).toHaveBeenCalledWith(['/'], { queryParams: { aviso: 'recorrido' } });
       expect(component.error()).toBeNull();
+    });
+  });
+
+  describe('reiniciar()', () => {
+    const nueva: RecorridoResponse = {
+      recorridoId: 'r2',
+      estado: 'EN_CURSO',
+      pregunta: { id: 'q_inicio', texto: '¿Primera?', opciones: ['SI', 'NO'], tieneImagenes: false, imagenes: [] },
+      resultado: null
+    };
+    const peticionReiniciar = () => httpMock.expectOne(r => r.url.endsWith('/reiniciar'));
+
+    beforeEach(() => {
+      component.respuesta.set({ ...nueva, recorridoId: 'r1', pregunta: { ...nueva.pregunta!, id: 'q_actual' } });
+      fixture.detectChanges();
+    });
+
+    it('«Reiniciar» pide confirmación antes de llamar al backend', () => {
+      const el = fixture.nativeElement as HTMLElement;
+      el.querySelector<HTMLButtonElement>('.pregunta__reiniciar')!.click();
+      fixture.detectChanges();
+
+      expect(el.querySelector('.pregunta__confirmacion')?.textContent).toContain('¿Reiniciar la consulta?');
+      httpMock.expectNone(r => r.url.endsWith('/reiniciar'));
+    });
+
+    it('cancelar cierra la confirmación sin reiniciar', () => {
+      component.pedirReinicio();
+      component.cancelarReinicio();
+
+      expect(component.confirmarReinicio()).toBeNull();
+      httpMock.expectNone(r => r.url.endsWith('/reiniciar'));
+    });
+
+    it('al confirmar, muestra la primera pregunta del recorrido nuevo y cambia la URL', () => {
+      const navegar = spyOn(router, 'navigate').and.resolveTo(true);
+      component.pedirReinicio();
+
+      component.reiniciar();
+      const req = peticionReiniciar();
+      expect(req.request.method).toBe('POST');
+      req.flush(nueva);
+
+      expect(component.respuesta()?.pregunta?.id).toBe('q_inicio');
+      expect(component.confirmarReinicio()).toBeNull();
+      expect(navegar).toHaveBeenCalledWith(['/pregunta', 'r2'], { replaceUrl: true });
+    });
+
+    it('si el recorrido ya terminó (409) muestra su resultado', () => {
+      const navegar = spyOn(router, 'navigate').and.resolveTo(true);
+
+      component.reiniciar();
+      peticionReiniciar().flush({ mensaje: 'terminó' }, { status: 409, statusText: 'Conflict' });
+
+      expect((navegar.calls.mostRecent().args[0] as unknown[])[0]).toBe('/resultado');
+    });
+
+    it('si el recorrido venció (410) vuelve al inicio con el aviso de vencido', () => {
+      const navegar = spyOn(router, 'navigate').and.resolveTo(true);
+
+      component.reiniciar();
+      peticionReiniciar().flush({ mensaje: 'venció' }, { status: 410, statusText: 'Gone' });
+
+      expect(navegar).toHaveBeenCalledWith(['/'], { queryParams: { aviso: 'vencido' } });
+    });
+
+    it('ante otro error muestra un mensaje y se queda en la pregunta', () => {
+      component.reiniciar();
+      peticionReiniciar().flush(null, { status: 500, statusText: 'Server Error' });
+
+      expect(component.error()).toContain('reiniciar');
+      expect(component.respuesta()?.pregunta?.id).toBe('q_actual');
     });
   });
 });

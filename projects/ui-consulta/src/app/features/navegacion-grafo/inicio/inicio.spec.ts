@@ -8,6 +8,7 @@ import { environment } from '../../../../environments/environment';
 import {
   CLAVE_SESION_CONSULTA,
   MENSAJE_RECORRIDO_NO_DISPONIBLE,
+  MENSAJE_RECORRIDO_VENCIDO,
   guardFamilia,
   proveerSesion
 } from '../../../core/sesion/sesion';
@@ -96,6 +97,13 @@ describe('Inicio', () => {
     await abrir('/?aviso=recorrido');
 
     expect(el.querySelector('.inicio__aviso')?.textContent).toContain(MENSAJE_RECORRIDO_NO_DISPONIBLE);
+  });
+
+  it('con ?aviso=vencido explica que la consulta venció o se reinició', async () => {
+    localStorage.setItem(CLAVE_SESION_CONSULTA, JSON.stringify(SESION_PADRE));
+    await abrir('/?aviso=vencido');
+
+    expect(el.querySelector('.inicio__aviso')?.textContent).toContain(MENSAJE_RECORRIDO_VENCIDO);
   });
 
   it('sin sesión, el aviso llega a la bienvenida en la URL', async () => {

@@ -1,23 +1,47 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RecorridoService } from '../../../core/http/recorrido';
 import { RecorridoResponse } from '../../../models/recorrido.model';
+import { etiquetaOpcion } from '../../../models/etiquetas-opcion';
 import { IlustracionResultadoComponent } from '../ilustracion-resultado/ilustracion-resultado';
-import { AVISO_RECORRIDO_NO_DISPONIBLE, recorridoNoDisponible } from '../../../core/sesion/sesion';
-import { BotonComponent, InsigniaIconoComponent, TonoInsignia, AvisoLegalComponent, MensajeErrorComponent } from 'ui-compartida';
+import { TelefonoPediatraComponent } from '../../cuenta/telefono-pediatra/telefono-pediatra';
+import {
+  AVISO_RECORRIDO_NO_DISPONIBLE, AVISO_RECORRIDO_VENCIDO, recorridoNoDisponible, recorridoVencido
+} from '../../../core/sesion/sesion';
+import { LINEA_EMERGENCIA, enlaceTelefono } from '../../../core/emergencia/emergencia';
+import {
+  BotonComponent, InsigniaIconoComponent, TonoInsignia, AvisoLegalComponent, MensajeErrorComponent, SesionService
+} from 'ui-compartida';
 
 /** Id del desenlace de sistema que el backend usa al cerrar por el máximo de preguntas. */
 const ID_LIMITE_PREGUNTAS = 'sistema/limite_preguntas';
+
+/** Una pregunta del recorrido con la respuesta que dio el padre. */
+export interface PasoLegible {
+  pregunta: string;
+  respuesta: string;
+}
 
 /**
  * Pantalla del desenlace: muestra el nivel de alerta, el mensaje y las
  * recomendaciones del recorrido finalizado. Permite corregir la última
  * respuesta, volver al inicio o empezar otra consulta.
+ *
+ * MODIFICADO (ítems 2.4 y 2.6): en URGENCIA, «Buscar ayuda ahora» llama a la
+ * línea 123 y se anuncia «Urgencias cercanas» como función próxima. En
+ * CONSULTAR_MEDICO, «Contactar a mi pediatra» abre un panel con la guía de qué
+ * contarle, la llamada al número guardado (o el formulario para guardarlo) y la
+ * línea 123. En las dos alertas, «¿Por qué este resultado?» muestra las reglas
+ * que dispararon y las preguntas con la respuesta dada. Un recorrido vencido
+ * (410) vuelve al inicio con su aviso.
  */
 @Component({
   selector: 'app-resultado',
   standalone: true,
-  imports: [IlustracionResultadoComponent, BotonComponent, InsigniaIconoComponent, AvisoLegalComponent, MensajeErrorComponent],
+  imports: [
+    IlustracionResultadoComponent, BotonComponent, InsigniaIconoComponent, AvisoLegalComponent, MensajeErrorComponent,
+    TelefonoPediatraComponent
+  ],
   templateUrl: './resultado.html',
   styleUrl: './resultado.scss'
 })
@@ -26,7 +50,47 @@ export class ResultadoComponent implements OnInit {
   respuesta = signal<RecorridoResponse | null>(null);
   /** Mensaje de error de la última operación. */
   error = signal<string | null>(null);
+  /** True si el panel «Contactar a mi pediatra» está abierto. */
+  panelPediatra = signal(false);
+  /** Enlace para llamar a la línea de emergencias. */
+  readonly enlaceEmergencia = enlaceTelefono(LINEA_EMERGENCIA);
+  /** Número de la línea de emergencias, para mostrarlo. */
+  readonly lineaEmergencia = LINEA_EMERGENCIA;
   private recorridoId = '';
+  private readonly sesion = inject(SesionService);
+
+  /** Teléfono del pediatra guardado en la cuenta, o null. */
+  telefonoPediatra = computed(() => this.sesion.usuario()?.telefonoPediatra ?? null);
+
+  /** Enlace `tel:` del pediatra, o null si no hay número guardado. */
+  enlacePediatra = computed(() => {
+    const telefono = this.telefonoPediatra();
+    return telefono ? enlaceTelefono(telefono) : null;
+  });
+
+  /**
+   * Preguntas del camino causal con la respuesta dada. Cada paso trae como
+   * condición la respuesta a la pregunta del paso anterior, así que se emparejan
+   * de a dos; se omiten los pasos sin texto (backends anteriores).
+   */
+  pasosLegibles = computed<PasoLegible[]>(() => {
+    const camino = this.respuesta()?.resultado?.caminoCausal ?? [];
+    const pasos: PasoLegible[] = [];
+    for (let i = 1; i < camino.length; i++) {
+      const pregunta = camino[i - 1].contenido;
+      if (pregunta && camino[i].condicion) {
+        pasos.push({ pregunta, respuesta: etiquetaOpcion(camino[i].condicion) });
+      }
+    }
+    return pasos;
+  });
+
+  /** True si el resultado es una alerta y hay algo que explicar en «¿Por qué este resultado?». */
+  mostrarPorQue = computed(() => {
+    const resultado = this.respuesta()?.resultado;
+    const alerta = resultado?.nivel === 'URGENCIA' || resultado?.nivel === 'CONSULTAR_MEDICO';
+    return alerta && ((resultado?.razones.length ?? 0) > 0 || this.pasosLegibles().length > 0);
+  });
 
   /** Tono de la insignia según el nivel de alerta del resultado. */
   tonoInsignia = computed<TonoInsignia>(() => {
@@ -72,8 +136,7 @@ export class ResultadoComponent implements OnInit {
     this.recorridoService.consultar(this.recorridoId).subscribe({
       next: r => this.respuesta.set(r),
       error: e => {
-        if (recorridoNoDisponible(e)) {
-          this.router.navigate(['/'], { queryParams: AVISO_RECORRIDO_NO_DISPONIBLE });
+        if (this.salirSiNoSigue(e)) {
           return;
         }
         this.error.set('No pudimos cargar el resultado. Intenta de nuevo.');
@@ -92,8 +155,7 @@ export class ResultadoComponent implements OnInit {
     this.recorridoService.retroceder(this.recorridoId).subscribe({
       next: r => this.router.navigate(['/pregunta', r.recorridoId]),
       error: e => {
-        if (recorridoNoDisponible(e)) {
-          this.router.navigate(['/'], { queryParams: AVISO_RECORRIDO_NO_DISPONIBLE });
+        if (this.salirSiNoSigue(e)) {
           return;
         }
         this.error.set('No pudimos volver a la pregunta anterior. Intenta de nuevo.');
@@ -108,5 +170,28 @@ export class ResultadoComponent implements OnInit {
       next: r => this.router.navigate(['/pregunta', r.recorridoId]),
       error: () => this.error.set('No pudimos iniciar una nueva consulta. Intenta de nuevo.')
     });
+  }
+
+  /** Abre o cierra el panel «Contactar a mi pediatra». */
+  alternarPanelPediatra(): void {
+    this.panelPediatra.update(abierto => !abierto);
+  }
+
+  /**
+   * Si el recorrido ya no está disponible (404) o venció (410), vuelve al inicio
+   * con el aviso que corresponde.
+   *
+   * @returns true si salió de la pantalla
+   */
+  private salirSiNoSigue(e: unknown): boolean {
+    if (recorridoNoDisponible(e)) {
+      this.router.navigate(['/'], { queryParams: AVISO_RECORRIDO_NO_DISPONIBLE });
+      return true;
+    }
+    if (recorridoVencido(e)) {
+      this.router.navigate(['/'], { queryParams: AVISO_RECORRIDO_VENCIDO });
+      return true;
+    }
+    return false;
   }
 }

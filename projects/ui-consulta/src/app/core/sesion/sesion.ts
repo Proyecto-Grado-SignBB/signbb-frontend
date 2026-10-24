@@ -13,6 +13,9 @@ export const MENSAJE_CUENTA_CLINICA = 'Esta cuenta es de médico; usa la app de 
 /** Aviso del inicio cuando un recorrido no es de esta cuenta o ya venció. */
 export const MENSAJE_RECORRIDO_NO_DISPONIBLE = 'Ese recorrido no está disponible.';
 
+/** Aviso del inicio cuando la consulta venció tras 8 h sin actividad o se reinició. */
+export const MENSAJE_RECORRIDO_VENCIDO = 'Esa consulta venció o se reinició. Puedes iniciar una nueva.';
+
 /** Configuración de la sesión compartida para esta app; también la usan las specs. */
 export function proveerSesion(): Provider[] {
   return [
@@ -58,6 +61,17 @@ export function recorridoNoDisponible(error: unknown): boolean {
 
 /** Parámetros del inicio para que muestre {@link MENSAJE_RECORRIDO_NO_DISPONIBLE}. */
 export const AVISO_RECORRIDO_NO_DISPONIBLE = { aviso: 'recorrido' };
+
+/**
+ * True si el back respondió 410 a un recorrido: su sesión venció tras 8 h sin
+ * actividad o el padre lo reinició y ya no se puede seguir.
+ */
+export function recorridoVencido(error: unknown): boolean {
+  return error instanceof HttpErrorResponse && error.status === 410;
+}
+
+/** Parámetros del inicio para que muestre {@link MENSAJE_RECORRIDO_VENCIDO}. */
+export const AVISO_RECORRIDO_VENCIDO = { aviso: 'vencido' };
 
 /**
  * Guard del inicio: con sesión de familia deja pasar; sin ella lleva a la

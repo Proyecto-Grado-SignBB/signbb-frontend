@@ -1,7 +1,17 @@
-<button
-  class="boton"
-  [class]="'boton--' + variante + ' boton--' + tono + ' boton--' + alto + ' boton--ancho-' + ancho"
-  [class.boton--deshabilitado]="disabled"
-  [disabled]="disabled">
-  <ng-content></ng-content>
-</button>
+<ng-template #contenido><ng-content></ng-content></ng-template>
+@if (href) {
+  <a
+    [class]="clases"
+    [class.boton--deshabilitado]="disabled"
+    [attr.href]="disabled ? null : href"
+    [attr.aria-disabled]="disabled ? 'true' : null">
+    <ng-container [ngTemplateOutlet]="contenido"></ng-container>
+  </a>
+} @else {
+  <button
+    [class]="clases"
+    [class.boton--deshabilitado]="disabled"
+    [disabled]="disabled">
+    <ng-container [ngTemplateOutlet]="contenido"></ng-container>
+  </button>
+}

@@ -116,3 +116,26 @@
   font-weight: 600;
   color: $color-alert-dark;
 }
+
+.perfil__pediatra {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px 20px;
+  border-radius: 20px;
+  background: white;
+  box-shadow: 0 6px 18px rgba(20, 20, 19, 0.06);
+
+  h2 {
+    margin: 0;
+    font-family: $font-heading;
+    font-size: 17px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.45;
+    color: $color-text-secondary;
+  }
+}

@@ -14,6 +14,8 @@ export interface UsuarioSesion {
   /** Institución del médico; nula en los padres. */
   institucion: string | null;
   activo: boolean;
+  /** Teléfono del pediatra que guardó un padre; nulo si no lo guardó (o en sesiones anteriores al dato). */
+  telefonoPediatra?: string | null;
 }
 
 /** Sesión abierta (`SesionDTO` del back): el token, cuándo vence y la cuenta. */
@@ -116,6 +118,16 @@ export class SesionService {
       .pipe(tap(() => this.salir()));
   }
 
+  /**
+   * Guarda el teléfono del pediatra del padre (`PUT /auth/yo/pediatra`); vacío
+   * lo borra. Si el back responde, actualiza la cuenta de la sesión guardada.
+   * Un 422 trae el motivo.
+   */
+  guardarTelefonoPediatra(telefono: string): Observable<UsuarioSesion> {
+    return this.http.put<UsuarioSesion>(`${this.apiUrl}/auth/yo/pediatra`, { telefono })
+      .pipe(tap(usuario => this.actualizarUsuario(usuario)));
+  }
+
   /** Cierra la sesión y la borra del navegador. */
   salir(): void {
     localStorage.removeItem(this.clave);
@@ -129,6 +141,18 @@ export class SesionService {
     (persistente ? sessionStorage : localStorage).removeItem(this.clave);
     (persistente ? localStorage : sessionStorage).setItem(this.clave, JSON.stringify(sesion));
     this.sesion.set(sesion);
+  }
+
+  /** Cambia la cuenta de la sesión abierta, en el mismo almacén donde ya estaba. */
+  private actualizarUsuario(usuario: UsuarioSesion): void {
+    const actual = this.sesion();
+    if (!actual) {
+      return;
+    }
+    const nueva: Sesion = { ...actual, usuario };
+    const almacen = localStorage.getItem(this.clave) !== null ? localStorage : sessionStorage;
+    almacen.setItem(this.clave, JSON.stringify(nueva));
+    this.sesion.set(nueva);
   }
 
   /** Lee la sesión guardada (en `localStorage` o `sessionStorage`); la descarta si está dañada o vencida. */

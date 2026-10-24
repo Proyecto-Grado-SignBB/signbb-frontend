@@ -1,16 +1,20 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { SesionService } from 'ui-compartida';
+import { TelefonoPediatraComponent } from '../telefono-pediatra/telefono-pediatra';
 
 /**
  * Perfil de la familia: sus datos de cuenta, el acceso a «Mis recorridos»,
  * «Cerrar sesión» y «Cerrar sesión en todos los dispositivos», que vuelven a
  * la bienvenida.
+ *
+ * MODIFICADO (ítem 2.4): permite guardar, cambiar o borrar el teléfono del
+ * pediatra que usa «Contactar a mi pediatra» en el resultado.
  */
 @Component({
   selector: 'app-perfil',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, TelefonoPediatraComponent],
   templateUrl: './perfil.html',
   styleUrl: './perfil.scss'
 })

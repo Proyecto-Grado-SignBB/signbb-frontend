@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import { Component, Input } from '@angular/core';
 
 /** Color semántico del botón según la acción que dispara. */
@@ -12,10 +13,14 @@ export type AnchoBoton = 'completo' | 'auto';
 /**
  * Botón reutilizable con tono, variante y alto configurables. El contenido
  * (texto o ícono) se proyecta desde la plantilla que lo usa.
+ *
+ * Con `href` se dibuja como enlace con el mismo aspecto, por ejemplo para
+ * llamar (`tel:123`); deshabilitado, el enlace queda sin destino.
  */
 @Component({
   selector: 'app-boton',
   standalone: true,
+  imports: [NgTemplateOutlet],
   templateUrl: './boton.html',
   styleUrl: './boton.scss'
 })
@@ -30,4 +35,11 @@ export class BotonComponent {
   @Input() ancho: AnchoBoton = 'completo';
   /** Deshabilita el botón cuando es true. */
   @Input() disabled = false;
+  /** Destino del enlace (`tel:`, `https:`...); si viene, el botón es un `<a>`. */
+  @Input() href: string | null = null;
+
+  /** Clases de tono, variante, alto y ancho, iguales para el botón y el enlace. */
+  get clases(): string {
+    return `boton boton--${this.variante} boton--${this.tono} boton--${this.alto} boton--ancho-${this.ancho}`;
+  }
 }
