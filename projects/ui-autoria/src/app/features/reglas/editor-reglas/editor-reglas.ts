@@ -95,8 +95,6 @@ export class EditorReglasComponent implements OnInit {
   });
   /** True si no se puede editar nada: el subgrafo está en revisión o la base es de otro médico. */
   protected readonly soloLectura = computed(() => this.enRevision() || this.ajena());
-  /** True si la base pertenece al grafo raíz (no se publica desde un subgrafo). */
-  protected readonly esRaiz = computed(() => this.base()?.grafoId === 'grafo_raiz');
 
   /** Diálogo de «Descartar cambios» abierto. */
   protected readonly mostrarDescartar = signal(false);
