@@ -1,0 +1,49 @@
+# =============================================================================
+# Frontend PWA de SignBB: build de ui-consulta + Caddy (HTTPS y proxy /api)
+# =============================================================================
+# Uso, desde este directorio:
+#   cp .env.example .env
+#   docker compose up -d --build
+#
+# Se usa la red del host para que Caddy alcance el backend que corre en
+# 127.0.0.1:8080 (tanto con ./mvnw spring-boot:run como con el backend en
+# Docker publicado en 127.0.0.1:8080). En Linux, la red del host también
+# permite que Caddy escuche directamente en 80 y 443.
+#
+# Requisito: el puerto 443 debe estar libre. El 80 no se abre (Caddy tiene
+# desactivada la redirección http->https), así que nginx puede seguir en él;
+# si se quiere redirección, liberar el 80 y quitar "auto_https disable_redirects"
+# del Caddyfile.
+# =============================================================================
+
+name: signbb-web
+
+services:
+  web:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    image: signbb-web:local
+
+    # Linux: comparte la red del host. No usar "ports" junto con esta opción.
+    network_mode: host
+
+    environment:
+      # IP o dominio por el que se accede a la PWA.
+      SIGNBB_DOMINIO: ${SIGNBB_DOMINIO:-192.168.20.217}
+      # Backend tal como se ve desde el host (Caddy corre en su red).
+      SIGNBB_BACKEND: ${SIGNBB_BACKEND:-127.0.0.1:8080}
+
+    volumes:
+      # Persisten la CA interna y los certificados. Si se borra caddy_data,
+      # la CA cambia y hay que reinstalarla en los dispositivos.
+      - caddy_data:/data
+      - caddy_config:/config
+
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+    name: signbb_caddy_data
+  caddy_config:
+    name: signbb_caddy_config

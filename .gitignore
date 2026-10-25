@@ -47,3 +47,7 @@ Thumbs.db
 
 # Salida por defecto de Compodoc (los scripts usan docs/)
 /documentation
+
+# Despliegue local (CA copiada del volumen y variables del compose)
+/deploy/.env
+/deploy/caddy-root.crt

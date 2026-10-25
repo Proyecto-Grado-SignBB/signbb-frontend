@@ -47,7 +47,26 @@ npx ng build ui-autoria
 - Para un build sin optimizar: `npx ng build <proyecto> --configuration development`.
 - La URL de la API por entorno está en `projects/<app>/src/environments/`:
   `environment.development.ts` usa `http://localhost:8080/api` y
-  `environment.ts` (producción) el placeholder `https://TU-DOMINIO-AQUI/api`.
+  `environment.ts` (producción) usa la ruta relativa `/api`. En producción,
+  Caddy sirve la PWA y hace proxy de `/api` y `/media` al backend, de modo que
+  el mismo build funciona con cualquier dominio o IP.
+
+## Despliegue PWA (Docker + Caddy)
+
+`ui-consulta` se despliega como PWA instalable con HTTPS en una red local.
+El despliegue autónomo (build de producción + Caddy + proxy al backend) está
+en [`deploy/`](deploy/):
+
+```bash
+cd deploy
+cp .env.example .env
+docker compose up -d --build
+```
+
+Allí se documentan la CA interna de Caddy, la instalación en Android/iOS, el
+ciclo de vida de los contenedores, las actualizaciones y el diagnóstico. Para
+un dominio público con certificado válido (fase 2), ver la sección final de
+[`deploy/README.md`](deploy/README.md).
 
 ## Pruebas
 

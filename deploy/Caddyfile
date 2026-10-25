@@ -1,0 +1,60 @@
+# =============================================================================
+# Caddy para la PWA de SignBB en una red local
+# =============================================================================
+# - Sirve dist/ui-consulta/browser en la raíz.
+# - Hace proxy de /api y /media al backend (mismo origen: sin CORS).
+# - TLS con la CA interna de Caddy ("tls internal"). La CA raíz se instala una
+#   vez en cada dispositivo; no se puede obtener un certificado público para
+#   una IP privada.
+#
+# Variables:
+#   SIGNBB_DOMINIO   IP o nombre por el que se accede (por defecto 192.168.20.217)
+#   SIGNBB_BACKEND   destino del proxy (por defecto 127.0.0.1:8080)
+#
+# Para pasar a un dominio público con DNS-01: quitar "tls internal" y añadir
+# el bloque "tls { dns ... }" correspondiente al proveedor.
+# =============================================================================
+{
+	admin localhost:2019
+
+	# La PWA se usa siempre por https://. No se abre el puerto 80, que puede
+	# seguir ocupado por nginx. Para redirigir http:// a https://, liberar el
+	# 80 y quitar esta línea.
+	auto_https disable_redirects
+}
+
+{$SIGNBB_DOMINIO:192.168.20.217} {
+	tls internal
+	encode zstd gzip
+
+	@api path /api/*
+	@media path /media/*
+	@sinCache path / /index.html /ngsw-worker.js /ngsw.json /safety-worker.js /manifest.webmanifest
+
+	# El index y el service worker deben revalidarse siempre; si no, una
+	# actualización de la PWA puede quedar atrapada en la caché del navegador.
+	header @sinCache Cache-Control "no-cache"
+
+	# Datos clínicos: las respuestas de la API no se cachean.
+	header /api/* Cache-Control "no-store"
+
+	header {
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+	}
+
+	handle @api {
+		reverse_proxy {$SIGNBB_BACKEND:127.0.0.1:8080}
+	}
+
+	handle @media {
+		reverse_proxy {$SIGNBB_BACKEND:127.0.0.1:8080}
+	}
+
+	# SPA: cualquier ruta desconocida vuelve a index.html.
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+}

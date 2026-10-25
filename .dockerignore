@@ -1,0 +1,12 @@
+# Contexto de build del frontend (deploy/Dockerfile)
+node_modules
+dist
+.angular
+.git
+.gitignore
+.vscode
+docs
+documentation
+projects/*/docs
+deploy/.env
+deploy/*.crt
