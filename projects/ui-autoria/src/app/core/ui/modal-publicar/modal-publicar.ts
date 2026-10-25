@@ -53,9 +53,4 @@ export class ModalPublicarComponent {
   protected get avisosReglas(): Aviso[] {
     return this.avisos.filter(a => a.codigo.startsWith('REGLA_'));
   }
-
-  /** Cantidad de nodos sueltos (no bloquean, no se publican). */
-  protected get sueltos(): number {
-    return this.avisos.filter(a => a.codigo === 'NODO_SUELTO').length;
-  }
 }

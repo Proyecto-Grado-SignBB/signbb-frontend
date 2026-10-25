@@ -20,7 +20,7 @@ export type Desenlace = 'RECOMENDACION' | 'CONSULTA_MEDICA' | 'URGENCIA';
  */
 export type EstadoBorrador = 'BORRADOR' | 'PUBLICADO' | 'CAMBIOS_SIN_PUBLICAR' | 'EN_REVISION';
 
-/** Clases de aviso del lienzo (todas bloquean la publicación salvo `NODO_SUELTO`). */
+/** Clases de aviso del lienzo (todas bloquean la publicación). */
 export type CodigoAviso =
   | 'SIN_INICIO'
   | 'TEXTO_VACIO'

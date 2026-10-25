@@ -20,7 +20,7 @@ export interface CajaNodo {
   x: number;
   y: number;
   profundidad: number;
-  /** true si no se llega a él desde la primera pregunta (no se publicará). */
+  /** true si no se llega a él desde la primera pregunta (bloquea la publicación). */
   suelto: boolean;
 }
 

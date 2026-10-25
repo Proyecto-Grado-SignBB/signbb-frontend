@@ -56,10 +56,6 @@
         <div class="check-strip">{{ directo ? 'No hay nada que impida publicarlo.' : 'No hay nada que impida enviarlo.' }}</div>
       }
 
-      @if (sueltos > 0) {
-        <p class="revisando">{{ sueltos }} nodo{{ sueltos === 1 ? '' : 's' }} suelto{{ sueltos === 1 ? '' : 's' }} no se publicará{{ sueltos === 1 ? '' : 'n' }}.</p>
-      }
-
       @if (error) {
         <div class="check-strip check-strip--aviso" role="alert">
           <span>{{ error }}</span>
