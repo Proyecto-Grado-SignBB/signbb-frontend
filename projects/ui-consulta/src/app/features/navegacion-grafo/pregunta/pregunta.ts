@@ -118,8 +118,9 @@ export class PreguntaComponent implements OnInit {
 
   /**
    * Botón «volver» del encabezado: deshace la última respuesta en el backend y
-   * muestra de nuevo la pregunta anterior para poder cambiarla. Si todavía no hay
-   * ninguna respuesta (primera pregunta) el backend responde 400 y se sale al inicio.
+   * muestra de nuevo la pregunta anterior para poder cambiarla. Si no hay pasos
+   * en el historial (primera pregunta o sesión heredada) el backend responde 400
+   * y se sale al inicio.
    */
   volver(): void {
     if (this.enviando() || this.volviendo()) {
