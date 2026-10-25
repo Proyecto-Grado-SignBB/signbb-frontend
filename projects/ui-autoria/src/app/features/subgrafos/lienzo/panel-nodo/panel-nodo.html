@@ -43,7 +43,7 @@
         <div class="miniaturas">
           @for (nombre of imagenes; track nombre; let i = $index) {
             <div class="miniatura">
-              <img [src]="urlImagen(nombre)" alt="" />
+              <img [src]="imagenesUrl[nombre]" alt="" />
               <button type="button" class="btn-quitar-imagen" (click)="quitarImagen(i)"
                 title="Quitar imagen" [attr.aria-label]="'Quitar imagen ' + (i + 1)">✕</button>
             </div>

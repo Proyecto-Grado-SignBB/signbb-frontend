@@ -147,25 +147,41 @@ describe('PanelNodoComponent', () => {
       fixture.detectChanges();
     }
 
+    function responderImagenes(http: HttpTestingController, nombres: string[]): void {
+      for (const nombre of nombres) {
+        http
+          .expectOne(`${environment.apiUrl}/autoria/imagenes/${nombre}`)
+          .flush(new Blob([new Uint8Array([1, 2, 3])], { type: 'image/png' }));
+      }
+      fixture.detectChanges();
+    }
+
     it('al editar muestra las imágenes que ya tiene la pregunta', async () => {
+      const http = TestBed.inject(HttpTestingController);
       await abrir({ tipo: 'editar', nodo: CON_IMAGENES });
+      responderImagenes(http, [IMG_1, IMG_2]);
 
       const fotos = [...el.querySelectorAll<HTMLImageElement>('.miniatura img')];
       expect(fotos.length).toBe(2);
-      expect(fotos[0].src).toContain(`/media/${IMG_1}`);
+      expect(fotos[0].src).toContain('blob:');
       expect(fotos[0].getAttribute('alt')).toBe('');
       expect(el.querySelector('.agregar-imagen')).not.toBeNull();
     });
 
     it('con tres imágenes ya no ofrece agregar otra', async () => {
-      await abrir({ tipo: 'editar', nodo: { ...TERMOMETRO, imagenes: [IMG_1, IMG_2, '33333333-3333-3333-3333-333333333333.webp'] } });
+      const http = TestBed.inject(HttpTestingController);
+      const tercera = '33333333-3333-3333-3333-333333333333.webp';
+      await abrir({ tipo: 'editar', nodo: { ...TERMOMETRO, imagenes: [IMG_1, IMG_2, tercera] } });
+      responderImagenes(http, [IMG_1, IMG_2, tercera]);
 
       expect(el.querySelectorAll('.miniatura').length).toBe(3);
       expect(el.querySelector('.agregar-imagen')).toBeNull();
     });
 
     it('quitar una imagen la saca de lo que se guarda', async () => {
+      const http = TestBed.inject(HttpTestingController);
       await abrir({ tipo: 'editar', nodo: CON_IMAGENES });
+      responderImagenes(http, [IMG_1, IMG_2]);
       let guardado: { nodoId: string; request: NodoRequest } | undefined;
       fixture.componentInstance.guardar.subscribe(g => (guardado = g));
 
@@ -187,6 +203,7 @@ describe('PanelNodoComponent', () => {
       expect(el.querySelector('.agregar-imagen')?.textContent).toContain('Subiendo');
       subida.flush({ nombre: IMG_1 });
       fixture.detectChanges();
+      responderImagenes(http, [IMG_1]);
 
       expect(el.querySelectorAll('.miniatura').length).toBe(1);
       enviar();

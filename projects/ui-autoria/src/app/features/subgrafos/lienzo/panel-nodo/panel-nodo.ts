@@ -1,5 +1,6 @@
-import { Component, EventEmitter, Input, OnChanges, Output, inject } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import { BotonComponent } from 'ui-compartida';
 import {
   Desenlace,
@@ -11,7 +12,7 @@ import {
   RespuestaLienzo
 } from '../../../../models/lienzo.model';
 import { AutoriaService, mensajeDeError } from '../../../../core/http/autoria';
-import { errorDeArchivo, MAX_IMAGENES, urlImagen } from '../../../../core/media/imagenes';
+import { errorDeArchivo, MAX_IMAGENES } from '../../../../core/media/imagenes';
 
 /**
  * Para qué se abrió el panel:
@@ -51,7 +52,7 @@ interface FilaRespuesta {
   templateUrl: './panel-nodo.html',
   styleUrl: './panel-nodo.scss'
 })
-export class PanelNodoComponent implements OnChanges {
+export class PanelNodoComponent implements OnChanges, OnDestroy {
   private readonly autoria = inject(AutoriaService);
 
   /** Para qué se abrió el panel. */
@@ -95,11 +96,21 @@ export class PanelNodoComponent implements OnChanges {
   protected subiendo = false;
   protected errorImagen: string | null = null;
   protected readonly maxImagenes = MAX_IMAGENES;
-  protected readonly urlImagen = urlImagen;
+  /** URL de objeto para cada imagen descargada con la sesión de autoría. */
+  protected imagenesUrl: Record<string, string> = {};
+  private readonly urlsObjeto: string[] = [];
+  private readonly imagenesPendientes = new Set<string>();
+  private suscripcionesImagenes = new Subscription();
 
   /** Reinicia el formulario cada vez que cambia el contexto. */
   ngOnChanges(): void {
+    this.limpiarUrls();
     this.reiniciar();
+  }
+
+  /** Libera las URLs de objeto al cerrar el panel. */
+  ngOnDestroy(): void {
+    this.limpiarUrls();
   }
 
   /** Carga el formulario según el contexto (crear, editar o enlazar). */
@@ -107,6 +118,7 @@ export class PanelNodoComponent implements OnChanges {
     const c = this.contexto;
     this.destinoExistente = null;
     this.imagenes = c.tipo === 'editar' ? [...(c.nodo.imagenes ?? [])] : [];
+    this.cargarImagenes();
     this.subiendo = false;
     this.errorImagen = null;
     if (c.tipo === 'editar') {
@@ -241,6 +253,7 @@ export class PanelNodoComponent implements OnChanges {
       next: nombre => {
         this.imagenes = [...this.imagenes, nombre];
         this.subiendo = false;
+        this.cargarImagenes();
       },
       error: e => {
         this.errorImagen = mensajeDeError(e, 'No se pudo subir la imagen. Intenta de nuevo.');
@@ -250,8 +263,57 @@ export class PanelNodoComponent implements OnChanges {
   }
 
   protected quitarImagen(indice: number): void {
+    const [retirada] = this.imagenes.filter((_, i) => i === indice);
     this.imagenes = this.imagenes.filter((_, i) => i !== indice);
+    if (retirada) {
+      this.liberarUrl(retirada);
+    }
     this.errorImagen = null;
+  }
+
+  /** Descarga las imágenes del borrador con el token de la sesión. */
+  private cargarImagenes(): void {
+    for (const nombre of this.imagenes) {
+      if (this.imagenesUrl[nombre] || this.imagenesPendientes.has(nombre)) {
+        continue;
+      }
+      this.imagenesPendientes.add(nombre);
+      this.suscripcionesImagenes.add(
+        this.autoria.verImagen(nombre).subscribe({
+          next: blob => {
+            if (!this.imagenes.includes(nombre)) {
+              return;
+            }
+            const url = URL.createObjectURL(blob);
+            this.imagenesUrl = { ...this.imagenesUrl, [nombre]: url };
+            this.urlsObjeto.push(url);
+            this.imagenesPendientes.delete(nombre);
+          },
+          error: () => this.imagenesPendientes.delete(nombre)
+        })
+      );
+    }
+  }
+
+  /** Libera una imagen concreta. */
+  private liberarUrl(nombre: string): void {
+    this.imagenesPendientes.delete(nombre);
+    const url = this.imagenesUrl[nombre];
+    if (!url) return;
+    URL.revokeObjectURL(url);
+    this.imagenesUrl = Object.fromEntries(
+      Object.entries(this.imagenesUrl).filter(([clave]) => clave !== nombre)
+    );
+  }
+
+  /** Libera todas las URLs de objeto. */
+  private limpiarUrls(): void {
+    this.suscripcionesImagenes.unsubscribe();
+    this.suscripcionesImagenes = new Subscription();
+    this.urlsObjeto.forEach(url => URL.revokeObjectURL(url));
+    this.urlsObjeto.length = 0;
+    this.imagenesUrl = {};
+    this.imagenesPendientes.clear();
   }
 
   // --- Acciones -----------------------------------------------------------------

@@ -213,6 +213,13 @@ export class AutoriaService {
     return this.http.post<{ nombre: string }>(`${this.base}/imagenes`, datos).pipe(map(r => r.nombre));
   }
 
+  /** Descarga una imagen del editor. Las imágenes de borradores no son públicas. */
+  verImagen(nombre: string): Observable<Blob> {
+    return this.http.get(`${this.base}/imagenes/${encodeURIComponent(nombre)}`, {
+      responseType: 'blob'
+    });
+  }
+
   /** Descarta los cambios sin publicar: el borrador vuelve a su última publicación. */
   descartar(id: number): Observable<SubgrafoDTO> {
     return this.http.post<SubgrafoDTO>(`${this.base}/subgrafos/${id}/descartar`, {});
