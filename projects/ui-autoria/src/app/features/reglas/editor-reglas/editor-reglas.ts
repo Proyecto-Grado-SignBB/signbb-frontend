@@ -253,6 +253,10 @@ export class EditorReglasComponent implements OnInit {
     cond.respuesta = respuesta;
   }
 
+  /** Máximo de casos por regla y de condiciones por caso (el servidor rechaza más de 20). */
+  protected readonly maxCasos = 20;
+  protected readonly maxCondiciones = 20;
+
   /** Agrega una condición vacía al caso. */
   protected agregarCondicion(caso: Condicion[]): void {
     caso.push({ idNodo: '', respuesta: '' });

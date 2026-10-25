@@ -2,8 +2,11 @@ import type { NivelAlerta, TipoInteraccion } from 'ui-compartida';
 
 export type { NivelAlerta, TipoInteraccion };
 
-/** Estado de la sesión: aún respondiendo preguntas o ya con desenlace. */
-export type EstadoRecorrido = 'EN_CURSO' | 'FINALIZADO';
+/**
+ * Estado de la sesión: aún respondiendo preguntas, ya con desenlace, vencida
+ * tras 8 h sin actividad o reiniciada por el padre (reemplazada por otra).
+ */
+export type EstadoRecorrido = 'EN_CURSO' | 'FINALIZADO' | 'VENCIDO' | 'ABANDONADO';
 
 /** Pregunta que el recorrido presenta al cuidador mientras está en curso. */
 export interface PreguntaDTO {
@@ -27,6 +30,8 @@ export interface PasoCausalDTO {
   nodoId: string;
   /** Condición de la arista por la que se llegó; vacía en el nodo inicial. */
   condicion: string;
+  /** Texto del nodo alcanzado (la pregunta, si es una); ausente en backends anteriores. */
+  contenido?: string;
 }
 
 /** Una recomendación alcanzada durante el recorrido, con su propio camino causal. */
@@ -47,7 +52,7 @@ export interface ResultadoDTO {
   destinoId: string;
   /** Contenido del nodo terminal. */
   mensaje: string;
-  /** Ids de las reglas que dispararon; vacío si NORMAL. */
+  /** Nombres de las reglas que dispararon; vacío si NORMAL. */
   razones: string[];
   /** Secuencia de nodos y condiciones hasta el destino. */
   caminoCausal: PasoCausalDTO[];
@@ -78,13 +83,15 @@ export interface ResponderRequest {
   opciones?: string[];
   /** Pista del tipo de interacción para la auditoría. */
   tipo?: TipoInteraccion;
+  /** Id de la pregunta que se contesta; si ya no es la actual, el backend responde 409. */
+  idPregunta?: string;
 }
 
 /** Fila de «Mis recorridos»: un recorrido de esta cuenta, en curso o terminado. */
 export interface ResumenRecorridoDTO {
   /** Id del recorrido. */
   recorridoId: string;
-  /** En curso o terminado. */
+  /** En curso, terminado, vencido o reiniciado. */
   estado: EstadoRecorrido;
   /** Nivel de alerta del resultado; nulo si sigue en curso. */
   nivel: NivelAlerta | null;

@@ -28,13 +28,13 @@
           <div class="crear-campos">
             <label>
               <span>Nombre de la base</span>
-              <input type="text" [(ngModel)]="nombreNuevo" placeholder="Ej: Ictericia en la piel" />
+              <input maxlength="100" type="text" [(ngModel)]="nombreNuevo" placeholder="Ej: Ictericia en la piel" />
               <small>Nombre técnico; solo lo ven los médicos.</small>
             </label>
 
             <label>
               <span>Descripción</span>
-              <textarea rows="2" [(ngModel)]="descripcionNueva"
+              <textarea maxlength="500" rows="2" [(ngModel)]="descripcionNueva"
                 placeholder="Explica para qué sirven estas reglas…"></textarea>
             </label>
 

@@ -1,0 +1,16 @@
+<form class="telefono" (ngSubmit)="guardar()">
+  <label class="telefono__campo">
+    Teléfono de tu pediatra
+    <input type="tel" name="telefono" maxlength="20" autocomplete="tel" inputmode="tel"
+      placeholder="+57 300 123 4567" [(ngModel)]="telefono" [disabled]="guardando()" />
+  </label>
+  @if (error(); as mensaje) {
+  <p class="telefono__error" role="alert">{{ mensaje }}</p>
+  }
+  @if (listo()) {
+  <p class="telefono__listo" role="status">Número guardado.</p>
+  }
+  <app-boton tono="neutro" variante="contorno" alto="mediano" [disabled]="guardando()">
+    Guardar número
+  </app-boton>
+</form>

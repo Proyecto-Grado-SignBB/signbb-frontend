@@ -2,7 +2,7 @@ import { Component, OnInit, computed } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { RecorridoService } from '../../../core/http/recorrido';
 import { AvisoLegalComponent, MensajeErrorComponent, SesionService } from 'ui-compartida';
-import { MENSAJE_RECORRIDO_NO_DISPONIBLE } from '../../../core/sesion/sesion';
+import { MENSAJE_RECORRIDO_NO_DISPONIBLE, MENSAJE_RECORRIDO_VENCIDO } from '../../../core/sesion/sesion';
 
 @Component({
   selector: 'app-inicio',
@@ -24,7 +24,7 @@ export class Inicio implements OnInit {
   cargando = false;
   /** Mensaje de error si no se pudo iniciar la consulta. */
   error: string | null = null;
-  /** Aviso al llegar desde un recorrido que no es de esta cuenta o ya venció. */
+  /** Aviso al llegar desde un recorrido que no es de esta cuenta (`?aviso=recorrido`) o que venció o se reinició (`?aviso=vencido`). */
   aviso: string | null = null;
 
   /** Nombre de la familia con sesión. */
@@ -38,8 +38,11 @@ export class Inicio implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    if (this.ruta.snapshot.queryParamMap.get('aviso') === 'recorrido') {
+    const aviso = this.ruta.snapshot.queryParamMap.get('aviso');
+    if (aviso === 'recorrido') {
       this.aviso = MENSAJE_RECORRIDO_NO_DISPONIBLE;
+    } else if (aviso === 'vencido') {
+      this.aviso = MENSAJE_RECORRIDO_VENCIDO;
     }
   }
 

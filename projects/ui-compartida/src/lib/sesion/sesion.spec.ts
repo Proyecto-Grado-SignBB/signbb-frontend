@@ -198,6 +198,31 @@ describe('SesionService', () => {
     expect(localStorage.getItem(CLAVE)).toBeNull();
   });
 
+  it('guardarTelefonoPediatra llama a /auth/yo/pediatra y actualiza la cuenta donde estaba guardada', () => {
+    sessionStorage.setItem(CLAVE, JSON.stringify(sesionDePrueba('PADRE')));
+    const servicio = crear();
+
+    servicio.guardarTelefonoPediatra('+57 300 123 4567').subscribe();
+    const req = http.expectOne(`${API}/auth/yo/pediatra`);
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body).toEqual({ telefono: '+57 300 123 4567' });
+    req.flush({ ...sesionDePrueba('PADRE').usuario, telefonoPediatra: '+57 300 123 4567' });
+
+    expect(servicio.usuario()?.telefonoPediatra).toBe('+57 300 123 4567');
+    expect(JSON.parse(sessionStorage.getItem(CLAVE)!).usuario.telefonoPediatra).toBe('+57 300 123 4567');
+    expect(localStorage.getItem(CLAVE)).toBeNull();
+  });
+
+  it('si guardar el teléfono falla, la cuenta de la sesión no cambia', () => {
+    localStorage.setItem(CLAVE, JSON.stringify(sesionDePrueba('PADRE')));
+    const servicio = crear();
+
+    servicio.guardarTelefonoPediatra('abc').subscribe({ error: () => undefined });
+    http.expectOne(`${API}/auth/yo/pediatra`).flush({ mensaje: 'no' }, { status: 422, statusText: 'Unprocessable' });
+
+    expect(servicio.usuario()?.telefonoPediatra).toBeUndefined();
+  });
+
   it('tieneRol compara con el rol de la cuenta', () => {
     localStorage.setItem(CLAVE, JSON.stringify(sesionDePrueba('MEDICO_SUPERVISOR')));
     const servicio = crear();

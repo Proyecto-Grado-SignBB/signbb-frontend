@@ -1,0 +1,40 @@
+@use 'tokens' as *;
+
+.telefono {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.telefono__campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: $color-text-primary;
+
+  input {
+    height: $button-height-md;
+    padding: 0 14px;
+    border: 1.5px solid $color-border;
+    border-radius: 12px;
+    font: inherit;
+    font-weight: 400;
+    background: white;
+  }
+}
+
+.telefono__error,
+.telefono__listo {
+  margin: 0;
+  font-size: 14px;
+}
+
+.telefono__error {
+  color: $color-alert-dark;
+}
+
+.telefono__listo {
+  color: $color-text-secondary;
+}

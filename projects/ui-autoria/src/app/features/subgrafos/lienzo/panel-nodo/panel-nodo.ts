@@ -102,6 +102,9 @@ export class PanelNodoComponent implements OnChanges, OnDestroy {
   private readonly imagenesPendientes = new Set<string>();
   private suscripcionesImagenes = new Subscription();
 
+  /** Máximo de respuestas por pregunta (el servidor rechaza más de 10). */
+  protected readonly maxRespuestas = 10;
+
   /** Reinicia el formulario cada vez que cambia el contexto. */
   ngOnChanges(): void {
     this.limpiarUrls();

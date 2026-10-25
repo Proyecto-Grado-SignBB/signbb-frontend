@@ -10,7 +10,7 @@
 
       <label class="campo">
         <span>Comentario para el médico</span>
-        <textarea [(ngModel)]="comentario" (blur)="tocado = true" rows="5"
+        <textarea maxlength="2000" [(ngModel)]="comentario" (blur)="tocado = true" rows="5"
           placeholder="Explica qué debe corregir…" [class.invalido]="tocado && !puedeRechazar"
           [disabled]="ocupado"></textarea>
         <small>Obligatorio. Sé específico para que el médico sepa qué ajustar.</small>

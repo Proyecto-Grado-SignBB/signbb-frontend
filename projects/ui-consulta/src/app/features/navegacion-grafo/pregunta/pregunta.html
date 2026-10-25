@@ -9,7 +9,28 @@
       </svg>
     </button>
     <span class="pregunta__titulo">Evaluación en curso</span>
+    <button type="button" class="pregunta__reiniciar" (click)="pedirReinicio()"
+      [disabled]="enviando() || volviendo() || reiniciando()">
+      Reiniciar
+    </button>
   </div>
+
+  @if (confirmarReinicio(); as motivo) {
+  <div class="pregunta__confirmacion" role="alertdialog" aria-labelledby="titulo-reinicio">
+    <p id="titulo-reinicio">
+      @if (motivo === 'primera') {
+      Esta es la primera pregunta. ¿Quieres reiniciar la consulta?
+      } @else {
+      ¿Reiniciar la consulta? Se pierden las respuestas de esta y empiezas desde la primera pregunta.
+      }
+    </p>
+    <app-boton tono="marca" alto="mediano" [disabled]="reiniciando()" (click)="reiniciar()">Sí, reiniciar</app-boton>
+    @if (motivo === 'primera') {
+    <app-boton variante="contorno" tono="neutro" alto="mediano" (click)="irAlInicio()">Ir al inicio</app-boton>
+    }
+    <app-boton variante="texto" tono="neutro" alto="mediano" (click)="cancelarReinicio()">Seguir con esta consulta</app-boton>
+  </div>
+  }
 
   @if (esImagen()) {
   <div class="pregunta__contenido pregunta__contenido--imagen">

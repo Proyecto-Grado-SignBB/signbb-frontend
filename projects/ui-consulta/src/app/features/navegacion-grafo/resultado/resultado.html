@@ -115,14 +115,72 @@
   </div>
   }
 
+  @if (mostrarPorQue()) {
+  <details class="resultado__porque">
+    <summary>¿Por qué este resultado?</summary>
+    @if (r.resultado?.nivel !== 'URGENCIA' && (r.resultado?.razones?.length ?? 0) > 0) {
+    <p class="resultado__porque-titulo">Señales que encontramos</p>
+    <ul class="resultado__porque-razones">
+      @for (razon of r.resultado?.razones; track razon) {
+      <li>{{ razon }}</li>
+      }
+    </ul>
+    }
+    @if (pasosLegibles().length > 0) {
+    <p class="resultado__porque-titulo">Lo que respondiste</p>
+    <ol class="resultado__camino">
+      @for (paso of pasosLegibles(); track $index) {
+      <li>
+        <span class="resultado__camino-pregunta">{{ paso.pregunta }}</span>
+        <b class="resultado__camino-respuesta">{{ paso.respuesta }}</b>
+      </li>
+      }
+    </ol>
+    }
+  </details>
+  }
+
   <div class="resultado__acciones">
     @switch (r.resultado?.nivel) {
     @case ('URGENCIA') {
-    <app-boton tono="alerta" (click)="volverAlInicio()">Buscar ayuda ahora</app-boton>
+    <app-boton tono="alerta" [href]="enlaceEmergencia">Buscar ayuda ahora · Llamar al {{ lineaEmergencia }}</app-boton>
+    <div class="resultado__proximamente" aria-disabled="true">
+      <div>
+        <b>Urgencias cercanas</b>
+        <span>Pronto podrás ver las urgencias pediátricas más cercanas a ti.</span>
+      </div>
+      <span class="resultado__insignia-proximamente">Próximamente</span>
+    </div>
     <app-boton variante="texto" tono="neutro" alto="mediano" (click)="volverAlInicio()">Finalizar navegación</app-boton>
     }
     @case ('CONSULTAR_MEDICO') {
-    <app-boton tono="aviso" (click)="volverAlInicio()">Contactar a mi pediatra</app-boton>
+    <app-boton tono="aviso" (click)="alternarPanelPediatra()">
+      {{ panelPediatra() ? 'Ocultar contacto del pediatra' : 'Contactar a mi pediatra' }}
+    </app-boton>
+    @if (panelPediatra()) {
+    <section class="resultado__pediatra" aria-label="Contactar a mi pediatra">
+      <h2>Qué contarle a tu pediatra</h2>
+      <ul>
+        @if ((r.resultado?.razones?.length ?? 0) > 0) {
+        <li>Las señales que encontramos: {{ r.resultado!.razones.join(', ') }}.</li>
+        }
+        @if (pasosLegibles().length > 0) {
+        <li>Lo que respondiste en esta consulta (lo ves en «¿Por qué este resultado?»).</li>
+        }
+        <li>Cuándo empezó el signo y si ha cambiado desde entonces.</li>
+      </ul>
+      @if (enlacePediatra(); as enlace) {
+      <app-boton tono="aviso" variante="contorno" alto="mediano" [href]="enlace">
+        Llamar a mi pediatra · {{ telefonoPediatra() }}
+      </app-boton>
+      } @else {
+      <app-telefono-pediatra></app-telefono-pediatra>
+      }
+      <app-boton tono="alerta" variante="texto" alto="mediano" [href]="enlaceEmergencia">
+        Si empeora, llama a la línea {{ lineaEmergencia }}
+      </app-boton>
+    </section>
+    }
     <app-boton variante="texto" tono="neutro" alto="mediano" (click)="volverAlInicio()">Finalizar navegación</app-boton>
     }
     @default {

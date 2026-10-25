@@ -3,20 +3,29 @@ import { Router, provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 
+import { SesionService } from 'ui-compartida';
 import { ResultadoComponent } from './resultado';
 import { RecorridoResponse, ResultadoDTO } from '../../../models/recorrido.model';
+import { CLAVE_SESION_CONSULTA, proveerSesion } from '../../../core/sesion/sesion';
+
+const SESION_PADRE = {
+  token: 't', expiraEn: new Date(Date.now() + 3_600_000).toISOString(),
+  usuario: { id: 9, nombre: 'Papá Uno', correo: 'p1@signbb.local', rol: 'PADRE', institucion: null, activo: true }
+};
 
 describe('Resultado', () => {
   let component: ResultadoComponent;
   let fixture: ComponentFixture<ResultadoComponent>;
 
   beforeEach(async () => {
+    localStorage.setItem(CLAVE_SESION_CONSULTA, JSON.stringify(SESION_PADRE));
     await TestBed.configureTestingModule({
       imports: [ResultadoComponent],
       providers: [
         provideRouter([{ path: 'resultado/:recorridoId', component: ResultadoComponent }]),
         provideHttpClient(),
-        provideHttpClientTesting()
+        provideHttpClientTesting(),
+        ...proveerSesion()
       ]
     })
     .compileComponents();
@@ -25,6 +34,8 @@ describe('Resultado', () => {
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
+
+  afterEach(() => localStorage.clear());
 
   it('should create', () => {
     expect(component).toBeTruthy();
@@ -205,6 +216,116 @@ describe('Resultado', () => {
         .flush(null, { status: 404, statusText: 'Not Found' });
 
       expect(navegar).toHaveBeenCalledWith(['/'], { queryParams: { aviso: 'recorrido' } });
+    });
+  });
+
+  describe('botones de emergencia', () => {
+    it('en URGENCIA «Buscar ayuda ahora» llama a la línea 123', () => {
+      const el = mostrar({ nivel: 'URGENCIA', razones: ['Regla Respiración Urgencia'] });
+
+      const enlace = el.querySelector<HTMLAnchorElement>('.resultado__acciones a[href="tel:123"]');
+      expect(enlace?.textContent).toContain('Buscar ayuda ahora');
+    });
+
+    it('en URGENCIA anuncia «Urgencias cercanas» como función próxima, sin acción', () => {
+      const el = mostrar({ nivel: 'URGENCIA', razones: ['Regla Respiración Urgencia'] });
+
+      const tarjeta = el.querySelector('.resultado__proximamente');
+      expect(tarjeta?.textContent).toContain('Urgencias cercanas');
+      expect(tarjeta?.textContent).toContain('Próximamente');
+      expect(tarjeta?.getAttribute('aria-disabled')).toBe('true');
+      expect(tarjeta?.querySelector('a, button')).toBeNull();
+    });
+
+    it('en CONSULTAR_MEDICO el panel del pediatra empieza cerrado y se abre con el botón', () => {
+      const el = mostrar({ nivel: 'CONSULTAR_MEDICO', razones: ['Regla Fiebre'] });
+      expect(el.querySelector('.resultado__pediatra')).toBeNull();
+
+      component.alternarPanelPediatra();
+      fixture.detectChanges();
+
+      const panel = el.querySelector('.resultado__pediatra')!;
+      expect(panel.textContent).toContain('Regla Fiebre');
+      expect(panel.textContent).toContain('Cuándo empezó el signo');
+      expect(panel.querySelector('a[href="tel:123"]')).not.toBeNull();
+    });
+
+    it('sin número guardado, el panel ofrece guardarlo', () => {
+      const el = mostrar({ nivel: 'CONSULTAR_MEDICO' });
+      component.alternarPanelPediatra();
+      fixture.detectChanges();
+
+      expect(el.querySelector('.resultado__pediatra app-telefono-pediatra input')).not.toBeNull();
+      expect(el.querySelector('.resultado__pediatra a[href^="tel:3"]')).toBeNull();
+    });
+
+    it('con número guardado, el panel llama al pediatra', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      TestBed.inject(SesionService).guardarTelefonoPediatra('300 123 4567').subscribe();
+      httpMock.expectOne(r => r.url.endsWith('/auth/yo/pediatra'))
+        .flush({ ...SESION_PADRE.usuario, telefonoPediatra: '300 123 4567' });
+
+      const el = mostrar({ nivel: 'CONSULTAR_MEDICO' });
+      component.alternarPanelPediatra();
+      fixture.detectChanges();
+
+      const llamar = el.querySelector<HTMLAnchorElement>('.resultado__pediatra a[href="tel:3001234567"]');
+      expect(llamar?.textContent).toContain('Llamar a mi pediatra');
+      expect(el.querySelector('.resultado__pediatra app-telefono-pediatra')).toBeNull();
+    });
+  });
+
+  describe('¿Por qué este resultado?', () => {
+    const camino = [
+      { nodoId: 'inicio', condicion: '', contenido: '¿Respira con dificultad?' },
+      { nodoId: 'q2', condicion: 'SI', contenido: '¿Desde hace cuánto?' },
+      { nodoId: 'urg', condicion: 'MENOS_DE_24_HORAS', contenido: 'Ve a urgencias' }
+    ];
+
+    it('empareja cada pregunta con la respuesta dada, traducida', () => {
+      const el = mostrar({ nivel: 'URGENCIA', razones: ['Regla Respiración Urgencia'], caminoCausal: camino });
+
+      expect(component.pasosLegibles()).toEqual([
+        { pregunta: '¿Respira con dificultad?', respuesta: 'Sí' },
+        { pregunta: '¿Desde hace cuánto?', respuesta: 'Menos de 24 horas' }
+      ]);
+      expect(el.querySelectorAll('.resultado__camino li').length).toBe(2);
+    });
+
+    it('en CONSULTAR_MEDICO también muestra los nombres de las reglas', () => {
+      const el = mostrar({ nivel: 'CONSULTAR_MEDICO', razones: ['Regla Fiebre'], caminoCausal: camino });
+
+      expect(el.querySelector('.resultado__porque-razones')?.textContent).toContain('Regla Fiebre');
+    });
+
+    it('no aparece en NORMAL', () => {
+      const el = mostrar({ nivel: 'NORMAL', caminoCausal: camino });
+
+      expect(el.querySelector('.resultado__porque')).toBeNull();
+    });
+
+    it('con un backend anterior (sin texto de las preguntas) solo deja las razones', () => {
+      const viejo = camino.map(({ nodoId, condicion }) => ({ nodoId, condicion }));
+      const el = mostrar({ nivel: 'CONSULTAR_MEDICO', razones: ['Regla Fiebre'], caminoCausal: viejo });
+
+      expect(component.pasosLegibles()).toEqual([]);
+      expect(el.querySelector('.resultado__porque')).not.toBeNull();
+      expect(el.querySelector('.resultado__camino')).toBeNull();
+    });
+  });
+
+  describe('recorrido vencido', () => {
+    it('al cargar, un 410 vuelve al inicio con el aviso de vencido', () => {
+      const router = TestBed.inject(Router);
+      const httpMock = TestBed.inject(HttpTestingController);
+      const navegar = spyOn(router, 'navigate').and.resolveTo(true);
+
+      component.cargar();
+      httpMock.match(r => r.method === 'GET')
+        .forEach(req => req.flush({ mensaje: 'venció' }, { status: 410, statusText: 'Gone' }));
+
+      expect(navegar).toHaveBeenCalledWith(['/'], { queryParams: { aviso: 'vencido' } });
+      expect(component.error()).toBeNull();
     });
   });
 });

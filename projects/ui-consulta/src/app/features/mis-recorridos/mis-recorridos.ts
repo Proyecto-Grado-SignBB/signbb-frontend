@@ -2,7 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { MensajeErrorComponent } from 'ui-compartida';
 import { RecorridoService } from '../../core/http/recorrido';
-import { NivelAlerta, ResumenRecorridoDTO } from '../../models/recorrido.model';
+import { EstadoRecorrido, NivelAlerta, ResumenRecorridoDTO } from '../../models/recorrido.model';
 
 /** Texto sencillo de cada nivel de alerta del resultado. */
 export const ETIQUETA_NIVEL: Record<NivelAlerta, string> = {
@@ -11,10 +11,19 @@ export const ETIQUETA_NIVEL: Record<NivelAlerta, string> = {
   URGENCIA: 'Ir a urgencias'
 };
 
+/** Texto de los recorridos que ya no se pueden seguir (CU10/CU11). */
+export const ETIQUETA_CERRADO: Partial<Record<EstadoRecorrido, string>> = {
+  VENCIDO: 'Vencido',
+  ABANDONADO: 'Reiniciado'
+};
+
 /**
  * «Mis recorridos»: las consultas de esta cuenta, de la más nueva a la más
  * vieja. Las que siguen en curso se continúan y las terminadas abren su
  * resultado.
+ *
+ * MODIFICADO (ítem 2.7): las vencidas tras 8 h sin actividad y las reiniciadas
+ * se muestran con su etiqueta y sin botón, porque ya no se pueden seguir.
  */
 @Component({
   selector: 'app-mis-recorridos',
@@ -28,6 +37,7 @@ export class MisRecorridosComponent implements OnInit {
   private readonly router = inject(Router);
 
   protected readonly etiquetaNivel = ETIQUETA_NIVEL;
+  protected readonly etiquetaCerrado = ETIQUETA_CERRADO;
   /** Recorridos de la cuenta. */
   protected readonly lista = signal<ResumenRecorridoDTO[]>([]);
   /** True mientras se cargan. */

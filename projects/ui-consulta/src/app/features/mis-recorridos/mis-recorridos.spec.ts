@@ -60,6 +60,21 @@ describe('MisRecorridosComponent', () => {
     expect(navegar.calls.argsFor(1)[0]).toEqual(['/resultado', 'r1']);
   });
 
+  it('los vencidos y reiniciados muestran su etiqueta y no se pueden abrir', () => {
+    peticion().flush([
+      { recorridoId: 'r4', estado: 'VENCIDO', nivel: null, mensaje: null,
+        iniciadoEn: '2026-10-14T10:05:00Z', finalizadoEn: null },
+      { recorridoId: 'r3', estado: 'ABANDONADO', nivel: null, mensaje: null,
+        iniciadoEn: '2026-10-13T10:05:00Z', finalizadoEn: null }
+    ]);
+    fixture.detectChanges();
+
+    const filas = el.querySelectorAll('.mis__fila');
+    expect(filas[0].textContent).toContain('Vencido');
+    expect(filas[1].textContent).toContain('Reiniciado');
+    expect(el.querySelector('.mis__fila button')).toBeNull();
+  });
+
   it('sin recorridos lo dice', () => {
     peticion().flush([]);
     fixture.detectChanges();

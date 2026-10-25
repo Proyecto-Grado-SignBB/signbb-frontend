@@ -26,7 +26,7 @@
           <div class="crear-campos">
             <label>
               <span>Nombre del subgrafo</span>
-              <input type="text" [(ngModel)]="nombreNuevo" (blur)="tocadoNombre = true"
+              <input maxlength="100" type="text" [(ngModel)]="nombreNuevo" (blur)="tocadoNombre = true"
                 placeholder="Ej: Ictericia en la piel" [class.invalido]="faltaNombre" />
               <small>Nombre técnico; solo lo ven los médicos.</small>
               @if (faltaNombre) {
@@ -63,7 +63,7 @@
                   <span class="crear-ayuda">— aparecerá como opción en «{{ pregunta }}»</span>
                 }
               </span>
-              <input type="text" [(ngModel)]="etiquetaNueva" (blur)="tocadoEtiqueta = true"
+              <input maxlength="100" type="text" [(ngModel)]="etiquetaNueva" (blur)="tocadoEtiqueta = true"
                 placeholder="Ej: Piel u ojos amarillos" [class.invalido]="faltaEtiqueta" />
               <small>{{ ayudaNombreFamilia }}</small>
               @if (faltaEtiqueta) {

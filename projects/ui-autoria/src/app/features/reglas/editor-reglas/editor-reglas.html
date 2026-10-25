@@ -105,13 +105,13 @@
             <div class="editor-body">
               <label class="campo">
                 <span>Nombre de la regla</span>
-                <input type="text" [ngModel]="form().nombre" (ngModelChange)="setNombre($event)"
+                <input maxlength="100" type="text" [ngModel]="form().nombre" (ngModelChange)="setNombre($event)"
                   placeholder="Ej: Ictericia con signos de alarma" />
               </label>
 
               <label class="campo">
                 <span>Descripción de la regla</span>
-                <textarea rows="3" [ngModel]="form().descripcion" (ngModelChange)="setDescripcion($event)"
+                <textarea maxlength="500" rows="3" [ngModel]="form().descripcion" (ngModelChange)="setDescripcion($event)"
                   placeholder="Explica para qué sirve la regla…"></textarea>
                 <small>Lo ven los médicos en autoría.</small>
               </label>
@@ -194,13 +194,13 @@
                       </div>
                     }
 
-                    <button type="button" class="btn-agregar" (click)="agregarCondicion(caso)">
+                    <button type="button" class="btn-agregar" [disabled]="caso.length >= maxCondiciones" (click)="agregarCondicion(caso)">
                       + Agregar condición
                     </button>
                   </div>
                 }
 
-                <button type="button" class="btn-agregar" style="margin-top: 16px;" (click)="agregarCaso()">
+                <button type="button" class="btn-agregar" style="margin-top: 16px;" [disabled]="form().casos.length >= maxCasos" (click)="agregarCaso()">
                   + Agregar caso
                 </button>
               </div>

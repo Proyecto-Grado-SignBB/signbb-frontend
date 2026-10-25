@@ -18,11 +18,19 @@
       @for (r of lista(); track r.recorridoId) {
         <li class="mis__fila">
           <div class="mis__texto">
-            <b>{{ r.estado === 'FINALIZADO' ? (r.nivel ? etiquetaNivel[r.nivel] : 'Terminado') : 'En curso' }}</b>
+            <b>
+              @switch (r.estado) {
+                @case ('FINALIZADO') { {{ r.nivel ? etiquetaNivel[r.nivel] : 'Terminado' }} }
+                @case ('EN_CURSO') { En curso }
+                @default { {{ etiquetaCerrado[r.estado] }} }
+              }
+            </b>
             <span>{{ fecha(r.iniciadoEn) }}@if (r.mensaje) { · {{ r.mensaje }} }</span>
           </div>
-          <button type="button" class="mis__accion" [class.mis__accion--curso]="r.estado !== 'FINALIZADO'"
-            (click)="abrir(r)">{{ r.estado === 'FINALIZADO' ? 'Ver resultado' : 'Continuar' }}</button>
+          @if (r.estado === 'FINALIZADO' || r.estado === 'EN_CURSO') {
+            <button type="button" class="mis__accion" [class.mis__accion--curso]="r.estado === 'EN_CURSO'"
+              (click)="abrir(r)">{{ r.estado === 'FINALIZADO' ? 'Ver resultado' : 'Continuar' }}</button>
+          }
         </li>
       }
     </ul>
