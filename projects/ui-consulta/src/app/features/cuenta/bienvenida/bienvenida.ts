@@ -9,7 +9,7 @@ interface PasoBienvenida {
 }
 
 /**
- * Bienvenida de las familias: explica en tres pasos para qué sirve SignBB y
+ * Bienvenida de las familias: explica en tres pasos para qué sirve Canguritos y
  * lleva a crear la cuenta o a ingresar. Es lo primero que ve quien no tiene
  * sesión; con sesión de familia pasa directo al inicio.
  */
