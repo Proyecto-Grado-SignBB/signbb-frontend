@@ -1,8 +1,0 @@
-<script>
-const s = { token: 't', expiraEn: new Date(Date.now() + 36e5).toISOString(),
-  usuario: { id: 9, nombre: 'Papá Uno', correo: 'p1@signbb.local', rol: 'PADRE', institucion: null, activo: true } };
-const ir = new URLSearchParams(location.search).get('ir');
-if (ir.startsWith('!')) localStorage.removeItem('signbb.consulta.sesion');
-else localStorage.setItem('signbb.consulta.sesion', JSON.stringify(s));
-location.replace(ir.replace(/^!/, ''));
-</script>
