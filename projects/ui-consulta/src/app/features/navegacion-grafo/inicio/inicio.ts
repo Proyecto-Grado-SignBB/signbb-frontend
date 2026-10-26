@@ -17,7 +17,6 @@ import { MENSAJE_RECORRIDO_NO_DISPONIBLE, MENSAJE_RECORRIDO_VENCIDO } from '../.
  * recorridos», al manual de usuario y al perfil, donde se cierra la sesión.
  */
 export class Inicio implements OnInit {
-  /** TODO: confirma con tu asesora si hay una sección específica del portal (recomendaciones/padres) en vez de la home. */
   urlFundacionCanguro = 'https://fundacioncanguro.co/';
 
   /** True mientras se inicia el recorrido. */
