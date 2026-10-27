@@ -20,6 +20,11 @@ preguntas y muestra el desenlace del triaje.
   `PADRE`. Si el back
   responde 404 a un recorrido (es de otra cuenta o venció), se vuelve al inicio
   con «Ese recorrido no está disponible.». No hay ruta comodín ni 404.
+- **Disponibilidad en el inicio.** Al entrar, `Inicio` consulta
+  `GET /api/consulta/disponibilidad`. Si no hay ningún subgrafo publicado,
+  muestra «La consulta no está disponible en estos momentos» y deshabilita
+  «Comenzar consulta»; si el backend responde 503 al iniciar, aplica el mismo
+  estado. Un recorrido ya iniciado puede continuar con su versión.
 - **Modelos** en `app/models/` (`recorrido.model.ts`, `nodo.model.ts`).
 - **API base** en `src/environments/environment*.ts`.
 

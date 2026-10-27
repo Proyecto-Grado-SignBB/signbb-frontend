@@ -199,6 +199,11 @@ export class PreguntaComponent implements OnInit {
           this.router.navigate(['/resultado', this.recorridoId]);
           return;
         }
+        const mensaje = e instanceof HttpErrorResponse ? (e.error as { mensaje?: unknown } | null)?.mensaje : null;
+        if (e instanceof HttpErrorResponse && e.status === 503 && typeof mensaje === 'string' && mensaje) {
+          this.error.set(mensaje);
+          return;
+        }
         this.error.set('No pudimos reiniciar la consulta. Intenta de nuevo.');
       }
     });

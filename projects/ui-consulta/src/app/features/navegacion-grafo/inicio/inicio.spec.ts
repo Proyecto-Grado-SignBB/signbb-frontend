@@ -12,6 +12,7 @@ import {
   guardFamilia,
   proveerSesion
 } from '../../../core/sesion/sesion';
+import { MENSAJE_CONSULTA_NO_DISPONIBLE } from '../../../core/consulta/mensajes';
 import { Inicio } from './inicio';
 
 @Component({ standalone: true, template: 'destino' })
@@ -27,10 +28,25 @@ describe('Inicio', () => {
   let harness: RouterTestingHarness;
   let el: HTMLElement;
 
-  async function abrir(url = '/'): Promise<void> {
+  async function abrir(url = '/', disponible: boolean | 'error' = true): Promise<void> {
     harness = await RouterTestingHarness.create();
     await harness.navigateByUrl(url);
     el = harness.routeNativeElement!;
+    await harness.fixture.whenStable();
+    // Solo el inicio (con sesión) consulta la disponibilidad.
+    if (el.querySelector('.inicio')) {
+      const peticion = http.expectOne(`${environment.apiUrl}/consulta/disponibilidad`);
+      if (disponible === 'error') {
+        peticion.flush(null, { status: 500, statusText: 'Server Error' });
+      } else {
+        peticion.flush({
+          disponible,
+          mensaje: disponible ? null : MENSAJE_CONSULTA_NO_DISPONIBLE
+        });
+      }
+      harness.detectChanges();
+      await harness.fixture.whenStable();
+    }
   }
 
   const cta = () => el.querySelector<HTMLButtonElement>('.inicio__cta')!;
@@ -74,6 +90,40 @@ describe('Inicio', () => {
     await harness.fixture.whenStable();
 
     expect(TestBed.inject(Router).url).toBe('/pregunta/r9');
+  });
+
+  it('sin subgrafos publicados muestra el aviso y deshabilita la consulta', async () => {
+    localStorage.setItem(CLAVE_SESION_CONSULTA, JSON.stringify(SESION_PADRE));
+    await abrir('/', false);
+
+    expect(el.querySelector('.inicio__aviso')?.textContent).toContain(MENSAJE_CONSULTA_NO_DISPONIBLE);
+    expect(cta().disabled).toBeTrue();
+
+    cta().click();
+    http.expectNone(`${environment.apiUrl}/recorridos`);
+  });
+
+  it('si falla la comprobación de disponibilidad deja intentar la consulta', async () => {
+    localStorage.setItem(CLAVE_SESION_CONSULTA, JSON.stringify(SESION_PADRE));
+    await abrir('/', 'error');
+
+    expect(cta().disabled).toBeFalse();
+  });
+
+  it('si el backend responde 503 al iniciar muestra que no está disponible', async () => {
+    localStorage.setItem(CLAVE_SESION_CONSULTA, JSON.stringify(SESION_PADRE));
+    await abrir();
+
+    cta().click();
+    http.expectOne(`${environment.apiUrl}/recorridos`).flush(
+      { mensaje: MENSAJE_CONSULTA_NO_DISPONIBLE },
+      { status: 503, statusText: 'Service Unavailable' }
+    );
+    harness.detectChanges();
+    await harness.fixture.whenStable();
+
+    expect(el.querySelector('.inicio__aviso')?.textContent).toContain(MENSAJE_CONSULTA_NO_DISPONIBLE);
+    expect(cta().disabled).toBeTrue();
   });
 
   it('el perfil se abre desde el encabezado y «Cerrar sesión» ya no está en el inicio', async () => {

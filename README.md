@@ -68,13 +68,51 @@ ciclo de vida de los contenedores, las actualizaciones y el diagnóstico. Para
 un dominio público con certificado válido (fase 2), ver la sección final de
 [`deploy/README.md`](deploy/README.md).
 
+## Entorno de pruebas y demo
+
+Para probar las apps con datos reales, arranca el backend con el seed de demo:
+
+```bash
+cd ../signbb-backend/backend
+SIGNBB_SIEMBRA_ACTIVA=true SIGNBB_SEED_DEMO_ACTIVA=true ./mvnw spring-boot:run
+```
+
+O con Docker:
+
+```bash
+cd ../signbb-backend/contenedores
+SIGNBB_SEED_DEMO_ACTIVA=true docker compose up -d --build
+```
+
+Cuentas de desarrollo:
+
+- Médico: `medico.ejemplo@signbb.local` / `Medico123`.
+- Padre: `padre.ejemplo@signbb.local` / `Padre123`.
+- Supervisor: `supervisor@signbb.local` / `Supervisor123`.
+
+El detalle de usuarios, grafos, reglas y comandos está en
+`signbb-backend/docs/entorno-pruebas/entorno-pruebas.md` (workspace).
+
+Con el backend arriba, las apps se levantan así:
+
+```bash
+npx ng serve ui-consulta   # http://localhost:4200
+npx ng serve ui-autoria    # http://localhost:4300
+```
+
 ## Pruebas
 
 ```bash
-npx ng test --watch=false          # todos los proyectos
+npx ng test --watch=false                         # todos los proyectos
+npx ng test ui-consulta --watch=false
 npx ng test ui-autoria --watch=false
-npx ng test --include='src/app/.../x.spec.ts' --watch=false   # un spec
+npx ng test ui-compartida --watch=false
+npx ng test ui-consulta --include='projects/ui-consulta/src/app/.../x.spec.ts' --watch=false
+npm test                                          # watcher
 ```
+
+Las pruebas de punta a punto requieren el backend con el seed de demo activo.
+Las pruebas unitarias no necesitan backend.
 
 ## Documentación
 

@@ -34,8 +34,13 @@
       <p class="inicio__aviso" role="status">{{ aviso }}</p>
     }
 
+    @if (noDisponible()) {
+      <p class="inicio__aviso" role="status">{{ mensajeNoDisponible }}</p>
+    }
+
     <div class="inicio__acciones">
-      <button type="button" class="inicio__cta" [disabled]="cargando" (click)="comenzarConsulta()">
+      <button type="button" class="inicio__cta" [disabled]="cargando || disponible() !== true"
+        (click)="comenzarConsulta()">
         <span class="inicio__cta-icono">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
@@ -44,7 +49,15 @@
         </span>
         <span class="inicio__cta-texto">
           <span class="inicio__cta-titulo">{{ cargando ? 'Un momento...' : 'Comenzar consulta' }}</span>
-          <span class="inicio__cta-subtitulo">Evalúa el estado de tu bebé ahora</span>
+          <span class="inicio__cta-subtitulo">
+            @if (noDisponible()) {
+              Intenta más tarde
+            } @else if (disponible() === null) {
+              Comprobando disponibilidad...
+            } @else {
+              Evalúa el estado de tu bebé ahora
+            }
+          </span>
         </span>
       </button>
 

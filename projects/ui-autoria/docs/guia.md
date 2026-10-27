@@ -44,7 +44,9 @@ directamente sus propios subgrafos, sin enviarlos a revisión.
   tocarlas. Solo el autor edita, igual que en el back
   (`PoliticaAccesoBorradores`). La sección «Revisión» permite aprobar (y
   publicar) o rechazar con comentario lo que enviaron otros médicos, y
-  despublicar lo que ya está vigente.
+  despublicar lo que ya está vigente. Se puede despublicar el último subgrafo:
+  si era el único de su categoría, esa categoría deja de mostrarse; si no queda
+  ninguno, el inicio de consulta muestra que la consulta no está disponible.
 - **API base** en `src/environments/environment*.ts`.
 
 ## Cómo se documenta

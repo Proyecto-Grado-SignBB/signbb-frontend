@@ -1,4 +1,5 @@
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RecorridoService } from '../../../core/http/recorrido';
 import { RecorridoResponse } from '../../../models/recorrido.model';
@@ -168,7 +169,14 @@ export class ResultadoComponent implements OnInit {
     this.error.set(null);
     this.recorridoService.iniciar().subscribe({
       next: r => this.router.navigate(['/pregunta', r.recorridoId]),
-      error: () => this.error.set('No pudimos iniciar una nueva consulta. Intenta de nuevo.')
+      error: e => {
+        const mensaje = e instanceof HttpErrorResponse ? (e.error as { mensaje?: unknown } | null)?.mensaje : null;
+        if (e instanceof HttpErrorResponse && e.status === 503 && typeof mensaje === 'string' && mensaje) {
+          this.error.set(mensaje);
+          return;
+        }
+        this.error.set('No pudimos iniciar una nueva consulta. Intenta de nuevo.');
+      }
     });
   }
 

@@ -75,6 +75,14 @@ export interface RecorridoResponse {
   resultado: ResultadoDTO | null;
 }
 
+/** Disponibilidad de la consulta para la pantalla de inicio. */
+export interface DisponibilidadDTO {
+  /** True si hay al menos un subgrafo publicado. */
+  disponible: boolean;
+  /** Mensaje para el cuidador cuando no está disponible; nulo si sí. */
+  mensaje: string | null;
+}
+
 /** Cuerpo de la petición que responde la pregunta actual. */
 export interface ResponderRequest {
   /** Opción seleccionada (formato de una sola opción). */

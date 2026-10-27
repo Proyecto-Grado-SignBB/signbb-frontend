@@ -1,7 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { RecorridoResponse, ResponderRequest, ResumenRecorridoDTO } from '../../models/recorrido.model';
+import {
+  DisponibilidadDTO,
+  RecorridoResponse,
+  ResponderRequest,
+  ResumenRecorridoDTO
+} from '../../models/recorrido.model';
 import { environment } from '../../../environments/environment';
 
 /**
@@ -13,6 +18,11 @@ import { environment } from '../../../environments/environment';
 export class RecorridoService {
 
   constructor(private http: HttpClient) { }
+
+  /** Indica si hay subgrafos publicados para iniciar una consulta. */
+  disponibilidad(): Observable<DisponibilidadDTO> {
+    return this.http.get<DisponibilidadDTO>(`${environment.apiUrl}/consulta/disponibilidad`);
+  }
 
   /** Inicia un recorrido y devuelve la primera pregunta. */
   iniciar(): Observable<RecorridoResponse> {
