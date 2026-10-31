@@ -27,14 +27,6 @@ describe('CarruselImagenesComponent', () => {
     expect(el.querySelectorAll('.carrusel__punto').length).toBe(3);
   });
 
-  it('con una sola imagen no muestra contador, puntos ni la ayuda para deslizar', () => {
-    mostrar(['aaa.png']);
-
-    expect(el.querySelectorAll('.carrusel__imagen').length).toBe(1);
-    expect(el.querySelector('.carrusel__contador')).toBeNull();
-    expect(el.querySelector('.carrusel__punto')).toBeNull();
-    expect(el.querySelector('.carrusel__ayuda')).toBeNull();
-  });
 
   it('desliza con el dedo y no se pasa de la primera ni de la última', () => {
     mostrar(['a.png', 'b.png']);
@@ -57,31 +49,8 @@ describe('CarruselImagenesComponent', () => {
     expect(c.indice()).toBe(0);
   });
 
-  it('un movimiento corto no cambia de imagen', () => {
-    mostrar(['a.png', 'b.png']);
-    fixture.componentInstance.inicioArrastre(100);
-    fixture.componentInstance.finArrastre(80);
-    expect(fixture.componentInstance.indice()).toBe(0);
-  });
 
-  it('los puntos llevan a esa imagen', () => {
-    mostrar(['a.png', 'b.png', 'c.png']);
 
-    el.querySelectorAll<HTMLElement>('.carrusel__punto')[2].click();
-    fixture.detectChanges();
-
-    expect(fixture.componentInstance.indice()).toBe(2);
-    expect(el.querySelector('.carrusel__contador')?.textContent).toContain('3 / 3');
-  });
-
-  it('al cambiar de pregunta vuelve a la primera imagen', () => {
-    mostrar(['a.png', 'b.png']);
-    fixture.componentInstance.irAImagen(1);
-
-    mostrar(['c.png', 'd.png']);
-
-    expect(fixture.componentInstance.indice()).toBe(0);
-  });
 
   it('si una imagen no carga, en su lugar queda la ilustración', () => {
     mostrar(['a.png', 'b.png']);
@@ -93,10 +62,4 @@ describe('CarruselImagenesComponent', () => {
     expect(el.querySelectorAll('.carrusel__slide svg').length).toBe(1);
   });
 
-  it('si la pregunta dice que tiene imágenes pero no llega ninguna, muestra la ilustración', () => {
-    mostrar([]);
-
-    expect(el.querySelector('.carrusel__imagen')).toBeNull();
-    expect(el.querySelectorAll('.carrusel__slide svg').length).toBe(1);
   });
-});

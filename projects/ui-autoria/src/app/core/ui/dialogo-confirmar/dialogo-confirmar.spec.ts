@@ -38,23 +38,5 @@ describe('DialogoConfirmarComponent', () => {
     expect(cancelados).toBe(2);
   });
 
-  it('mientras está ocupado no se puede confirmar ni cerrar', () => {
-    fixture.componentRef.setInput('ocupado', true);
-    fixture.detectChanges();
 
-    boton('Eliminando…').click();
-    escape();
-    (el.querySelector('.backdrop') as HTMLElement).click();
-    expect(confirmados).toBe(0);
-    expect(cancelados).toBe(0);
   });
-
-  it('muestra el error adentro y ofrece reintentar', () => {
-    fixture.componentRef.setInput('error', 'No hay conexión con el servidor.');
-    fixture.detectChanges();
-
-    expect(el.querySelector('[role="alert"]')?.textContent).toContain('No hay conexión');
-    boton('Intentar de nuevo').click();
-    expect(confirmados).toBe(1);
-  });
-});

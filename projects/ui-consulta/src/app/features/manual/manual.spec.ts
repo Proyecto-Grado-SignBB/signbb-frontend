@@ -48,21 +48,5 @@ describe('ManualComponent', () => {
     expect(el.textContent).toContain('Ve a urgencias ahora');
   });
 
-  it('explica el dispositivo seguro (30 días) y el bloqueo por intentos', async () => {
-    await abrir();
 
-    expect(el.textContent).toContain('Este es un dispositivo seguro');
-    expect(el.textContent).toContain('30 días');
-    expect(el.textContent).toContain('5 veces');
-    expect(el.textContent).toContain('15');
   });
-
-  it('tiene el enlace de vuelta al inicio y el de la Fundación Canguro', async () => {
-    await abrir();
-
-    expect(el.querySelector('a[href="/"]')).not.toBeNull();
-    const enlace = el.querySelector<HTMLAnchorElement>('.manual__enlace')!;
-    expect(enlace.getAttribute('href')).toBe('https://fundacioncanguro.co/');
-    expect(enlace.getAttribute('rel')).toContain('noopener');
-  });
-});

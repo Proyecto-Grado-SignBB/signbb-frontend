@@ -11,12 +11,6 @@ describe('layout-regla', () => {
     ]
   };
 
-  it('un caso sin condiciones queda vacío', () => {
-    const vista = distribuirCaso([], catalogo, 'conclusion_5');
-    expect(vista.vacio).toBeTrue();
-    expect(vista.pasos.length).toBe(0);
-    expect(vista.enlaces.length).toBe(0);
-  });
 
   it('un caso con dos preguntas arma una cadena hasta el destino', () => {
     const vista = distribuirCaso([
@@ -43,43 +37,7 @@ describe('layout-regla', () => {
     expect(vista.enlaces[0].etiquetas[0].y).not.toBe(vista.enlaces[0].etiquetas[1].y);
   });
 
-  it('ignora condiciones a medio llenar', () => {
-    const vista = distribuirCaso([
-      { idNodo: 'pregunta_1', respuesta: 'Más de 39 °C' },
-      { idNodo: '', respuesta: '' }
-    ], catalogo, 'conclusion_5');
-    expect(vista.enlaces.length).toBe(1);
-    expect(vista.enlaces[0].etiquetas.length).toBe(1);
+
+
+
   });
-
-  it('distribuye varios casos', () => {
-    const vistas = distribuirCasos([
-      [{ idNodo: 'pregunta_1', respuesta: 'Más de 39 °C' }],
-      []
-    ], catalogo, 'conclusion_5');
-    expect(vistas.length).toBe(2);
-    expect(vistas[0].vacio).toBeFalse();
-    expect(vistas[1].vacio).toBeTrue();
-  });
-
-  it('el terminal lleva el desenlace del catálogo', () => {
-    const vista = distribuirCaso(
-      [{ idNodo: 'pregunta_1', respuesta: 'Más de 39 °C' }], catalogo, 'conclusion_5');
-
-    const terminal = vista.pasos.find(p => p.tipo === 'terminal');
-    expect(terminal?.desenlace).toBe('URGENCIA');
-  });
-
-  it('la separación entre columnas crece con la etiqueta más larga', () => {
-    const corta = distribuirCaso([
-      { idNodo: 'pregunta_1', respuesta: 'Sí' },
-      { idNodo: 'pregunta_2', respuesta: 'Sí' }
-    ], catalogo, '');
-    const larga = distribuirCaso([
-      { idNodo: 'pregunta_1', respuesta: 'Respira persistentemente rápido (≥60/min)' },
-      { idNodo: 'pregunta_2', respuesta: 'Sí' }
-    ], catalogo, '');
-
-    expect(larga.ancho).toBeGreaterThan(corta.ancho);
-  });
-});

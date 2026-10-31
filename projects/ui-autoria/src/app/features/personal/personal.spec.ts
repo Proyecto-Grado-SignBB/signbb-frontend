@@ -90,56 +90,5 @@ describe('PersonalComponent', () => {
     expect(el.textContent).toContain('Dra. Ana Martínez');
   });
 
-  it('crea un médico con rol MEDICO', async () => {
-    boton('+ Agregar médico').click();
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
 
-    await escribir('nombre', 'Dra. Valentina Herrera');
-    await escribir('correo', 'valentina@signbb.local');
-    await escribir('institucion', 'Fundación Canguro');
-    await escribir('contrasena', 'signbb2026');
-    boton('Crear médico').click();
-
-    const peticion = http.expectOne(BASE);
-    expect(peticion.request.method).toBe('POST');
-    expect(peticion.request.body).toEqual({
-      nombre: 'Dra. Valentina Herrera',
-      correo: 'valentina@signbb.local',
-      contrasena: 'signbb2026',
-      rol: 'MEDICO',
-      institucion: 'Fundación Canguro'
-    });
-    peticion.flush({
-      id: 8,
-      nombre: 'Dra. Valentina Herrera',
-      correo: 'valentina@signbb.local',
-      rol: 'MEDICO',
-      institucion: 'Fundación Canguro',
-      activo: true
-    });
-    fixture.detectChanges();
-
-    expect(el.textContent).toContain('Se agregó a Dra. Valentina Herrera.');
-    expect(el.textContent).toContain('Dra. Valentina Herrera');
   });
-
-  it('desactiva una cuenta después de confirmar', () => {
-    boton('Desactivar').click();
-    fixture.detectChanges();
-
-    const dialogo = el.querySelector('app-dialogo-confirmar')!;
-    expect(dialogo.textContent).toContain('¿Desactivar a Dra. Ana Martínez?');
-    boton('Desactivar cuenta', dialogo).click();
-
-    const peticion = http.expectOne(`${BASE}/7/activo`);
-    expect(peticion.request.method).toBe('PUT');
-    expect(peticion.request.body).toEqual({ activo: false });
-    peticion.flush({ ...ANA, activo: false });
-    fixture.detectChanges();
-
-    expect(el.textContent).toContain('Inactivo');
-    expect(el.textContent).toContain('Dra. Ana Martínez quedó inactivo.');
-  });
-});

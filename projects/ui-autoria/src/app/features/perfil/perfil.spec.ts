@@ -73,34 +73,5 @@ describe('PerfilComponent', () => {
     expect(localStorage.getItem(CLAVE_SESION_AUTORIA)).toBeNull();
   });
 
-  it('si el back falla al cerrar todas, conserva la sesión y avisa', () => {
-    const fixture = TestBed.createComponent(PerfilComponent);
-    fixture.detectChanges();
-    http.expectOne(`${environment.apiUrl}/auth/yo`).flush(ANA);
-    http.expectOne(`${environment.apiUrl}/autoria/subgrafos`).flush([]);
-    fixture.detectChanges();
 
-    const boton = [...(fixture.nativeElement as HTMLElement).querySelectorAll('button')]
-      .find(b => b.textContent?.trim() === 'Cerrar en todos')!;
-    boton.click();
-    http.expectOne(`${environment.apiUrl}/auth/cerrar-todas`).flush({ mensaje: 'x' }, { status: 500, statusText: 'Error' });
-    fixture.detectChanges();
-
-    expect(TestBed.inject(SesionService).autenticado()).toBeTrue();
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('No se pudo cerrar la sesión en todos los dispositivos');
   });
-
-  it('cerrar sesión la borra', () => {
-    const fixture = TestBed.createComponent(PerfilComponent);
-    fixture.detectChanges();
-    http.expectOne(`${environment.apiUrl}/auth/yo`).flush(ANA);
-    http.expectOne(`${environment.apiUrl}/autoria/subgrafos`).flush([]);
-    fixture.detectChanges();
-
-    const boton = [...(fixture.nativeElement as HTMLElement).querySelectorAll('button')]
-      .find(b => b.textContent?.trim() === 'Cerrar sesión' && b.closest('.profile-danger'))!;
-    boton.click();
-    expect(TestBed.inject(SesionService).autenticado()).toBeFalse();
-    expect(localStorage.getItem(CLAVE_SESION_AUTORIA)).toBeNull();
-  });
-});

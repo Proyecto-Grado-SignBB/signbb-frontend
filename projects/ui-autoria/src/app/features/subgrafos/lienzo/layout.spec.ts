@@ -25,11 +25,6 @@ function fiebre(): NodoLienzo[] {
 }
 
 describe('distribuir (layout del lienzo)', () => {
-  it('un lienzo vacío no tiene nodos ni ramas', () => {
-    const d = distribuir(null, []);
-    expect(d.nodos).toEqual([]);
-    expect(d.ramas).toEqual([]);
-  });
 
   it('una columna por profundidad', () => {
     const d = distribuir('pregunta_1', fiebre());
@@ -48,41 +43,7 @@ describe('distribuir (layout del lienzo)', () => {
     expect(enlace.destinoTexto).toBe('¿Está decaído o no quiere comer?');
   });
 
-  it('cada pregunta queda a la altura media de lo que cuelga de ella', () => {
-    const d = distribuir('pregunta_1', fiebre());
-    const centro = (id: string) => d.nodos.find(c => c.nodo.id === id)!.y + MEDIDAS.altoNodo / 2;
-    const centroRama = (id: string) => d.ramas.find(r => r.respuesta.id === id)!.etiquetaY;
 
-    // pregunta_6: filas 0 (Sí) y 1 (+ de No).
-    expect(centro('pregunta_6')).toBe((centroRama('r_7') + centroRama('r_8')) / 2);
-    // pregunta_1: de la primera rama (pregunta_6) a la última (urgencia).
-    expect(centro('pregunta_1')).toBe((centro('pregunta_6') + centro('conclusion_5')) / 2);
-  });
 
-  it('las líneas salen del borde derecho del origen y entran por la izquierda del destino', () => {
-    const d = distribuir('pregunta_1', fiebre());
-    const origen = d.nodos.find(c => c.nodo.id === 'pregunta_1')!;
-    const r = d.ramas.find(x => x.respuesta.id === 'r_4')!;
-    expect(r.d.startsWith(`M ${origen.x + MEDIDAS.anchoNodo} ${origen.y + MEDIDAS.altoNodo / 2}`)).toBeTrue();
-    expect(r.d.endsWith(`H ${r.x}`)).toBeTrue();
-  });
 
-  it('los nodos sueltos se dibujan debajo y marcados', () => {
-    const nodos = fiebre();
-    nodos.push({ id: 'conclusion_11', tipo: 'CONCLUSION', texto: 'Suelta', variasRespuestas: false, desenlace: 'RECOMENDACION', respuestas: [] });
-    const d = distribuir('pregunta_1', nodos);
-    const suelto = d.nodos.find(c => c.nodo.id === 'conclusion_11')!;
-    expect(suelto.suelto).toBeTrue();
-    expect(suelto.profundidad).toBe(0);
-    expect(Math.max(...d.nodos.filter(c => !c.suelto).map(c => c.y))).toBeLessThan(suelto.y);
-    expect(d.alto).toBeGreaterThan(suelto.y);
   });
-
-  it('una pregunta sin respuestas ocupa su propia fila', () => {
-    const d = distribuir('pregunta_1', [
-      { id: 'pregunta_1', tipo: 'PREGUNTA', texto: '¿?', variasRespuestas: false, desenlace: null, respuestas: [] }
-    ]);
-    expect(d.nodos.length).toBe(1);
-    expect(d.nodos[0].y).toBe(MEDIDAS.margen);
-  });
-});

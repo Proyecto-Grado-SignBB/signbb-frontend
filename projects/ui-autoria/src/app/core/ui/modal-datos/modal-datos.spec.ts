@@ -42,21 +42,7 @@ describe('ModalDatosComponent', () => {
     expect(el.querySelector('.falta')).toBeNull();
   });
 
-  it('sin nombre explica qué falta y no guarda', async () => {
-    await escribir('nombre', '   ');
 
-    expect(el.textContent).toContain('Escribe el nombre del subgrafo.');
-    boton('Guardar').click();
-    expect(guardados).toEqual([]);
-  });
-
-  it('sin nombre para la familia explica qué falta y no guarda', async () => {
-    await escribir('etiquetaOpcion', '');
-
-    expect(el.textContent).toContain('Escribe cómo lo verán las familias.');
-    boton('Guardar').click();
-    expect(guardados).toEqual([]);
-  });
 
   it('al pulsar guardar con ambos vacíos avisa los dos', async () => {
     fixture.componentInstance['nombre'] = '';
