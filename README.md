@@ -111,6 +111,14 @@ npx ng test ui-consulta --include='projects/ui-consulta/src/app/.../x.spec.ts' -
 npm test                                          # watcher
 ```
 
+Para generar la cobertura:
+
+```bash
+npx ng test --watch=false --code-coverage
+# abrir coverage/ui-consulta/index.html, coverage/ui-autoria/index.html
+# o coverage/ui-compartida/index.html
+```
+
 Las pruebas de punta a punto requieren el backend con el seed de demo activo.
 Las pruebas unitarias no necesitan backend.
 
