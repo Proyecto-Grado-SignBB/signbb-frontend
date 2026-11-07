@@ -8,6 +8,10 @@ body {
   background: oklch(90% 0.02 300); // fondo de la página en pantallas anchas
   font-family: $font-body;
   color: $color-text-primary;
+  // Evita que una palabra larga sin espacios (texto clínico mal tipeado,
+  // una URL, etc.) desborde horizontalmente el contenedor (AP-03).
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .pantalla {

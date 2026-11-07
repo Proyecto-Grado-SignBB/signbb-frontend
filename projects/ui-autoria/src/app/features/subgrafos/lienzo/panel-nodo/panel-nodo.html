@@ -66,7 +66,7 @@
         <span class="respuestas-titulo">Respuestas y qué tan grave es cada una</span>
         @for (fila of respuestas; track $index; let i = $index) {
           <div class="respuesta">
-            <input maxlength="200" type="text" [(ngModel)]="fila.texto" placeholder="Respuesta {{ i + 1 }}" [attr.aria-label]="'Respuesta ' + (i + 1)" />
+            <input maxlength="60" type="text" [(ngModel)]="fila.texto" placeholder="Respuesta {{ i + 1 }}" [attr.aria-label]="'Respuesta ' + (i + 1)" />
             <div class="semaforo" role="radiogroup" [attr.aria-label]="'Gravedad de la respuesta ' + (i + 1)">
               @for (g of gravedades; track g) {
                 <button

@@ -25,8 +25,11 @@ services:
       dockerfile: deploy/Dockerfile
     image: signbb-web:local
 
-    # Linux: comparte la red del host. No usar "ports" junto con esta opción.
-    network_mode: host
+    # En Windows (Docker Desktop) "network_mode: host" no expone el puerto a
+    # la red real del equipo, asi que se usa mapeo de puertos explicito en su
+    # lugar (ajuste local para pruebas de portabilidad, ver deploy/README.md).
+    ports:
+      - "443:443"
 
     environment:
       # IP o dominio por el que se accede a la PWA.

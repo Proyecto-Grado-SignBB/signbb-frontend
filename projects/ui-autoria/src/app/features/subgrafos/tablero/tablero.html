@@ -63,7 +63,7 @@
                   <span class="crear-ayuda">— aparecerá como opción en «{{ pregunta }}»</span>
                 }
               </span>
-              <input maxlength="100" type="text" [(ngModel)]="etiquetaNueva" (blur)="tocadoEtiqueta = true"
+              <input maxlength="60" type="text" [(ngModel)]="etiquetaNueva" (blur)="tocadoEtiqueta = true"
                 placeholder="Ej: Piel u ojos amarillos" [class.invalido]="faltaEtiqueta" />
               <small>{{ ayudaNombreFamilia }}</small>
               @if (faltaEtiqueta) {
