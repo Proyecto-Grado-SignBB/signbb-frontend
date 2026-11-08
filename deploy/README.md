@@ -1,5 +1,9 @@
 # Despliegue de la PWA de consulta (Caddy + Docker)
 
+> Para el despliegue público con dominio, HTTPS y las dos aplicaciones
+> (`ui-consulta` y `ui-autoria`), ver `README-prod.md`. Para el respaldo con un
+> PC propio y Cloudflare Tunnel, ver `README-tunnel.md`.
+
 Este directorio contiene el despliegue de `ui-consulta` como PWA instalable en
 una red local, con HTTPS y sin CORS: Caddy sirve el frontend y hace de proxy
 inverso de `/api` y `/media` hacia el backend.

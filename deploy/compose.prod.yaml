@@ -1,0 +1,183 @@
+# =============================================================================
+# Despliegue público de SignBB: PostgreSQL, Redis, Silo, backend y Caddy
+# =============================================================================
+# Uso, desde este directorio:
+#   cp .env.prod.example .env
+#   chmod 600 .env
+#   docker compose -f compose.prod.yaml up -d --build
+#
+# Requisitos:
+# - Los repositorios signbb-backend y signbb-frontend deben estar uno al lado
+#   del otro. El build del backend usa ../../signbb-backend/backend.
+# - Solo el servicio "web" publica puertos en el host (80 y 443). PostgreSQL,
+#   Redis, Silo y el backend quedan en la red interna de Docker.
+# - Las variables sensibles viven en .env (no versionado).
+# =============================================================================
+
+name: signbb
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+
+  # ===========================================================================
+  # PostgreSQL
+  # ===========================================================================
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    shm_size: 128mb
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: ${SIGNBB_DB_CONTRASENA:?define SIGNBB_DB_CONTRASENA en .env}
+      POSTGRES_DB: signbb
+      TZ: ${TZ:-America/Bogota}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d signbb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    logging: *default-logging
+
+  # ===========================================================================
+  # Redis: caché del contenido clínico y sesiones de los recorridos
+  # ===========================================================================
+  cache:
+    image: redis:8-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    logging: *default-logging
+
+  # ===========================================================================
+  # Silo: almacenamiento de objetos compatible con S3 (imágenes)
+  # ===========================================================================
+  silo:
+    image: pgsty/silo:RELEASE.2026-08-06T00-00-00Z
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${SIGNBB_MEDIA_ACCESS_KEY:?define SIGNBB_MEDIA_ACCESS_KEY en .env}
+      MINIO_ROOT_PASSWORD: ${SIGNBB_MEDIA_SECRET_KEY:?define SIGNBB_MEDIA_SECRET_KEY en .env}
+      TZ: ${TZ:-America/Bogota}
+    volumes:
+      - silo_data:/data
+    healthcheck:
+      test: ["CMD", "silo", "healthcheck", "ready"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    logging: *default-logging
+
+  # ===========================================================================
+  # Backend Spring Boot
+  # ===========================================================================
+  backend:
+    build:
+      context: ../../signbb-backend/backend
+    image: signbb-backend:prod
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      SIGNBB_DB_URL: jdbc:postgresql://db:5432/signbb
+      SIGNBB_DB_USUARIO: admin
+      SIGNBB_DB_CONTRASENA: ${SIGNBB_DB_CONTRASENA:?define SIGNBB_DB_CONTRASENA en .env}
+      SIGNBB_REDIS_HOST: cache
+      SIGNBB_REDIS_PUERTO: 6379
+      SIGNBB_MEDIA_ENDPOINT: http://silo:9000
+      SIGNBB_MEDIA_ACCESS_KEY: ${SIGNBB_MEDIA_ACCESS_KEY:?define SIGNBB_MEDIA_ACCESS_KEY en .env}
+      SIGNBB_MEDIA_SECRET_KEY: ${SIGNBB_MEDIA_SECRET_KEY:?define SIGNBB_MEDIA_SECRET_KEY en .env}
+      SIGNBB_MEDIA_BUCKET: ${SIGNBB_MEDIA_BUCKET:-signbb-imagenes}
+      SIGNBB_ENTORNO: ${SIGNBB_ENTORNO:-produccion}
+      SIGNBB_JWT_SECRETO: ${SIGNBB_JWT_SECRETO:?define SIGNBB_JWT_SECRETO en .env}
+      SIGNBB_SUPERVISOR_CONTRASENA: ${SIGNBB_SUPERVISOR_CONTRASENA:?define SIGNBB_SUPERVISOR_CONTRASENA en .env}
+      SIGNBB_DOCS_ACTIVAS: ${SIGNBB_DOCS_ACTIVAS:-false}
+      SIGNBB_SHOW_SQL: ${SIGNBB_SHOW_SQL:-false}
+      SIGNBB_SIEMBRA_ACTIVA: ${SIGNBB_SIEMBRA_ACTIVA:-true}
+      SIGNBB_SEED_DEMO_ACTIVA: ${SIGNBB_SEED_DEMO_ACTIVA:-false}
+      SIGNBB_DEMO_ACTIVA: ${SIGNBB_DEMO_ACTIVA:-false}
+      SIGNBB_CORS_ORIGENES: ${SIGNBB_CORS_ORIGENES:?define SIGNBB_CORS_ORIGENES en .env}
+      SERVER_FORWARD_HEADERS_STRATEGY: ${SERVER_FORWARD_HEADERS_STRATEGY:-framework}
+      JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS:--XX:MaxRAMPercentage=70}
+      TZ: ${TZ:-America/Bogota}
+    expose:
+      - "8080"
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+      silo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 120s
+    logging: *default-logging
+
+  # ===========================================================================
+  # Caddy: ui-consulta, ui-autoria y proxy de /api, /media y /actuator/health
+  # ===========================================================================
+  web:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      args:
+        # Para Cloudflare Quick Tunnel, define AUTORIA_BASE_HREF=/autoria/.
+        AUTORIA_BASE_HREF: ${AUTORIA_BASE_HREF:-/}
+    image: signbb-web:prod
+    restart: unless-stopped
+    environment:
+      SIGNBB_DOMINIO_CONSULTA: ${SIGNBB_DOMINIO_CONSULTA:?define SIGNBB_DOMINIO_CONSULTA en .env}
+      SIGNBB_DOMINIO_AUTORIA: ${SIGNBB_DOMINIO_AUTORIA:?define SIGNBB_DOMINIO_AUTORIA en .env}
+      # En producción el backend siempre se alcanza por el nombre del servicio.
+      SIGNBB_BACKEND: backend:8080
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "caddy", "validate", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    logging: *default-logging
+
+# =============================================================================
+# Volúmenes nombrados (nombres fijos para backups y restauración)
+# =============================================================================
+volumes:
+  postgres_data:
+    name: signbb_postgres_data
+  redis_data:
+    name: signbb_redis_data
+  silo_data:
+    name: signbb_silo_data
+  caddy_data:
+    name: signbb_caddy_data
+  caddy_config:
+    name: signbb_caddy_config

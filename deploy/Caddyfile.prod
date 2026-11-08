@@ -1,0 +1,110 @@
+# =============================================================================
+# Caddy para el despliegue público de SignBB (consulta + autoría)
+# =============================================================================
+# - Sirve ui-consulta en consulta.<dominio> y ui-autoria en autoria.<dominio>.
+# - Hace proxy de /api, /media y /actuator/health al backend (mismo origen:
+#   sin CORS para el navegador).
+# - Obtiene y renueva los certificados con Let's Encrypt automáticamente.
+#
+# Variables:
+#   SIGNBB_DOMINIO_CONSULTA  hostname público de la PWA de consulta
+#   SIGNBB_DOMINIO_AUTORIA   hostname público de la aplicación de autoría
+#   SIGNBB_BACKEND           destino del proxy (por defecto backend:8080)
+#
+# No se usa "tls internal": ese modo es solo para la red local. Tampoco se
+# desactiva la redirección http -> https.
+# =============================================================================
+{
+	# Si quieres un correo de contacto para Let's Encrypt, descomenta:
+	# email admin@example.com
+}
+
+{$SIGNBB_DOMINIO_CONSULTA} {
+	encode zstd gzip
+
+	@api path /api /api/*
+	@media path /media /media/*
+	@health path /actuator/health
+	@sinCache path / /index.html /ngsw-worker.js /ngsw.json /safety-worker.js /manifest.webmanifest
+
+	# El index y el service worker deben revalidarse siempre; si no, una
+	# actualización de la PWA puede quedar atrapada en la caché del navegador.
+	header @sinCache Cache-Control "no-cache"
+
+	# Datos clínicos: las respuestas de la API no se cachean.
+	header @api Cache-Control "no-store"
+
+	header {
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		X-Frame-Options "DENY"
+		# No añadir HSTS hasta comprobar que el certificado funciona en todos
+		# los dispositivos de prueba. Es difícil de revertir.
+	}
+
+	handle @api {
+		reverse_proxy {$SIGNBB_BACKEND:backend:8080} {
+			header_up X-Forwarded-Proto https
+			header_up X-Forwarded-Host {host}
+		}
+	}
+
+	handle @media {
+		reverse_proxy {$SIGNBB_BACKEND:backend:8080} {
+			header_up X-Forwarded-Proto https
+			header_up X-Forwarded-Host {host}
+		}
+	}
+
+	handle @health {
+		reverse_proxy {$SIGNBB_BACKEND:backend:8080} {
+			header_up X-Forwarded-Proto https
+			header_up X-Forwarded-Host {host}
+		}
+	}
+
+	# SPA: cualquier ruta desconocida vuelve a index.html.
+	handle {
+		root * /srv-consulta
+		try_files {path} /index.html
+		file_server
+	}
+}
+
+{$SIGNBB_DOMINIO_AUTORIA} {
+	encode zstd gzip
+
+	@api path /api /api/*
+	@media path /media /media/*
+	@sinCache path / /index.html
+
+	header @sinCache Cache-Control "no-cache"
+	header @api Cache-Control "no-store"
+
+	header {
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		X-Frame-Options "DENY"
+	}
+
+	handle @api {
+		reverse_proxy {$SIGNBB_BACKEND:backend:8080} {
+			header_up X-Forwarded-Proto https
+			header_up X-Forwarded-Host {host}
+		}
+	}
+
+	handle @media {
+		reverse_proxy {$SIGNBB_BACKEND:backend:8080} {
+			header_up X-Forwarded-Proto https
+			header_up X-Forwarded-Host {host}
+		}
+	}
+
+	# SPA: cualquier ruta desconocida vuelve a index.html.
+	handle {
+		root * /srv-autoria
+		try_files {path} /index.html
+		file_server
+	}
+}
