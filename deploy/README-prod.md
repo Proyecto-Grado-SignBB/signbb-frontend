@@ -70,10 +70,12 @@ Editar `.env`:
 - `SIGNBB_MEDIA_ACCESS_KEY`: `openssl rand -hex 16` (sin `/`, `+` ni `=`,
   porque forma parte de la cadena de credenciales SigV4).
 - `SIGNBB_MEDIA_SECRET_KEY`: `openssl rand -base64 24`.
-- `SIGNBB_ENTORNO=produccion`.
+- `SIGNBB_ENTORNO=produccion` para el despliegue final.
 - `SIGNBB_DOCS_ACTIVAS=false` y `SIGNBB_SHOW_SQL=false`.
-- `SIGNBB_SIEMBRA_ACTIVA=true` y `SIGNBB_SEED_DEMO_ACTIVA=true` solo en el
-  primer arranque; después se apagan.
+- `SIGNBB_SIEMBRA_ACTIVA=true` solo en el primer arranque; después se apaga.
+- `SIGNBB_SEED_DEMO_ACTIVA=false` por defecto. El seed de demo no se puede
+  activar con `SIGNBB_ENTORNO=produccion`; para sembrarlo, sigue la secuencia
+  de la sección "Primer arranque".
 - Si se usa el seed de demo, cambiar sus contraseñas.
 
 El backend no arranca en producción si conserva el secreto JWT, la contraseña
@@ -90,13 +92,60 @@ docker compose -f compose.prod.yaml build
 
 # 2. Levantar la infraestructura
 docker compose -f compose.prod.yaml up -d db cache silo
-
-# 3. Esperar a que estén sanos y arrancar el backend
 docker compose -f compose.prod.yaml ps
+```
+
+### Con datos de demostración
+
+El seed de demo no se puede activar con `SIGNBB_ENTORNO=produccion`. En una
+base nueva, siembra primero en desarrollo:
+
+```dotenv
+# En .env
+SIGNBB_ENTORNO=desarrollo
+SIGNBB_SIEMBRA_ACTIVA=true
+SIGNBB_SEED_DEMO_ACTIVA=true
+```
+
+```bash
 docker compose -f compose.prod.yaml up -d backend
 docker compose -f compose.prod.yaml logs -f backend
+# esperar: "Seed demo terminado: médico ..., 4 subgrafo(s) publicado(s)."
+```
 
-# 4. Cuando el backend esté sano, arrancar Caddy
+Después, pasar a producción:
+
+```dotenv
+SIGNBB_ENTORNO=produccion
+SIGNBB_SIEMBRA_ACTIVA=false
+SIGNBB_SEED_DEMO_ACTIVA=false
+```
+
+```bash
+docker compose -f compose.prod.yaml up -d --force-recreate backend
+docker compose -f compose.prod.yaml logs -f backend
+# esperar: "Entorno de producción: ..." y "Started BackendApplication"
+```
+
+### Sin datos de demostración
+
+```dotenv
+SIGNBB_ENTORNO=produccion
+SIGNBB_SIEMBRA_ACTIVA=true
+SIGNBB_SEED_DEMO_ACTIVA=false
+```
+
+```bash
+docker compose -f compose.prod.yaml up -d backend
+docker compose -f compose.prod.yaml logs -f backend
+# esperar la siembra del grafo raíz y "Started BackendApplication"
+```
+
+Luego cambia `SIGNBB_SIEMBRA_ACTIVA=false` y recrea el backend.
+
+### Arrancar Caddy
+
+```bash
 docker compose -f compose.prod.yaml up -d web
 docker compose -f compose.prod.yaml logs -f web
 ```
@@ -112,15 +161,19 @@ Si Caddy no obtiene el certificado:
 - comprobar que no hay otro proceso ocupando 80/443;
 - revisar los errores ACME en los logs.
 
-## Apagar la siembra
+## Pasar a producción
 
-Cuando la primera siembra haya terminado:
+Después de sembrar, con o sin datos de demo, deja el backend en producción:
 
 ```bash
+sed -i 's/^SIGNBB_ENTORNO=.*/SIGNBB_ENTORNO=produccion/' .env
 sed -i 's/^SIGNBB_SIEMBRA_ACTIVA=.*/SIGNBB_SIEMBRA_ACTIVA=false/' .env
 sed -i 's/^SIGNBB_SEED_DEMO_ACTIVA=.*/SIGNBB_SEED_DEMO_ACTIVA=false/' .env
-docker compose -f compose.prod.yaml up -d backend
+docker compose -f compose.prod.yaml up -d --force-recreate backend
 ```
+
+Si no usaste el seed de demo, este paso sigue siendo necesario para apagar
+`SIGNBB_SIEMBRA_ACTIVA`; el grafo raíz ya está en la base.
 
 ## Validación
 
