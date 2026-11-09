@@ -140,9 +140,6 @@ services:
     build:
       context: ..
       dockerfile: deploy/Dockerfile
-      args:
-        # Para Cloudflare Quick Tunnel, define AUTORIA_BASE_HREF=/autoria/.
-        AUTORIA_BASE_HREF: ${AUTORIA_BASE_HREF:-/}
     image: signbb-web:prod
     restart: unless-stopped
     environment:

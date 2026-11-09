@@ -265,7 +265,5 @@ Después, borrar los registros DNS y destruir el host o la instancia.
 - No se despliega Adminer.
 - No se usa `network_mode: host`.
 - No se publican PostgreSQL, Redis, Silo ni el backend.
-- El despliegue con PC propio y Cloudflare Tunnel reutiliza estos archivos y
-  añade un `compose.tunnel.yaml` con Caddy en el puerto 80.
 - No habilitar HSTS hasta comprobar que el certificado funciona en todos los
   dispositivos de prueba.

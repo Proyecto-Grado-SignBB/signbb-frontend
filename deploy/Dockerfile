@@ -11,9 +11,6 @@
 #
 # ui-compartida se compila primero porque tsconfig.json resuelve el import
 # "ui-compartida" contra dist/ui-compartida.
-#
-# AUTORIA_BASE_HREF permite servir ui-autoria bajo un subpath (por ejemplo
-# /autoria/ en el despliegue con Cloudflare Tunnel). Por defecto usa /.
 # =============================================================================
 
 # --- Etapa 1: compilación ----------------------------------------------------
@@ -30,10 +27,9 @@ RUN npm ci
 COPY angular.json tsconfig.json ./
 COPY projects ./projects
 
-ARG AUTORIA_BASE_HREF=/
 RUN npm run build -- --project ui-compartida \
     && npm run build -- --project ui-consulta \
-    && npm run build -- --project ui-autoria --base-href ${AUTORIA_BASE_HREF}
+    && npm run build -- --project ui-autoria
 
 # --- Etapa 2: servidor web ---------------------------------------------------
 FROM caddy:2-alpine

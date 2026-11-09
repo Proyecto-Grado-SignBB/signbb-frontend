@@ -1,8 +1,7 @@
 # Despliegue de la PWA de consulta (Caddy + Docker)
 
 > Para el despliegue público con dominio, HTTPS y las dos aplicaciones
-> (`ui-consulta` y `ui-autoria`), ver `README-prod.md`. Para el respaldo con un
-> PC propio y Cloudflare Tunnel, ver `README-tunnel.md`.
+> (`ui-consulta` y `ui-autoria`), ver `README-prod.md`.
 
 Este directorio contiene el despliegue de `ui-consulta` como PWA instalable en
 una red local, con HTTPS y sin CORS: Caddy sirve el frontend y hace de proxy
@@ -395,9 +394,8 @@ Sin tocar el frontend (`apiUrl` ya es `/api`):
 
 1. Crear un dominio o subdominio cuyo registro A apunte a la IP privada del
    servidor (o usar DNS local).
-2. Compilar Caddy con el plugin DNS del proveedor (por ejemplo,
-   `caddy-dns/cloudflare`) y configurar `tls { dns ... }` en lugar de
-   `tls internal`.
+2. Compilar Caddy con el plugin DNS del proveedor y configurar
+   `tls { dns ... }` en lugar de `tls internal`.
 3. Ajustar `SIGNBB_DOMINIO` y `SIGNBB_CORS_ORIGENES`.
 4. Recompilar la imagen de Caddy y reiniciar el servicio.
 
