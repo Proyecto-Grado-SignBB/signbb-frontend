@@ -391,9 +391,8 @@ Sin tocar el frontend (`apiUrl` ya es `/api`):
 
 1. Crear un dominio o subdominio cuyo registro A apunte a la IP privada del
    servidor (o usar DNS local).
-2. Compilar Caddy con el plugin DNS del proveedor (por ejemplo,
-   `caddy-dns/cloudflare`) y configurar `tls { dns ... }` en lugar de
-   `tls internal`.
+2. Compilar Caddy con el plugin DNS del proveedor y configurar
+   `tls { dns ... }` en lugar de `tls internal`.
 3. Ajustar `SIGNBB_DOMINIO` y `SIGNBB_CORS_ORIGENES`.
 4. Recompilar la imagen de Caddy y reiniciar el servicio.
 
