@@ -214,6 +214,18 @@
               </div>
             </div>
 
+            @if (referenciasRotas.length > 0) {
+              <div class="aviso-referencias" role="alert">
+                <span class="aviso-referencias__titulo">Corrige la regla antes de guardar</span>
+                <p>Un nodo o una respuesta que usaba esta regla se eliminó del lienzo:</p>
+                <ul>
+                  @for (motivo of referenciasRotas; track $index) {
+                    <li>{{ motivo }}</li>
+                  }
+                </ul>
+              </div>
+            }
+
             <div class="editor-foot">
               @if (reglaId()) {
                 <app-boton tono="alerta" variante="texto" alto="compacto" ancho="auto" (click)="pedirEliminar()">

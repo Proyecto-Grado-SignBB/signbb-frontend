@@ -17,6 +17,7 @@ import {
   ReglaDTO,
   ReglaRequest,
   opcionesDeNodo,
+  preguntasDe,
   terminalesDe,
   textoDeNodo
 } from '../../../models/regla.model';
@@ -283,8 +284,48 @@ export class EditorReglasComponent implements OnInit {
     if (!f.nombre.trim() || !f.nodoDestino || f.casos.length === 0) {
       return false;
     }
-    return f.casos.every(caso =>
+    const completo = f.casos.every(caso =>
       caso.length > 0 && caso.every(c => c.idNodo !== '' && c.respuesta !== ''));
+    // No se puede guardar si una referencia (nodo o respuesta) fue eliminada del
+    // lienzo: el médico debe corregirla primero (PA-005).
+    return completo && this.referenciasRotas.length === 0;
+  }
+
+  /**
+   * Referencias de la regla en edición que ya no existen en el lienzo porque el
+   * médico borró el nodo o la respuesta: el nodo destino, la pregunta de una
+   * condición o la respuesta esperada. Mientras haya alguna, no se puede
+   * guardar (PA-005). Si el catálogo aún no cargó, no se bloquea: no se puede
+   * verificar todavía.
+   */
+  protected get referenciasRotas(): string[] {
+    const cat = this.catalogo();
+    if (!cat) {
+      return [];
+    }
+    const f = this.form();
+    const idsPregunta = new Set(preguntasDe(cat).map(n => n.id));
+    const idsTerminal = new Set(terminalesDe(cat).map(n => n.id));
+    const rotas: string[] = [];
+
+    if (f.nodoDestino && !idsTerminal.has(f.nodoDestino)) {
+      rotas.push('La conclusión a la que lleva la regla ya no está en el lienzo: elige otra.');
+    }
+    f.casos.forEach((caso, ci) => {
+      for (const c of caso) {
+        if (!c.idNodo) {
+          continue;
+        }
+        if (!idsPregunta.has(c.idNodo)) {
+          rotas.push(`La pregunta del caso ${ci + 1} ya no está en el lienzo: elígela de nuevo.`);
+        } else if (c.respuesta && !opcionesDeNodo(cat, c.idNodo).includes(c.respuesta)) {
+          rotas.push(
+            `La respuesta esperada en "${textoDeNodo(cat, c.idNodo)}" ya no es una de sus opciones: elígela de nuevo.`
+          );
+        }
+      }
+    });
+    return rotas;
   }
 
   /** Guarda (crea o edita) la regla. */
