@@ -97,6 +97,10 @@ describe('PanelNodoComponent', () => {
     expect(emitido?.desenlace).toBe('RECOMENDACION');
   });
 
+  function destinos(): HTMLButtonElement[] {
+    return [...el.querySelectorAll<HTMLButtonElement>('.destino')];
+  }
+
   it('"Nodo existente" no ofrece la misma pregunta y emite el enlace', async () => {
     const otra: NodoLienzo = { ...TERMOMETRO, id: 'pregunta_6', texto: '¿Está decaído?', respuestas: [] };
     await abrir({ tipo: 'mas', origen: TERMOMETRO, respuesta: TERMOMETRO.respuestas[0] }, [TERMOMETRO, otra]);
@@ -105,18 +109,16 @@ describe('PanelNodoComponent', () => {
 
     boton('Nodo existente').click();
     fixture.detectChanges();
-    const select = el.querySelector('select')!;
-    const opciones = [...select.options].map(o => o.textContent?.trim());
-    expect(opciones).not.toContain('¿Cuánto marca el termómetro?');
 
-    select.value = select.options[1].value;
-    select.dispatchEvent(new Event('change'));
+    const textos = destinos().map(b => b.textContent?.trim());
+    expect(textos).not.toContain('¿Cuánto marca el termómetro?');
+    destinos().find(b => b.textContent?.trim() === '¿Está decaído?')!.click();
     fixture.detectChanges();
     enviar();
     expect(enlace).toEqual({ respuestaId: 'r_2', nodoId: 'pregunta_6' });
   });
 
-  it('"Nodo existente" ofrece las conclusiones y las agrupa', async () => {
+  it('"Nodo existente" ofrece las conclusiones con su texto y las agrupa', async () => {
     const conclusion: NodoLienzo = {
       id: 'conclusion_4', tipo: 'CONCLUSION', texto: 'Lleve al bebé a urgencias ahora.',
       variasRespuestas: false, desenlace: 'URGENCIA', respuestas: []
@@ -132,18 +134,32 @@ describe('PanelNodoComponent', () => {
     boton('Nodo existente').click();
     fixture.detectChanges();
 
-    const grupos = [...el.querySelectorAll('optgroup')].map(g => g.getAttribute('label'));
+    const grupos = [...el.querySelectorAll('.grupo-titulo')].map(g => g.textContent?.trim());
     expect(grupos).toEqual(['Preguntas', 'Conclusiones']);
-    const opcionConclusion = [...el.querySelectorAll('option')]
-      .find(o => o.textContent?.includes('Lleve al bebé a urgencias ahora.'))!;
-    expect(opcionConclusion.textContent?.trim()).toBe('Lleve al bebé a urgencias ahora.');
+    const botonConclusion = destinos()
+      .find(b => b.textContent?.trim() === 'Lleve al bebé a urgencias ahora.')!;
+    expect(botonConclusion.textContent).not.toContain('Ir a urgencias');
 
-    const select = el.querySelector('select')!;
-    select.value = opcionConclusion.value;
-    select.dispatchEvent(new Event('change'));
+    botonConclusion.click();
     fixture.detectChanges();
     enviar();
     expect(enlace).toEqual({ respuestaId: 'r_2', nodoId: 'conclusion_4' });
+  });
+
+  it('al abrir un enlace marca el destino actual', async () => {
+    const conclusion: NodoLienzo = {
+      id: 'conclusion_4', tipo: 'CONCLUSION', texto: 'Lleve al bebé a urgencias ahora.',
+      variasRespuestas: false, desenlace: 'URGENCIA', respuestas: []
+    };
+    await abrir(
+      { tipo: 'enlace', origen: TERMOMETRO, respuesta: TERMOMETRO.respuestas[1], destino: conclusion },
+      [TERMOMETRO, conclusion]
+    );
+
+    const activo = el.querySelector<HTMLButtonElement>('.destino.activo')!;
+    expect(activo).toBeTruthy();
+    expect(activo.textContent?.trim()).toBe('Lleve al bebé a urgencias ahora.');
+    expect(activo.getAttribute('aria-checked')).toBe('true');
   });
 
   it('al guardar o fallar no se pierde lo que el médico escribió', async () => {
