@@ -110,7 +110,7 @@ SIGNBB_SEED_DEMO_ACTIVA=true
 ```bash
 docker compose -f compose.prod.yaml up -d backend
 docker compose -f compose.prod.yaml logs -f backend
-# esperar: "Seed demo terminado: médico ..., 4 subgrafo(s) publicado(s)."
+# esperar: "Seed demo terminado: médico ..., 5 subgrafo(s) publicado(s)."
 ```
 
 Después, pasar a producción:

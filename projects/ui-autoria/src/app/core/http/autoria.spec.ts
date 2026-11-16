@@ -23,7 +23,7 @@ describe('AutoriaService', () => {
     servicio.listar().subscribe();
     expect(http.expectOne(`${base}/subgrafos`).request.method).toBe('GET');
 
-    const request = { nombre: 'Fiebre', puenteId: 'puente_neuro', etiquetaOpcion: 'Fiebre o calentura' };
+    const request = { nombre: 'Fiebre', puenteId: 'puente_temperatura', etiquetaOpcion: 'Fiebre o calentura' };
     servicio.crear(request).subscribe();
     const crear = http.expectOne(`${base}/subgrafos`);
     expect(crear.request.method).toBe('POST');
