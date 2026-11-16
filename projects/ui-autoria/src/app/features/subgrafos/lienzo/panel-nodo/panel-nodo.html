@@ -101,7 +101,7 @@
       @if (preguntasDestino.length === 0 && conclusionesDestino.length === 0) {
         <p class="nota">Todavía no hay otro nodo en el lienzo al que esta respuesta pueda ir.</p>
       } @else {
-        <div class="campo">
+        <div class="campo campo--destinos">
           <span>¿A qué pregunta o conclusión va?</span>
           <div class="destinos" role="radiogroup" aria-label="¿A qué pregunta o conclusión va?">
             @if (preguntasDestino.length > 0) {
