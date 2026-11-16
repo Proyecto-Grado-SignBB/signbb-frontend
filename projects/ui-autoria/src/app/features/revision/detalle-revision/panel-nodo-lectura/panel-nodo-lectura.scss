@@ -1,0 +1,151 @@
+@use 'tokens-admin' as *;
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+.panel {
+  width: 360px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: $color-surface;
+  border-left: 1px solid $color-line;
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid $color-line;
+
+  h4 {
+    font-family: $font-heading;
+    font-size: 15px;
+    font-weight: 800;
+    color: $color-ink;
+  }
+}
+
+.btn-cerrar {
+  border: none;
+  background: none;
+  font-size: 15px;
+  color: $color-ink-faint;
+  cursor: pointer;
+}
+
+.panel-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.texto {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: $color-ink;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.nota {
+  margin: 0;
+  font-size: 12.5px;
+  color: $color-ink-faint;
+}
+
+.desenlace {
+  align-self: flex-start;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: $color-surface-2;
+  color: $color-ink-soft;
+
+  &.desenlace--RECOMENDACION {
+    background: $color-calm-tint;
+    color: $color-calm-dark;
+  }
+
+  &.desenlace--CONSULTA_MEDICA {
+    background: $color-aviso-tint;
+    color: $color-aviso-dark;
+  }
+
+  &.desenlace--URGENCIA {
+    background: $color-alert-tint;
+    color: $color-alert-dark;
+  }
+}
+
+.seccion {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.seccion-titulo {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: $color-ink-faint;
+}
+
+.miniaturas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.miniatura {
+  width: 84px;
+  height: 84px;
+  border-radius: 10px;
+  border: 1px solid $color-line;
+  overflow: hidden;
+  background: $color-surface-2;
+  display: block;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+.respuesta {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  background: $color-surface-2;
+  border: 1px solid $color-line-soft;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.35;
+  color: $color-ink;
+  overflow-wrap: anywhere;
+}
+
+.punto {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  margin-top: 4px;
+}
+
+.punto--LEVE { background: $color-calm; }
+.punto--MODERADA { background: $color-aviso; }
+.punto--GRAVE { background: $color-alert; }

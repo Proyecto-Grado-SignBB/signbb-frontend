@@ -262,6 +262,19 @@ app-avisos {
 .grafo-panel {
   height: 640px;
   min-height: 420px;
+  display: flex;
+  min-width: 0;
+
+  app-visor-grafo {
+    flex: 1;
+    min-width: 0;
+  }
+
+  app-panel-nodo-lectura {
+    flex: none;
+    width: 360px;
+    height: 100%;
+  }
 }
 
 .reglas-lectura {
@@ -433,6 +446,16 @@ app-avisos {
 
 @media (max-width: 760px) {
   .grafo-panel {
+    height: auto;
+    flex-direction: column;
+  }
+
+  .grafo-panel app-visor-grafo {
+    height: 520px;
+  }
+
+  .grafo-panel app-panel-nodo-lectura {
+    width: 100%;
     height: 520px;
   }
 

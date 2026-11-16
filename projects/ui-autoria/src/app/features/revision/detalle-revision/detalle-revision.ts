@@ -20,6 +20,7 @@ import { iniciales } from '../../../core/sesion/sesion';
 import {
   ETIQUETA_ESTADO,
   EstadoBorrador,
+  NodoLienzo,
   ResumenSubgrafoDTO,
   SubgrafoDTO,
   nombreCategoria
@@ -31,6 +32,7 @@ import {
   ReglaDTO,
   ResumenBaseReglaDTO
 } from '../../../models/regla.model';
+import { PanelNodoLecturaComponent } from './panel-nodo-lectura/panel-nodo-lectura';
 
 /**
  * Detalle de una revisión: el supervisor ve el grafo completo y la base de
@@ -48,6 +50,7 @@ import {
     AvisosComponent,
     VisorGrafoComponent,
     VisorReglaComponent,
+    PanelNodoLecturaComponent,
     BotonComponent,
     EtiquetaComponent,
     MensajeErrorComponent
@@ -70,6 +73,8 @@ export class DetalleRevisionComponent implements OnInit {
   protected readonly catalogo = signal<CatalogoDTO | null>(null);
   protected readonly reglaSeleccionada = signal<ReglaDTO | null>(null);
   protected readonly resumen = signal<ResumenSubgrafoDTO | null>(null);
+  /** Nodo abierto en el panel de solo lectura del visor. */
+  protected readonly nodoSeleccionado = signal<NodoLienzo | null>(null);
 
   protected readonly cargando = signal(true);
   protected readonly error = signal<string | null>(null);
@@ -135,6 +140,7 @@ export class DetalleRevisionComponent implements OnInit {
     }
     this.cargando.set(true);
     this.error.set(null);
+    this.nodoSeleccionado.set(null);
     forkJoin({
       subgrafo: this.autoria.obtener(this.id),
       revisiones: this.autoria.listarRevisiones().pipe(
@@ -185,7 +191,20 @@ export class DetalleRevisionComponent implements OnInit {
 
   /** Cambia la pestaña visible. */
   protected verTab(tab: 'grafo' | 'reglas'): void {
+    if (tab !== 'grafo') {
+      this.nodoSeleccionado.set(null);
+    }
     this.tab.set(tab);
+  }
+
+  /** Abre el detalle de un nodo del visor. */
+  protected seleccionarNodo(nodo: NodoLienzo): void {
+    this.nodoSeleccionado.set(nodo);
+  }
+
+  /** Cierra el detalle del nodo. */
+  protected cerrarDetalleNodo(): void {
+    this.nodoSeleccionado.set(null);
   }
 
   /** Selecciona una regla en el visor. */

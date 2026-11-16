@@ -35,10 +35,13 @@
           }
 
           @for (c of d.nodos; track c.nodo.id) {
-            <div class="nodo nodo--{{ c.nodo.tipo }} desenlace--{{ c.nodo.desenlace }}"
+            <button type="button" class="nodo nodo--{{ c.nodo.tipo }} desenlace--{{ c.nodo.desenlace }}"
               [class.suelto]="c.suelto"
+              [class.seleccionado]="seleccionadoId === c.nodo.id"
+              [attr.aria-pressed]="seleccionadoId === c.nodo.id"
               [style.left.px]="c.x" [style.top.px]="c.y"
-              [style.width.px]="medidas.anchoNodo" [style.height.px]="medidas.altoNodo">
+              [style.width.px]="medidas.anchoNodo" [style.height.px]="medidas.altoNodo"
+              (click)="nodoSeleccionado.emit(c.nodo)">
               <span class="nodo-tipo">
                 @if (c.nodo.tipo === 'PREGUNTA') {
                   {{ esInicio(c.nodo) ? 'Primera pregunta' : 'Pregunta' }}{{ c.nodo.variasRespuestas ? ' · varias' : '' }}
@@ -51,7 +54,7 @@
                 @if (c.suelto) { · suelta }
               </span>
               <span class="nodo-texto">{{ c.nodo.texto || (c.nodo.tipo === 'PREGUNTA' ? 'Pregunta sin texto' : 'Conclusión sin mensaje') }}</span>
-            </div>
+            </button>
           }
         </div>
       </div>

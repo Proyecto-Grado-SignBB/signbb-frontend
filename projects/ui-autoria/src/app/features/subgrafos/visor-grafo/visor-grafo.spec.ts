@@ -54,4 +54,19 @@ describe('VisorGrafoComponent', () => {
     fixture.detectChanges();
     expect(el.querySelector('.porcentaje')?.textContent).not.toContain('100 %');
   });
+
+  it('emite el nodo seleccionado y lo resalta', () => {
+    let elegido: NodoLienzo | undefined;
+    fixture.componentInstance.nodoSeleccionado.subscribe(n => (elegido = n));
+    fixture.componentInstance.seleccionadoId = 'c1';
+    fixture.detectChanges();
+
+    const conclusion = [...el.querySelectorAll<HTMLButtonElement>('.nodo')]
+      .find(b => b.textContent?.includes('URGENCIA'))!;
+    expect(conclusion.classList).toContain('seleccionado');
+    expect(conclusion.getAttribute('aria-pressed')).toBe('true');
+
+    conclusion.click();
+    expect(elegido?.id).toBe('c1');
+  });
 });

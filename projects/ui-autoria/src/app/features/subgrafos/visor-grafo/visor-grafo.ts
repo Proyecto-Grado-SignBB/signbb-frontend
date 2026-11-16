@@ -2,7 +2,9 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
+  EventEmitter,
   Input,
+  Output,
   computed,
   effect,
   inject,
@@ -53,6 +55,12 @@ export class VisorGrafoComponent {
   @Input() set nodos(valor: NodoLienzo[]) {
     this.nodosSig.set(valor ?? []);
   }
+
+  /** Id del nodo seleccionado, para resaltarlo. */
+  @Input() seleccionadoId: string | null = null;
+
+  /** Nodo que el usuario tocó para ver su detalle. */
+  @Output() nodoSeleccionado = new EventEmitter<NodoLienzo>();
 
   /** Distribución calculada de nodos y ramas. */
   protected readonly distribucion = computed(() => distribuir(this.inicioSig(), this.nodosSig()));
@@ -190,7 +198,7 @@ export class VisorGrafoComponent {
     }
     const el = this.zona()?.nativeElement;
     const objetivo = evento.target as HTMLElement | null;
-    if (!el || !objetivo || objetivo.closest('.controles-zoom, .minimapa')) {
+    if (!el || !objetivo || objetivo.closest('button, .controles-zoom, .minimapa')) {
       return;
     }
     this.arrastre = {

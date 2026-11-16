@@ -98,11 +98,28 @@
   gap: 4px;
   padding: 10px 14px;
   text-align: left;
+  color: inherit;
+  appearance: none;
+  cursor: pointer;
   background: $color-surface;
   border: 1.5px solid $color-line;
   border-radius: 14px;
   box-shadow: $shadow-card;
   overflow: hidden;
+
+  &:hover {
+    border-color: $color-ink-faint;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $color-brand;
+    outline-offset: 2px;
+  }
+
+  &.seleccionado {
+    border-color: $color-brand;
+    box-shadow: $shadow-card, 0 0 0 2px $color-brand;
+  }
 
   &.suelto {
     opacity: 0.6;

@@ -157,6 +157,34 @@ describe('DetalleRevisionComponent', () => {
     expect(el.querySelector('app-visor-regla')).toBeTruthy();
   });
 
+  it('abre el detalle de un nodo y lo cierra', () => {
+    const nodo = [...el.querySelectorAll<HTMLButtonElement>('button.nodo')]
+      .find(b => b.textContent?.includes('URGENCIA'))!;
+    nodo.click();
+    harness.detectChanges();
+
+    const panel = el.querySelector('app-panel-nodo-lectura')!;
+    expect(panel).toBeTruthy();
+    expect(panel.textContent).toContain('Conclusión');
+    expect(panel.textContent).toContain('Ir a urgencias');
+
+    panel.querySelector<HTMLButtonElement>('.btn-cerrar')!.click();
+    harness.detectChanges();
+    expect(el.querySelector('app-panel-nodo-lectura')).toBeNull();
+  });
+
+  it('cierra el detalle al pasar a la pestaña de reglas', () => {
+    [...el.querySelectorAll<HTMLButtonElement>('button.nodo')]
+      .find(b => b.textContent?.includes('URGENCIA'))!.click();
+    harness.detectChanges();
+    expect(el.querySelector('app-panel-nodo-lectura')).toBeTruthy();
+
+    boton('Base reglas').click();
+    harness.detectChanges();
+
+    expect(el.querySelector('app-panel-nodo-lectura')).toBeNull();
+  });
+
   it('aprueba la revisión y vuelve a la bandeja', () => {
     const router = TestBed.inject(Router);
     spyOn(router, 'navigate').and.resolveTo(true);

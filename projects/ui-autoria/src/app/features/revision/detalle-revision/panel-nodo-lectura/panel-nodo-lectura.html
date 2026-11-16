@@ -1,0 +1,47 @@
+<aside class="panel" aria-label="Detalle del nodo">
+  <div class="panel-head">
+    <h4>{{ titulo }}</h4>
+    <button type="button" class="btn-cerrar" (click)="cerrar.emit()" title="Cerrar">✕</button>
+  </div>
+
+  <div class="panel-body">
+    @if (!esPregunta) {
+      <span class="desenlace desenlace--{{ nodo.desenlace }}">{{ desenlace }}</span>
+    }
+
+    <p class="texto">{{ nodo.texto || (esPregunta ? 'Pregunta sin texto' : 'Conclusión sin mensaje') }}</p>
+
+    @if (esPregunta) {
+      @if (nodo.variasRespuestas) {
+        <p class="nota">Permite marcar varias respuestas.</p>
+      }
+
+      @if (nodo.imagenes?.length) {
+        <div class="seccion">
+          <span class="seccion-titulo">Imágenes de apoyo</span>
+          <div class="miniaturas">
+            @for (nombre of nodo.imagenes!; track nombre) {
+              @if (imagenesUrl[nombre]; as url) {
+                <a class="miniatura" [href]="url" target="_blank" rel="noopener" title="Abrir imagen">
+                  <img [src]="url" alt="" />
+                </a>
+              }
+            }
+          </div>
+        </div>
+      }
+
+      <div class="seccion">
+        <span class="seccion-titulo">Respuestas ({{ nodo.respuestas.length }})</span>
+        @for (r of nodo.respuestas; track r.id) {
+          <div class="respuesta">
+            <i class="punto punto--{{ r.gravedad }}" [title]="etiquetaGravedad[r.gravedad]"></i>
+            <span>{{ r.texto || '(sin texto)' }}</span>
+          </div>
+        } @empty {
+          <p class="nota">Esta pregunta no tiene respuestas.</p>
+        }
+      </div>
+    }
+  </div>
+</aside>

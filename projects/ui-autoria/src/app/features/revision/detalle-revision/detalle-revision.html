@@ -100,10 +100,15 @@
 
         @if (tab() === 'grafo') {
           <div class="aviso-info">
-            <span><b>Vista de solo lectura.</b> Usa el zoom, el arrastre y el mini-mapa para recorrer el grafo completo antes de decidir.</span>
+            <span><b>Vista de solo lectura.</b> Toca un nodo para ver su detalle. Usa el zoom, el arrastre y el mini-mapa para recorrer el grafo completo antes de decidir.</span>
           </div>
-          <div class="grafo-panel">
-            <app-visor-grafo [inicio]="s.inicio" [nodos]="s.nodos" />
+          <div class="grafo-panel" [class.grafo-panel--con-detalle]="nodoSeleccionado()">
+            <app-visor-grafo [inicio]="s.inicio" [nodos]="s.nodos"
+              [seleccionadoId]="nodoSeleccionado()?.id ?? null"
+              (nodoSeleccionado)="seleccionarNodo($event)" />
+            @if (nodoSeleccionado(); as nodo) {
+              <app-panel-nodo-lectura [nodo]="nodo" [inicio]="s.inicio" (cerrar)="cerrarDetalleNodo()" />
+            }
           </div>
         } @else {
           <div class="aviso-info">
