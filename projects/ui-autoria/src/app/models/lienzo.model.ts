@@ -42,6 +42,7 @@ export interface RespuestaLienzo {
   id: string;
   texto: string;
   gravedad: Gravedad;
+  /** Id de la pregunta o conclusión a la que lleva, o null si es un "+". */
   destino: string | null;
 }
 

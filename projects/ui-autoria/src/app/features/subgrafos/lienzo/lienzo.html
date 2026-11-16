@@ -129,7 +129,7 @@
                       [class.resaltado]="resaltado() === r.respuesta.id"
                       [style.left.px]="r.x" [style.top.px]="r.y"
                       [style.width.px]="medidas.anchoEnlace" [style.height.px]="medidas.altoEnlace"
-                      (click)="abrirRama(r)">↪ va a: {{ r.destinoTexto || '(pregunta sin texto)' }}</button>
+                      (click)="abrirRama(r)">↪ va a: {{ r.destinoTexto || '(sin texto)' }}</button>
                   }
                 }
 
@@ -188,7 +188,7 @@
       @if (contexto(); as c) {
         <app-panel-nodo
           [contexto]="c"
-          [preguntas]="preguntas()"
+          [nodos]="nodos()"
           [ocupado]="ocupado()"
           [error]="errorPanel()"
           (crear)="crear($event)"

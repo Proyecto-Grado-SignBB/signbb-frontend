@@ -166,10 +166,8 @@ export class LienzoComponent implements OnInit {
     return distribuir(s?.inicio ?? null, s?.nodos ?? []);
   });
 
-  /** Nodos que son preguntas. */
-  protected readonly preguntas = computed(() =>
-    (this.subgrafo()?.nodos ?? []).filter(n => n.tipo === 'PREGUNTA')
-  );
+  /** Nodos del lienzo, para el panel de "Nodo existente". */
+  protected readonly nodos = computed(() => this.subgrafo()?.nodos ?? []);
 
   /** True si el lienzo no tiene todavía una primera pregunta. */
   protected readonly vacio = computed(() => {
@@ -420,7 +418,7 @@ export class LienzoComponent implements OnInit {
     return `Se eliminará ${que}.${mas}`;
   }
 
-  /** Enlaza una respuesta a una pregunta existente (o la vuelve "+"). */
+  /** Enlaza una respuesta a una pregunta o conclusión existente (o la vuelve "+"). */
   protected enlazar(evento: { respuestaId: string; nodoId: string | null }): void {
     this.ejecutar(this.autoria.enlazar(this.id, evento.respuestaId, evento.nodoId));
   }

@@ -26,7 +26,7 @@
     }
 
     @if (bloqueadoPorEnlace) {
-      <p class="nota">Esta respuesta ya va a una pregunta existente. Quita el enlace para poner aquí una pregunta o conclusión nueva.</p>
+      <p class="nota">Esta respuesta ya va a un nodo existente. Quita el enlace para poner aquí una pregunta o conclusión nueva.</p>
     } @else if (modo === 'PREGUNTA') {
       <label class="campo">
         <span>Pregunta para la cuidadora</span>
@@ -98,15 +98,26 @@
         <textarea maxlength="1000" rows="3" [(ngModel)]="texto" placeholder="Ej: Lleve al bebé a urgencias ahora."></textarea>
       </label>
     } @else {
-      @if (preguntasDestino.length === 0) {
-        <p class="nota">Todavía no hay otra pregunta en el lienzo a la que esta respuesta pueda ir.</p>
+      @if (preguntasDestino.length === 0 && conclusionesDestino.length === 0) {
+        <p class="nota">Todavía no hay otro nodo en el lienzo al que esta respuesta pueda ir.</p>
       } @else {
         <label class="campo">
-          <span>¿A qué pregunta va?</span>
+          <span>¿A qué pregunta o conclusión va?</span>
           <select [(ngModel)]="destinoExistente">
-            <option [ngValue]="null" disabled>Elige una pregunta…</option>
-            @for (p of preguntasDestino; track p.id) {
-              <option [ngValue]="p.id">{{ p.texto || '(pregunta sin texto)' }}</option>
+            <option [ngValue]="null" disabled>Elige una pregunta o conclusión…</option>
+            @if (preguntasDestino.length > 0) {
+              <optgroup label="Preguntas">
+                @for (p of preguntasDestino; track p.id) {
+                  <option [ngValue]="p.id">{{ etiquetaDestino(p) }}</option>
+                }
+              </optgroup>
+            }
+            @if (conclusionesDestino.length > 0) {
+              <optgroup label="Conclusiones">
+                @for (c of conclusionesDestino; track c.id) {
+                  <option [ngValue]="c.id">{{ etiquetaDestino(c) }}</option>
+                }
+              </optgroup>
             }
           </select>
         </label>

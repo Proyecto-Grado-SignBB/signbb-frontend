@@ -43,6 +43,19 @@ describe('distribuir (layout del lienzo)', () => {
     expect(enlace.destinoTexto).toBe('¿Está decaído o no quiere comer?');
   });
 
+  it('una conclusión compartida se dibuja una vez y la segunda respuesta es un enlace', () => {
+    const compartida: NodoLienzo[] = fiebre().map(n => n.id === 'pregunta_6'
+      ? { ...n, respuestas: n.respuestas.map(r => r.id === 'r_8' ? { ...r, destino: 'conclusion_9' } : r) }
+      : n);
+    const d = distribuir('pregunta_1', compartida);
+
+    expect(d.nodos.filter(c => c.nodo.id === 'conclusion_9').length).toBe(1);
+    const enlace = d.ramas.find(r => r.respuesta.id === 'r_8')!;
+    expect(enlace.tipo).toBe('enlace');
+    expect(enlace.destinoId).toBe('conclusion_9');
+    expect(enlace.destinoTexto).toBe('Pida una cita hoy.');
+  });
+
 
 
 

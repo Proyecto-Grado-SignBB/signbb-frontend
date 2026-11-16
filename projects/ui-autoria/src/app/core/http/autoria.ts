@@ -86,7 +86,7 @@ export class AutoriaService {
     return this.http.delete<SubgrafoDTO>(`${this.base}/subgrafos/${id}/nodos/${nodoId}`);
   }
 
-  /** "Pregunta existente"; con `nodoId` nulo la respuesta vuelve a ser un "+". */
+  /** "Nodo existente"; con `nodoId` nulo la respuesta vuelve a ser un "+". */
   enlazar(id: number, respuestaId: string, nodoId: string | null): Observable<SubgrafoDTO> {
     return this.http.put<SubgrafoDTO>(
       `${this.base}/subgrafos/${id}/respuestas/${respuestaId}/destino`,

@@ -17,9 +17,9 @@ describe('PanelNodoComponent', () => {
   let fixture: ComponentFixture<PanelNodoComponent>;
   let el: HTMLElement;
 
-  async function abrir(contexto: ContextoPanel, preguntas: NodoLienzo[] = [TERMOMETRO]): Promise<void> {
+  async function abrir(contexto: ContextoPanel, nodos: NodoLienzo[] = [TERMOMETRO]): Promise<void> {
     fixture.componentRef.setInput('contexto', contexto);
-    fixture.componentRef.setInput('preguntas', preguntas);
+    fixture.componentRef.setInput('nodos', nodos);
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
@@ -97,13 +97,13 @@ describe('PanelNodoComponent', () => {
     expect(emitido?.desenlace).toBe('RECOMENDACION');
   });
 
-  it('"Pregunta existente" no ofrece la misma pregunta y emite el enlace', async () => {
+  it('"Nodo existente" no ofrece la misma pregunta y emite el enlace', async () => {
     const otra: NodoLienzo = { ...TERMOMETRO, id: 'pregunta_6', texto: '¿Está decaído?', respuestas: [] };
     await abrir({ tipo: 'mas', origen: TERMOMETRO, respuesta: TERMOMETRO.respuestas[0] }, [TERMOMETRO, otra]);
     let enlace: { respuestaId: string; nodoId: string | null } | undefined;
     fixture.componentInstance.enlazar.subscribe(e => (enlace = e));
 
-    boton('Pregunta existente').click();
+    boton('Nodo existente').click();
     fixture.detectChanges();
     const select = el.querySelector('select')!;
     const opciones = [...select.options].map(o => o.textContent?.trim());
@@ -114,6 +114,51 @@ describe('PanelNodoComponent', () => {
     fixture.detectChanges();
     enviar();
     expect(enlace).toEqual({ respuestaId: 'r_2', nodoId: 'pregunta_6' });
+  });
+
+  it('"Nodo existente" ofrece las conclusiones y las agrupa', async () => {
+    const conclusion: NodoLienzo = {
+      id: 'conclusion_4', tipo: 'CONCLUSION', texto: 'Lleve al bebé a urgencias ahora.',
+      variasRespuestas: false, desenlace: 'URGENCIA', respuestas: []
+    };
+    const otra: NodoLienzo = { ...TERMOMETRO, id: 'pregunta_6', texto: '¿Está decaído?', respuestas: [] };
+    await abrir(
+      { tipo: 'mas', origen: TERMOMETRO, respuesta: TERMOMETRO.respuestas[0] },
+      [TERMOMETRO, otra, conclusion]
+    );
+    let enlace: { respuestaId: string; nodoId: string | null } | undefined;
+    fixture.componentInstance.enlazar.subscribe(e => (enlace = e));
+
+    boton('Nodo existente').click();
+    fixture.detectChanges();
+
+    const grupos = [...el.querySelectorAll('optgroup')].map(g => g.getAttribute('label'));
+    expect(grupos).toEqual(['Preguntas', 'Conclusiones']);
+    const opcionConclusion = [...el.querySelectorAll('option')]
+      .find(o => o.textContent?.includes('Lleve al bebé a urgencias ahora.'))!;
+    expect(opcionConclusion.textContent?.trim()).toBe('Lleve al bebé a urgencias ahora.');
+
+    const select = el.querySelector('select')!;
+    select.value = opcionConclusion.value;
+    select.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    enviar();
+    expect(enlace).toEqual({ respuestaId: 'r_2', nodoId: 'conclusion_4' });
+  });
+
+  it('al guardar o fallar no se pierde lo que el médico escribió', async () => {
+    await abrir({ tipo: 'mas', origen: TERMOMETRO, respuesta: TERMOMETRO.respuestas[0] });
+    await escribir('textarea', '¿Está decaído o no quiere comer?');
+
+    fixture.componentRef.setInput('ocupado', true);
+    fixture.detectChanges();
+    expect(el.querySelector<HTMLTextAreaElement>('textarea')!.value).toContain('¿Está decaído');
+
+    fixture.componentRef.setInput('ocupado', false);
+    fixture.componentRef.setInput('error', 'No se pudo guardar el cambio. Intenta de nuevo.');
+    fixture.detectChanges();
+    expect(el.querySelector<HTMLTextAreaElement>('textarea')!.value).toContain('¿Está decaído');
+    expect(el.querySelector('.error')?.textContent).toContain('No se pudo guardar');
   });
 
   it('al editar conserva el id de cada respuesta (y así su destino)', async () => {

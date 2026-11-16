@@ -19,7 +19,7 @@ import { errorDeArchivo, MAX_IMAGENES } from '../../../../core/media/imagenes';
  * - `primera`: el lienzo está vacío y se crea la primera pregunta;
  * - `mas`: se tocó el "+" de una respuesta;
  * - `editar`: se tocó un nodo;
- * - `enlace`: se tocó el chip de una respuesta que va a una pregunta existente.
+ * - `enlace`: se tocó el chip de una respuesta que va a un nodo existente.
  */
 export type ContextoPanel =
   | { tipo: 'primera' }
@@ -41,9 +41,9 @@ interface FilaRespuesta {
 
 /**
  * Panel lateral del lienzo: arma el nodo que va después de un "+", edita uno
- * existente o cambia a qué pregunta va una respuesta. Solo llama al backend
- * para subir imágenes; lo demás lo emite como petición y el lienzo la envía y
- * redibuja con lo que vuelve.
+ * existente o cambia a qué pregunta o conclusión va una respuesta. Solo llama
+ * al backend para subir imágenes; lo demás lo emite como petición y el lienzo
+ * la envía y redibuja con lo que vuelve.
  */
 @Component({
   selector: 'app-panel-nodo',
@@ -57,8 +57,8 @@ export class PanelNodoComponent implements OnChanges, OnDestroy {
 
   /** Para qué se abrió el panel. */
   @Input({ required: true }) contexto!: ContextoPanel;
-  /** Preguntas del lienzo, para "Pregunta existente". */
-  @Input() preguntas: NodoLienzo[] = [];
+  /** Nodos del lienzo, para "Nodo existente". */
+  @Input() nodos: NodoLienzo[] = [];
   /** True mientras el lienzo guarda el cambio. */
   @Input() ocupado = false;
   /** Error a mostrar si la operación falla. */
@@ -70,7 +70,7 @@ export class PanelNodoComponent implements OnChanges, OnDestroy {
   @Output() guardar = new EventEmitter<{ nodoId: string; request: NodoRequest }>();
   /** Elimina el nodo que se está editando. */
   @Output() eliminar = new EventEmitter<string>();
-  /** "Pregunta existente"; `nodoId` nulo quita el enlace (la respuesta vuelve a ser un "+"). */
+  /** "Nodo existente"; `nodoId` nulo quita el enlace (la respuesta vuelve a ser un "+"). */
   @Output() enlazar = new EventEmitter<{ respuestaId: string; nodoId: string | null }>();
   /** Cierra el panel sin cambios. */
   @Output() cerrar = new EventEmitter<void>();
@@ -90,6 +90,8 @@ export class PanelNodoComponent implements OnChanges, OnDestroy {
   protected desenlace: Desenlace | null = null;
   protected respuestas: FilaRespuesta[] = [];
   protected destinoExistente: string | null = null;
+  /** Contexto con el que se cargó el formulario; solo ese cambio lo reinicia. */
+  private contextoAnterior: ContextoPanel | null = null;
 
   /** Imágenes de apoyo de la pregunta (nombres que dio el servidor al subirlas). */
   protected imagenes: string[] = [];
@@ -105,8 +107,12 @@ export class PanelNodoComponent implements OnChanges, OnDestroy {
   /** Máximo de respuestas por pregunta (el servidor rechaza más de 10). */
   protected readonly maxRespuestas = 10;
 
-  /** Reinicia el formulario cada vez que cambia el contexto. */
+  /** Reinicia el formulario solo cuando cambia el contexto, no al guardar ni al fallar. */
   ngOnChanges(): void {
+    if (this.contexto === this.contextoAnterior) {
+      return;
+    }
+    this.contextoAnterior = this.contexto;
     this.limpiarUrls();
     this.reiniciar();
   }
@@ -156,7 +162,7 @@ export class PanelNodoComponent implements OnChanges, OnDestroy {
     switch (this.contexto.tipo) {
       case 'primera': return 'Primera pregunta';
       case 'mas': return '¿Qué pasa después?';
-      case 'enlace': return 'Va a una pregunta existente';
+      case 'enlace': return 'Va a un nodo existente';
       case 'editar': return this.contexto.nodo.tipo === 'PREGUNTA' ? 'Editar pregunta' : 'Editar conclusión';
     }
   }
@@ -182,14 +188,29 @@ export class PanelNodoComponent implements OnChanges, OnDestroy {
 
   /** Texto legible de un modo del panel. */
   protected etiquetaModo(modo: ModoPanel): string {
-    return modo === 'PREGUNTA' ? 'Pregunta' : modo === 'CONCLUSION' ? 'Conclusión' : 'Pregunta existente';
+    return modo === 'PREGUNTA' ? 'Pregunta' : modo === 'CONCLUSION' ? 'Conclusión' : 'Nodo existente';
   }
 
   /** Preguntas a las que puede ir la respuesta: todas menos la suya. */
   protected get preguntasDestino(): NodoLienzo[] {
+    return this.destinosPosibles.filter(n => n.tipo === 'PREGUNTA');
+  }
+
+  /** Conclusiones a las que puede ir la respuesta. */
+  protected get conclusionesDestino(): NodoLienzo[] {
+    return this.destinosPosibles.filter(n => n.tipo === 'CONCLUSION');
+  }
+
+  /** Nodos existentes a los que puede ir la respuesta: todos menos su pregunta de origen. */
+  private get destinosPosibles(): NodoLienzo[] {
     const c = this.contexto;
     const origen = c.tipo === 'mas' || c.tipo === 'enlace' ? c.origen.id : null;
-    return this.preguntas.filter(p => p.id !== origen);
+    return this.nodos.filter(n => n.id !== origen);
+  }
+
+  /** Texto de una opción del desplegable: solo lo que escribió el médico. */
+  protected etiquetaDestino(nodo: NodoLienzo): string {
+    return nodo.texto || (nodo.tipo === 'PREGUNTA' ? 'Pregunta sin texto' : 'Conclusión sin mensaje');
   }
 
   /** True si el panel está editando un nodo existente. */
@@ -216,7 +237,7 @@ export class PanelNodoComponent implements OnChanges, OnDestroy {
   protected get textoBoton(): string {
     if (this.ocupado) return 'Guardando…';
     if (this.esEdicion) return 'Guardar';
-    return this.modo === 'EXISTENTE' ? 'Ir a esa pregunta' : 'Agregar al lienzo';
+    return this.modo === 'EXISTENTE' ? 'Enlazar' : 'Agregar al lienzo';
   }
 
   // --- Respuestas ---------------------------------------------------------------
